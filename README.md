@@ -26,18 +26,8 @@ Refer to [EXAMPLES.md](./EXAMPLES.md) for different examples of how to configure
 ## Quickstart <a id="chapter-888ccd"></a>
 * Follow the steps below
 
-### Run a single Node (development)
-* [Example "dev" development PoS testnet (with single node)
-](./EXAMPLES.md#example-dev-development-pos-testnet-with-single-node-)
+### Run a Collator node as a parachain to local relay chain
+* [Run Collator Node with local relay chain](./EXAMPLES.md#example-dev-development-pos-testnet-with-single-node-)
 
-### Run multiple Nodes (local testnet)
-* [Example "local" PoS testnet (with multiple nodes)](./EXAMPLES.md#example-local-pos-testnet-with-multiple-nodes-)
-
-### Run multiple Nodes (latest_testnet)
-* [Testnet (Alpha) "testnet_latest" PoS testnet (with multiple nodes)](./EXAMPLES.md#testnet-alpha-testnet_latest-pos-testnet-with-multiple-nodes-)
-
-### Run a Validator node (Harbour testnet)
-* [Setup Validator Node](https://dev.datahighway.com/docs/en/tutorials/tutorials-nodes-validator-setup)
-
-### Run a Collator node as a parachain to Polkadot (Chachacha/Rococo)
-* [Setup Collator Node](https://dev.datahighway.com/docs/en/tutorials/tutorials-nodes-collators-setup)
+### Run a Collator node as a parachain to Rococo
+* [Run a Collator node as a parachain to Rococo](https://dev.datahighway.com/docs/en/tutorials/tutorials-nodes-collators-setup)

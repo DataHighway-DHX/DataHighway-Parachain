@@ -381,7 +381,7 @@ pub fn datahighway_rococo_parachain_config() -> ChainSpec {
                     // authority #4 aura
                     hex!["ea239700d67f53d30e39bee0c056f1165a6fb59ad4d5dd495c06d001af366c02"].into(),
                 ],
-                2023.into(),
+                2026.into(),
             )
         },
         boot_nodes,
@@ -390,7 +390,7 @@ pub fn datahighway_rococo_parachain_config() -> ChainSpec {
         Some(properties),
         Extensions {
             relay_chain: "rococo".into(),
-            para_id: 2023,
+            para_id: 2026,
         },
     )
 }

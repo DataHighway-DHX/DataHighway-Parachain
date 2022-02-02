@@ -80,9 +80,9 @@ cargo build --release
 
 ```bash
 rm rococo-parachain-plain.json
-rm rococo-parachain-2023-raw.json
+rm rococo-parachain-2026-raw.json
 ./target/release/datahighway-collator build-spec --chain rococo --disable-default-bootnode > rococo-parachain-plain.json
-./target/release/datahighway-collator build-spec --chain rococo-parachain-plain.json --raw --disable-default-bootnode > rococo-parachain-2023-raw.json
+./target/release/datahighway-collator build-spec --chain rococo-parachain-plain.json --raw --disable-default-bootnode > rococo-parachain-2026-raw.json
 
 ```
 
@@ -109,7 +109,7 @@ Run Alice's bootnode using the raw chain definition file that was generated
 --alice \
 --collator \
 --force-authoring \
---chain rococo-parachain-2023-raw.json \
+--chain rococo-parachain-2026-raw.json \
 --base-path /tmp/parachain/alice \
 --port 40333 \
 --ws-port 8844 \

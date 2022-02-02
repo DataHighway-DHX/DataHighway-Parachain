@@ -115,7 +115,7 @@ Run Alice's bootnode using the raw chain definition file that was generated
 --ws-port 8844 \
 -- \
 --execution wasm \
---chain /res/rococo.json \
+--chain ./res/rococo.json \
 --port 30343 \
 --ws-port 9977
 ```

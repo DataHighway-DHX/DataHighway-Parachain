@@ -30,4 +30,4 @@ Refer to [EXAMPLES.md](./EXAMPLES.md) for different examples of how to configure
 * [Run Collator Node with local relay chain](./EXAMPLES.md#example-dev-development-pos-testnet-with-single-node-)
 
 ### Run a Collator node as a parachain to Rococo
-* [Run a Collator node as a parachain to Rococo](https://dev.datahighway.com/docs/en/tutorials/tutorials-nodes-collators-setup)
+* [Run a Collator node as a parachain to Rococo](./EXAMPLES.md#run-a-collator-node-as-a-parachain-to-rococo-)

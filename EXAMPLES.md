@@ -23,7 +23,7 @@ The development testnet only requires a single node to produce blocks.
 curl https://getsubstrate.io -sSf | bash -s -- --fast && \
 ./scripts/init.sh && \
 cargo build --release
-```0
+```
 
 * Purge the chain (remove relevant existing blockchain testnet database blocks and keys)
 

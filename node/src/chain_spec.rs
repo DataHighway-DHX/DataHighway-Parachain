@@ -1,3 +1,4 @@
+use crate::fixtures::get_allocation;
 use cumulus_primitives_core::ParaId;
 use datahighway_parachain_runtime::{
     AccountId,
@@ -1018,6 +1019,10 @@ fn dev_genesis(
     endowed_accounts: Vec<AccountId>,
     id: ParaId,
 ) -> datahighway_parachain_runtime::GenesisConfig {
+
+    let allocation = get_allocation().unwrap();
+    let hardspoon_balances = allocation.0;
+
     datahighway_parachain_runtime::GenesisConfig {
         system: datahighway_parachain_runtime::SystemConfig {
             code: datahighway_parachain_runtime::WASM_BINARY.expect("WASM binary was not build, please build it!").to_vec(),
@@ -1041,6 +1046,8 @@ fn dev_genesis(
                         return (x, INITIAL_BALANCE);
                     }
                 })
+                // allocate hardspoon balances from standalone chain to parachain
+                .chain(hardspoon_balances.iter().map(|x| (x.0.clone(), x.1.clone())))
                 .collect(),
         },
         sudo: SudoConfig {

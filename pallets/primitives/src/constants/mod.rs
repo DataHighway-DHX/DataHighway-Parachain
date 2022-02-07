@@ -23,14 +23,6 @@ pub mod currency {
 
 /// Time.
 pub mod time {
-    // pub use frame_support::{
-    //     weights::{
-    //         constants::{WEIGHT_PER_SECOND},
-    //         Weight,
-    //     },
-    // };
-    // pub use sp_runtime::{Perbill};
-
     pub use crate::types::{
         BlockNumber,
         Moment,

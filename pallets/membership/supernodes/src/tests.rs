@@ -46,6 +46,7 @@
 //     type Header = Header;
 //     type Index = u64;
 //     type Lookup = IdentityLookup<Self::AccountId>;
+//     type MaxConsumers = frame_support::traits::ConstU32<16>;
 //     type OnKilledAccount = ();
 //     type OnNewAccount = ();
 //     type Origin = Origin;

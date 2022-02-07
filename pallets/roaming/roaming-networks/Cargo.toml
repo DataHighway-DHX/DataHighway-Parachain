@@ -80,21 +80,3 @@ branch = "polkadot-v0.9.16"
 default-features = false
 git = 'https://github.com/paritytech/substrate.git'
 branch = "polkadot-v0.9.16"
-
-[dev-dependencies]
-
-[dev-dependencies.sp-core]
-default-features = false
-git = 'https://github.com/paritytech/substrate.git'
-branch = "polkadot-v0.9.16"
-
-
-[dev-dependencies.sp-io]
-default-features = false
-git = 'https://github.com/paritytech/substrate.git'
-branch = "polkadot-v0.9.16"
-
-[dev-dependencies.sp-runtime]
-default-features = false
-git = 'https://github.com/paritytech/substrate.git'
-branch = "polkadot-v0.9.16"

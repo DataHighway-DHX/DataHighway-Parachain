@@ -1,4 +1,3 @@
-
 /// Money matters.
 pub mod currency {
     use crate::types::Balance;
@@ -7,6 +6,16 @@ pub mod currency {
     pub const CENTS: Balance = 1_000 * MILLICENTS; // assume this is worth about a cent.
     pub const DOLLARS: Balance = 100 * CENTS;
 
+    // Unit = the base number of indivisible units for balances
+    pub const UNIT: Balance = 1_000_000_000_000;
+    pub const MILLIUNIT: Balance = 1_000_000_000;
+    pub const MICROUNIT: Balance = 1_000_000;
+
+    /// The existential deposit. Set to 1/10 of the Connected Relay Chain.
+    // Note: Kusama relay chain's `ExistentialDeposit` is 1 * CENTS,
+    // so 1/10 of that is 100 millicents
+    pub const EXISTENTIAL_DEPOSIT: Balance = 100 * MILLICENTS;
+
     pub const fn deposit(items: u32, bytes: u32) -> Balance {
         items as Balance * 15 * CENTS + (bytes as Balance) * 6 * CENTS
     }
@@ -14,12 +23,23 @@ pub mod currency {
 
 /// Time.
 pub mod time {
+    // pub use frame_support::{
+    //     weights::{
+    //         constants::{WEIGHT_PER_SECOND},
+    //         Weight,
+    //     },
+    // };
+    // pub use sp_runtime::{Perbill};
+
     pub use crate::types::{
         BlockNumber,
         Moment,
     };
 
-    pub const MILLISECS_PER_BLOCK: Moment = 4320;
+    // Note: On Standalone chain we used 4320, but we must use the
+    // substrate-parachain-template default value for the Parachain
+    pub const MILLISECS_PER_BLOCK: Moment = 12000;
+
     pub const SLOT_DURATION: Moment = MILLISECS_PER_BLOCK;
 
     // These time units are defined in number of blocks.

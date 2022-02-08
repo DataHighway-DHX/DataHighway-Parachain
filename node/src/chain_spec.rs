@@ -41,8 +41,13 @@ pub use sp_runtime::{
     Permill,
 };
 
+const DEFAULT_PROTOCOL_ID: &str = "dhx";
+
 /// Specialized `ChainSpec` for the normal parachain runtime.
 pub type ChainSpec = sc_service::GenericChainSpec<datahighway_parachain_runtime::GenesisConfig, Extensions>;
+
+/// The default XCM version to set in genesis config.
+const SAFE_XCM_VERSION: u32 = xcm::prelude::XCM_VERSION;
 
 /// Helper function to generate a crypto pair from seed
 pub fn get_public_from_seed<TPublic: Public>(seed: &str) -> <TPublic::Pair as Pair>::Public {
@@ -138,6 +143,7 @@ pub fn datahighway_rococo_development_config() -> ChainSpec {
         vec![],
         None,
         None,
+        None,
         Some(properties),
         Extensions {
             relay_chain: "rococo-dev".into(),
@@ -193,6 +199,7 @@ pub fn datahighway_rococo_local_testnet_config() -> ChainSpec {
         // Telemetry
         None,
         None,
+        None,
         Some(properties),
         Extensions {
             relay_chain: "rococo-local".into(),
@@ -246,6 +253,7 @@ pub fn datahighway_chachacha_development_config() -> ChainSpec {
         vec![],
         None,
         None,
+        None,
         Some(properties),
         Extensions {
             relay_chain: "chachacha-dev".into(),
@@ -296,6 +304,7 @@ pub fn datahighway_chachacha_local_testnet_config() -> ChainSpec {
             )
         },
         Vec::new(),
+        None,
         None,
         None,
         Some(properties),
@@ -384,10 +393,17 @@ pub fn datahighway_rococo_parachain_config() -> ChainSpec {
                 2026.into(),
             )
         },
+        // Bootnodes
         boot_nodes,
+        // Telemetry
         None,
-        Some("dhx"),
+        // Protocol ID
+        Some(DEFAULT_PROTOCOL_ID),
+        // Fork ID
+        None,
+        // Properties
         Some(properties),
+        // Extensions
         Extensions {
             relay_chain: "rococo".into(),
             para_id: 2026,
@@ -475,7 +491,8 @@ pub fn datahighway_chachacha_parachain_config() -> ChainSpec {
         },
         boot_nodes,
         None,
-        Some("dhx"),
+        Some(DEFAULT_PROTOCOL_ID),
+        None,
         Some(properties),
         Extensions {
             relay_chain: "chachacha".into(),
@@ -526,6 +543,7 @@ pub fn datahighway_westend_development_config() -> ChainSpec {
             )
         },
         vec![],
+        None,
         None,
         None,
         Some(properties),
@@ -580,6 +598,7 @@ pub fn datahighway_westend_local_testnet_config() -> ChainSpec {
         Vec::new(),
         None,
         None,
+        None,
         Some(properties),
         Extensions {
             relay_chain: "westend-local".into(),
@@ -632,6 +651,7 @@ pub fn datahighway_kusama_development_config() -> ChainSpec {
         vec![],
         None,
         None,
+        None,
         Some(properties),
         Extensions {
             relay_chain: "kusama-dev".into(),
@@ -682,6 +702,7 @@ pub fn datahighway_kusama_local_testnet_config() -> ChainSpec {
             )
         },
         Vec::new(),
+        None,
         None,
         None,
         Some(properties),
@@ -772,7 +793,8 @@ pub fn datahighway_westend_parachain_config() -> ChainSpec {
         },
         boot_nodes,
         None,
-        Some("dhx"),
+        Some(DEFAULT_PROTOCOL_ID),
+        None,
         Some(properties),
         Extensions {
             relay_chain: "westend".into(),
@@ -861,7 +883,8 @@ pub fn datahighway_kusama_parachain_config() -> ChainSpec {
         },
         boot_nodes,
         None,
-        Some("dhx"),
+        Some(DEFAULT_PROTOCOL_ID),
+        None,
         Some(properties),
         Extensions {
             relay_chain: "kusama".into(),
@@ -914,7 +937,7 @@ fn spreehafen_testnet_genesis(
         },
         pallet_treasury: Default::default(),
         sudo: SudoConfig {
-            key: root_key.clone(),
+            key: Some(root_key.clone()),
         },
         parachain_info: datahighway_parachain_runtime::ParachainInfoConfig {
             parachain_id: id,
@@ -941,6 +964,9 @@ fn spreehafen_testnet_genesis(
         aura: Default::default(),
         aura_ext: Default::default(),
         parachain_system: Default::default(),
+		polkadot_xcm: datahighway_parachain_runtime::PolkadotXcmConfig {
+			safe_xcm_version: Some(SAFE_XCM_VERSION),
+		},
     }
 }
 
@@ -976,7 +1002,7 @@ fn testnet_genesis(
             .collect(),
         },
         sudo: SudoConfig {
-            key: root_key.clone(),
+            key: Some(root_key.clone()),
         },
         general_council: Default::default(),
         general_council_membership: GeneralCouncilMembershipConfig {
@@ -1009,6 +1035,9 @@ fn testnet_genesis(
         aura: Default::default(),
         aura_ext: Default::default(),
         parachain_system: Default::default(),
+		polkadot_xcm: datahighway_parachain_runtime::PolkadotXcmConfig {
+			safe_xcm_version: Some(SAFE_XCM_VERSION),
+		},
     }
 }
 
@@ -1044,7 +1073,7 @@ fn dev_genesis(
                 .collect(),
         },
         sudo: SudoConfig {
-            key: root_key.clone(),
+            key: Some(root_key.clone()),
         },
         general_council: Default::default(),
         general_council_membership: GeneralCouncilMembershipConfig {
@@ -1077,6 +1106,9 @@ fn dev_genesis(
         aura: Default::default(),
         aura_ext: Default::default(),
         parachain_system: Default::default(),
+		polkadot_xcm: datahighway_parachain_runtime::PolkadotXcmConfig {
+			safe_xcm_version: Some(SAFE_XCM_VERSION),
+		},
     }
 }
 
@@ -1118,7 +1150,7 @@ fn baikal_testnet_genesis(
         },
         pallet_treasury: Default::default(),
         sudo: SudoConfig {
-            key: root_key.clone(),
+            key: Some(root_key.clone()),
         },
         parachain_info: datahighway_parachain_runtime::ParachainInfoConfig {
             parachain_id: id,
@@ -1145,6 +1177,9 @@ fn baikal_testnet_genesis(
         aura: Default::default(),
         aura_ext: Default::default(),
         parachain_system: Default::default(),
+		polkadot_xcm: datahighway_parachain_runtime::PolkadotXcmConfig {
+			safe_xcm_version: Some(SAFE_XCM_VERSION),
+		},
     }
 }
 
@@ -1186,7 +1221,7 @@ fn tanganika_testnet_genesis(
         },
         pallet_treasury: Default::default(),
         sudo: SudoConfig {
-            key: root_key.clone(),
+            key: Some(root_key.clone()),
         },
         parachain_info: datahighway_parachain_runtime::ParachainInfoConfig {
             parachain_id: id,
@@ -1213,5 +1248,8 @@ fn tanganika_testnet_genesis(
         aura: Default::default(),
         aura_ext: Default::default(),
         parachain_system: Default::default(),
+		polkadot_xcm: datahighway_parachain_runtime::PolkadotXcmConfig {
+			safe_xcm_version: Some(SAFE_XCM_VERSION),
+		},
     }
 }

@@ -969,8 +969,8 @@ fn testnet_genesis(
         }
     }
 
-    let allocation = get_allocation(endowed_accounts_with_balances.clone()).unwrap();
-    let hardspoon_balances = allocation;
+    // let allocation = get_allocation(endowed_accounts_with_balances.clone()).unwrap();
+    let hardspoon_balances = endowed_accounts_with_balances;
     // log::trace!("hardspoon_balances {:#?}", hardspoon_balances);
 
     GenesisConfig {
@@ -979,65 +979,6 @@ fn testnet_genesis(
         },
         balances: BalancesConfig {
             balances: hardspoon_balances.iter().cloned().map(|x| (x.0.clone(), x.1.clone())).collect(),
-            // balances: hardspoon_balances
-            //     .iter()
-            //     .cloned()
-            //     .map(|x| {
-            //         return (x.0.clone(), x.1.clone());
-            //         // log::info!("hardspoon_balances x {:#?}", x);
-            //         // log::info!("hardspoon_balances x.0 {:#?}", x.0);
-            //         // log::info!("hardspoon_balances x.1 {:#?}", x.1);
-            //         // let a = AccountId::from_str("4MkLjys3KYVtRKBWBeNUSYxymqXK3C8vKzXZuSroWv3cVhqp").unwrap();
-            //         // log::info!("hardspoon_balances a {:#?}", a.clone());
-            //         // if x.0 == a.clone()
-            //         //     // 4MkLjys3KYVtRKBWBeNUSYxymqXK3C8vKzXZuSroWv3cVhqp
-            //         //     // a6b34be9aa95c82927b112dacf99bac1e728acb0fbae849097c0f9150fa49c23
-            //         //     // hex!("a42b7518d62a942344fec55d414f1654bf3fd325dbfa32a3c30534d5976acb21").into(),
-            //         // {
-            //         //     return (x.0.clone(), x.1.clone());
-            //         // } else {
-            //         //     // dummy account. note that 'the balance of any account should always be at least the existential deposit.' EXISTENTIAL_DEPOSIT
-            //         //     // 0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
-            //         //     return (AccountId::from_str("4MqYNQEEwTn8veHcpvcoP1He6LUuBWCXMLKRP1eob825ouqi").unwrap(), 1000000000000000u128);
-            //         // }
-            //     })
-            //     // .map(|x| {
-            //     //     // Insert Public key (hex) of the account without the 0x prefix below
-            //     //     if x == UncheckedFrom::unchecked_from(
-            //     //         hex!("a42b7518d62a942344fec55d414f1654bf3fd325dbfa32a3c30534d5976acb21").into(),
-            //     //     ) {
-            //     //         // If we use println, then the top of the chain specification file that gets
-            //     //         // generated contains the println, and then we have to remove the println from
-            //     //         // the top of that file to generate the "raw" chain definition
-            //     //         // println!("endowed_account treasury {:?}", x.clone());
-            //     //         return (x, INITIAL_DHX_DAO_TREASURY_UNLOCKED_RESERVES_BALANCE);
-            //     //     } else {
-            //     //         // println!("endowed_account {:?}", x.clone());
-            //     //         return (x, INITIAL_BALANCE);
-            //     //     }
-            //     // })
-            //     // // allocate hardspoon balances from standalone chain to parachain
-            //     // .chain(hardspoon_balances.iter()
-            //     //     .map(|x| {
-            //     //         log::info!("hardspoon_balances x {:#?}", x);
-            //     //         log::info!("hardspoon_balances x.0 {:#?}", x.0);
-            //     //         log::info!("hardspoon_balances x.1 {:#?}", x.1);
-            //     //         let a = AccountId::from_str("4MkLjys3KYVtRKBWBeNUSYxymqXK3C8vKzXZuSroWv3cVhqp").unwrap();
-            //     //         log::info!("hardspoon_balances a {:#?}", a.clone());
-            //     //         if x.0 == a.clone()
-            //     //             // 4MkLjys3KYVtRKBWBeNUSYxymqXK3C8vKzXZuSroWv3cVhqp
-            //     //             // a6b34be9aa95c82927b112dacf99bac1e728acb0fbae849097c0f9150fa49c23
-            //     //             // hex!("a42b7518d62a942344fec55d414f1654bf3fd325dbfa32a3c30534d5976acb21").into(),
-            //     //         {
-            //     //             return (x.0.clone(), x.1.clone());
-            //     //         } else {
-            //     //             // dummy account. note that 'the balance of any account should always be at least the existential deposit.' EXISTENTIAL_DEPOSIT
-            //     //             // 0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
-            //     //             return (AccountId::from_str("4MqYNQEEwTn8veHcpvcoP1He6LUuBWCXMLKRP1eob825ouqi").unwrap(), 1000000000000000u128);
-            //     //         }
-            //     //     })
-            //     // )
-            //     .collect::<Vec<(AccountId, Balance)>>(),
         },
         sudo: SudoConfig {
             key: root_key.clone(),

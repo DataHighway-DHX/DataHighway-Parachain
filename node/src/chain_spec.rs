@@ -969,16 +969,19 @@ fn testnet_genesis(
         }
     }
 
-    // let allocation = get_allocation(endowed_accounts_with_balances.clone()).unwrap();
+    let allocation = get_allocation(endowed_accounts_with_balances.clone()).unwrap();
     let hardspoon_balances = endowed_accounts_with_balances;
-    // log::trace!("hardspoon_balances {:#?}", hardspoon_balances);
 
     GenesisConfig {
         system: datahighway_parachain_runtime::SystemConfig {
             code: datahighway_parachain_runtime::WASM_BINARY.expect("WASM binary was not build, please build it!").to_vec(),
         },
         balances: BalancesConfig {
-            balances: hardspoon_balances.iter().cloned().map(|x| (x.0.clone(), x.1.clone())).collect(),
+            balances: hardspoon_balances
+                .iter()
+                .cloned()
+                .map(|x| (x.0.clone(), x.1.clone()))
+                .collect(),
         },
         sudo: SudoConfig {
             key: root_key.clone(),

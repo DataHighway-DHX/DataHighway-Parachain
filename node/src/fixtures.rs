@@ -34,20 +34,20 @@ pub fn get_allocation(endowed_accounts_with_balances: Vec<(AccountId32, Balance)
 
     let mut combined_balances: Vec<(AccountId32, Balance)> = vec![];
 
-    if endowed_accounts_with_balances.len() != 0 {
-        for e in endowed_accounts_with_balances {
-            let account_public_key_endowed: String = e.0.to_string();
-            // println!("account_public_key_endowed {:#?}", account_public_key_endowed.clone());
+    // if endowed_accounts_with_balances.len() != 0 {
+    //     for e in endowed_accounts_with_balances {
+    //         let account_public_key_endowed: String = e.0.to_string();
+    //         // println!("account_public_key_endowed {:#?}", account_public_key_endowed.clone());
 
-            let account_balance_endowed: Balance = e.1.to_string().parse::<Balance>().unwrap();
-            // println!("account_balance_endowed {:#?}", account_balance_endowed.clone());
+    //         let account_balance_endowed: Balance = e.1.to_string().parse::<Balance>().unwrap();
+    //         // println!("account_balance_endowed {:#?}", account_balance_endowed.clone());
 
-            let account_ss58_address_endowed: AccountId32 = AccountId32::from_str(&account_public_key_endowed).unwrap();
-            // println!("account_ss58_address_endowed {:#?}", account_ss58_address_endowed.clone());
+    //         let account_ss58_address_endowed: AccountId32 = AccountId32::from_str(&account_public_key_endowed).unwrap();
+    //         // println!("account_ss58_address_endowed {:#?}", account_ss58_address_endowed.clone());
 
-            combined_balances.push((account_ss58_address_endowed.clone(), account_balance_endowed.clone()));
-        }
-    }
+    //         combined_balances.push((account_ss58_address_endowed.clone(), account_balance_endowed.clone()));
+    //     }
+    // }
 
     if balances_json.len() != 0 {
         // overwrite any existing account balances in endowed using the accounts from the json file

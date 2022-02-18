@@ -996,7 +996,7 @@ fn testnet_genesis(
     }
 
     let allocation = get_allocation(endowed_accounts_with_balances.clone()).unwrap();
-    let hardspoon_balances = endowed_accounts_with_balances;
+    let hardspoon_balances = allocation;
 
     GenesisConfig {
         system: datahighway_parachain_runtime::SystemConfig {

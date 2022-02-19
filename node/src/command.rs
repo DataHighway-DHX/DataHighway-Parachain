@@ -23,18 +23,18 @@ use std::{io::Write, net::SocketAddr};
 
 fn load_spec(id: &str) -> std::result::Result<Box<dyn sc_service::ChainSpec>, String> {
     Ok(match id {
-        "dev" | "rococo-dev"=> Box::new(chain_spec::datahighway_rococo_development_config()),
+        // "dev" | "rococo-dev"=> Box::new(chain_spec::datahighway_rococo_development_config()),
         "" | "local" | "rococo-local"=> Box::new(chain_spec::datahighway_rococo_local_testnet_config()),
-        "chachacha-dev"=> Box::new(chain_spec::datahighway_chachacha_development_config()),
-        "chachacha-local"=> Box::new(chain_spec::datahighway_chachacha_local_testnet_config()),
-        "rococo" => Box::new(chain_spec::datahighway_rococo_parachain_config()),
-        "chachacha" => Box::new(chain_spec::datahighway_chachacha_parachain_config()),
-        "westend-dev"=> Box::new(chain_spec::datahighway_westend_development_config()),
-        "westend-local"=> Box::new(chain_spec::datahighway_westend_local_testnet_config()),
-        "westend" => Box::new(chain_spec::datahighway_westend_parachain_config()),
-        "kusama-dev"=> Box::new(chain_spec::datahighway_kusama_development_config()),
-        "kusama-local"=> Box::new(chain_spec::datahighway_kusama_local_testnet_config()),
-        "kusama" => Box::new(chain_spec::datahighway_kusama_parachain_config()),
+        // "chachacha-dev"=> Box::new(chain_spec::datahighway_chachacha_development_config()),
+        // "chachacha-local"=> Box::new(chain_spec::datahighway_chachacha_local_testnet_config()),
+        // "rococo" => Box::new(chain_spec::datahighway_rococo_parachain_config()),
+        // "chachacha" => Box::new(chain_spec::datahighway_chachacha_parachain_config()),
+        // "westend-dev"=> Box::new(chain_spec::datahighway_westend_development_config()),
+        // "westend-local"=> Box::new(chain_spec::datahighway_westend_local_testnet_config()),
+        // "westend" => Box::new(chain_spec::datahighway_westend_parachain_config()),
+        // "kusama-dev"=> Box::new(chain_spec::datahighway_kusama_development_config()),
+        // "kusama-local"=> Box::new(chain_spec::datahighway_kusama_local_testnet_config()),
+        // "kusama" => Box::new(chain_spec::datahighway_kusama_parachain_config()),
         path => Box::new(chain_spec::ChainSpec::from_json_file(std::path::PathBuf::from(path))?),
     })
 }

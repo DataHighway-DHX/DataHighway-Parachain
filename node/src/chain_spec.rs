@@ -990,13 +990,12 @@ fn testnet_genesis(
         ) {
             endowed_accounts_with_balances.push((x, INITIAL_DHX_DAO_TREASURY_UNLOCKED_RESERVES_BALANCE));
         } else {
-            println!("endowed_accounts_with_balances INITIAL_BALANCE {:?}", x.clone());
             endowed_accounts_with_balances.push((x, INITIAL_BALANCE));
         }
     }
 
     let allocation = get_allocation(endowed_accounts_with_balances.clone()).unwrap();
-    let hardspoon_balances = endowed_accounts_with_balances;
+    let hardspoon_balances = allocation;
 
     GenesisConfig {
         system: datahighway_parachain_runtime::SystemConfig {

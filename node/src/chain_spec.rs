@@ -902,7 +902,7 @@ pub fn datahighway_kusama_parachain_config() -> ChainSpec {
 // total supply should be 100m, with 30m (30%) going to DHX DAO unlocked reserves, and the remaining
 // 70m split between the initial 8x accounts other than the reserves such that each should receive 8750
 const INITIAL_BALANCE: u128 = 8_750_000_000_000_000_000_000_u128; // $70M 70_000_000_000_000_000_000_000_u128
-const INITIAL_DHX_DAO_TREASURY_UNLOCKED_RESERVES_BALANCE: u128 = 30_000_000_000_000_000_000_000_u128; // $30M
+const INITIAL_DHX_DAO_TREASURY_UNLOCKED_RESERVES_BALANCE: u128 = 30_000_000_000_000_000_000_000_000_u128; // $30M
 // const INITIAL_STAKING: u128 = 1_000_000_000_000_000_000_u128;
 
 fn spreehafen_testnet_genesis(

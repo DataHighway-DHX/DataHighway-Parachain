@@ -164,20 +164,20 @@ pub fn get_endowed_accounts_with_balance() -> Result<Vec<(AccountId, Balance)>, 
         get_account_id_from_seed::<sr25519::Public>("Eve//stash"),
         get_account_id_from_seed::<sr25519::Public>("Ferdie//stash"),
     ];
-    let accounts_with_balance: Vec<(AccountId, Balance)> = accounts.iter().cloned().map(|k| (k, 1 << 60)).collect();
-    // let mut endowed_accounts_with_balances: Vec<(AccountId, Balance)> = vec![];
-    // for x in endowed_accounts {
-    //     if x == UncheckedFrom::unchecked_from(
-    //         hex!("a42b7518d62a942344fec55d414f1654bf3fd325dbfa32a3c30534d5976acb21").into(),
-    //     ) {
-    //         endowed_accounts_with_balances.push((x, INITIAL_DHX_DAO_TREASURY_UNLOCKED_RESERVES_BALANCE));
-    //     } else {
-    //         println!("endowed_accounts_with_balances INITIAL_BALANCE {:?}", x.clone());
-    //         endowed_accounts_with_balances.push((x, INITIAL_BALANCE));
-    //     }
-    // }
+    // let accounts_with_balance: Vec<(AccountId, Balance)> = accounts.iter().cloned().map(|k| (k, 1 << 60)).collect();
+    let mut accounts_with_balance: Vec<(AccountId, Balance)> = vec![];
+    for x in accounts {
+        if x == UncheckedFrom::unchecked_from(
+            hex!("a42b7518d62a942344fec55d414f1654bf3fd325dbfa32a3c30534d5976acb21").into(),
+        ) {
+            accounts_with_balance.push((x, INITIAL_DHX_DAO_TREASURY_UNLOCKED_RESERVES_BALANCE));
+        } else {
+            // do not use `println!` otherwise get error in Polkadot-Launch with code being included as values in the rococo-local.json file
+            // println!("accounts_with_balance INITIAL_BALANCE {:?}", x.clone());
+            accounts_with_balance.push((x, INITIAL_BALANCE));
+        }
+    }
     let json_data = &include_bytes!("genesis.json")[..];
-    print("json_data is");
     let additional_accounts_with_balance: Vec<(AccountId, Balance)> = serde_json::from_slice(json_data).unwrap();
     let mut accounts = additional_accounts_with_balance.clone();
 
@@ -257,7 +257,6 @@ pub fn datahighway_rococo_local_testnet_config() -> ChainSpec {
                     ),
                 ],
                 get_account_id_from_seed::<sr25519::Public>("Alice"),
-                // Pre-funded accounts
                 get_endowed_accounts_with_balance().unwrap(),
                 2000.into(),
             )

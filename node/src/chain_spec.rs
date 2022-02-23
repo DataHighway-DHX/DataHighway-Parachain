@@ -52,7 +52,18 @@ pub use sp_runtime::{
     Permill,
 };
 
-const DEFAULT_PROTOCOL_ID: &str = "dhx";
+const ROCOCO_DEV_PROTOCOL_ID: &str = "dhx-rococo-dev";
+const ROCOCO_LOCAL_PROTOCOL_ID: &str = "dhx-rococo-local";
+const ROCOCO_SPREEHAFEN_PROTOCOL_ID: &str = "dhx-rococo-spreehafen";
+const CHACHACHA_DEV_PROTOCOL_ID: &str = "dhx-chachacha-dev";
+const CHACHACHA_LOCAL_PROTOCOL_ID: &str = "dhx-chachacha-local";
+const CHACHACHA_SPREEHAFEN_PROTOCOL_ID: &str = "dhx-chachacha-spreehafen";
+const WESTEND_DEV_PROTOCOL_ID: &str = "dhx-westend-dev";
+const WESTEND_LOCAL_PROTOCOL_ID: &str = "dhx-westend-local";
+const WESTEND_BAIKAL_PROTOCOL_ID: &str = "dhx-westend-baikal";
+const KUSAMA_DEV_PROTOCOL_ID: &str = "dhx-kusama-dev";
+const KUSAMA_LOCAL_PROTOCOL_ID: &str = "dhx-kusama-local";
+const KUSAMA_TANGANIKA_PROTOCOL_ID: &str = "dhx-kusama-tanganika";
 
 /// Specialized `ChainSpec` for the normal parachain runtime.
 pub type ChainSpec = sc_service::GenericChainSpec<datahighway_parachain_runtime::GenesisConfig, Extensions>;
@@ -109,18 +120,41 @@ pub fn datahighway_session_keys(keys: AuraId) -> datahighway_parachain_runtime::
     datahighway_parachain_runtime::SessionKeys { aura: keys }
 }
 
-// TODO - find out where `6d6f646c70792f74727372790000000000000000000000000000000000000000` was generated from?
-// was it generated from doing `<pallet_treasury::Module<T>>::account_id()` and why is it different from
-// `a42b7518d62a942344fec55d414f1654bf3fd325dbfa32a3c30534d5976acb21`. maybe it was used because
-// we were not able to fund the treasury account directly prior to Substrate 3.0.0
+// DHX DAO Unlocked Reserves Balance
+// Given a Treasury ModuleId in runtime parameter_types of
+// `py/trsry`, we convert that to its associated address
+// using Module ID" to Address" at https://www.shawntabrizi.com/substrate-js-utilities/,
+// which generates 5EYCAe5ijiYfyeZ2JJCGq56LmPyNRAKzpG4QkoQkkQNB5e6Z,
+// and find its corresponding hex value by pasting the address into
+// "AccountId to Hex" at that same link to return
+// 6d6f646c70792f74727372790000000000000000000000000000000000000000.
+// But since DataHighway is using an SS58 address prefix of 33 instead of
+// Substrate's default of 42, the address corresponds to
+// 4LTFqiD6H6g8a7ur9WH4RxhWx2givWfK7o5EDed3ai1nYTvk.
+// This is pallet_treasury's account_id.
+//
+// In the older version of Substrate 2 it did not have instantiable support for treasury
+// but was later supported in Substrate 3 and was fixed here
+// https://github.com/paritytech/substrate/pull/7058
+//
+// Since we are using Substrate 3, we may transfer funds directly to the Treasury,
+// which will hold the DHX DAO Unlocked Reserves Balance.
+//
+// Note: The original DataHighway Testnet Genesis has used:
+//   5FmxcuFwGK7kPmQCB3zhk3HtxxJUyb3WjxosF8jvnkrVRLUG
+//   4Mh2HyPJohFCzEm22G5VLvu59b1qUwNq3VpghyxDd4W6tJW9
+//   hex: a42b7518d62a942344fec55d414f1654bf3fd325dbfa32a3c30534d5976acb21
+//
+// However, the DataHighway Westlake Mainnet and DataHighway Parachain will transfer the funds to:
+//   4LTFqiD6H6g8a7ur9WH4RxhWx2givWfK7o5EDed3ai1nYTvk
+//   6d6f646c70792f74727372790000000000000000000000000000000000000000
+//
+// To transfer funds from the Treasury, either the Sudo user needs to
+// call the `forceTransfer` extrinsic to transfer funds from the Treasury,
+// or a proposal is required.
 
 // note: we cannot use constants so a constant function has been used instead
 // https://datahighway.subscan.io/tools/format_transform
-// a42b7518d62a942344fec55d414f1654bf3fd325dbfa32a3c30534d5976acb21
-pub fn dhx_unlocked_reserves_account_development() -> AccountId {
-    return AccountId32::from_str(&"4Mh2HyPJohFCzEm22G5VLvu59b1qUwNq3VpghyxDd4W6tJW9".to_string()).unwrap();
-}
-// TODO - we need this to be different for rococo, kusama, etc
 // 6d6f646c70792f74727372790000000000000000000000000000000000000000
 pub fn dhx_unlocked_reserves_account() -> AccountId {
     return AccountId32::from_str(&"4LTFqiD6H6g8a7ur9WH4RxhWx2givWfK7o5EDed3ai1nYTvk".to_string()).unwrap();
@@ -163,7 +197,7 @@ pub fn datahighway_rococo_development_config() -> ChainSpec {
                 ],
                 get_account_id_from_seed::<sr25519::Public>("Alice"),
                 vec![
-                    dhx_unlocked_reserves_account_development(),
+                    dhx_unlocked_reserves_account(),
                     get_account_id_from_seed::<sr25519::Public>("Alice"),
                     get_account_id_from_seed::<sr25519::Public>("Bob"),
                     get_account_id_from_seed::<sr25519::Public>("Charlie"),
@@ -178,13 +212,23 @@ pub fn datahighway_rococo_development_config() -> ChainSpec {
                     get_account_id_from_seed::<sr25519::Public>("Ferdie//stash"),
                 ],
                 2000.into(),
+                true,
             )
         },
+        // Bootnodes
         vec![],
+        // Telemetry Endpoints
+        Some(
+            TelemetryEndpoints::new(vec![(POLKADOT_STAGING_TELEMETRY_URL.to_string(), 0)])
+                .expect("Polkadot telemetry url is valid; qed"),
+        ),
+        // Protocol ID
+        Some(ROCOCO_DEV_PROTOCOL_ID),
+        // Fork ID
         None,
-        None,
-        None,
+        // Properties
         Some(properties),
+        // Extensions
         Extensions {
             relay_chain: "rococo-dev".into(),
             para_id: 2000,
@@ -217,7 +261,7 @@ pub fn datahighway_rococo_local_testnet_config() -> ChainSpec {
                 ],
                 get_account_id_from_seed::<sr25519::Public>("Alice"),
                 vec![
-                    dhx_unlocked_reserves_account_development(),
+                    dhx_unlocked_reserves_account(),
                     get_account_id_from_seed::<sr25519::Public>("Alice"),
                     get_account_id_from_seed::<sr25519::Public>("Bob"),
                     get_account_id_from_seed::<sr25519::Public>("Charlie"),
@@ -232,15 +276,23 @@ pub fn datahighway_rococo_local_testnet_config() -> ChainSpec {
                     get_account_id_from_seed::<sr25519::Public>("Ferdie//stash"),
                 ],
                 2000.into(),
+                true,
             )
         },
         // Bootnodes
-        Vec::new(),
-        // Telemetry
+        vec![],
+        // Telemetry Endpoints
+        Some(
+            TelemetryEndpoints::new(vec![(POLKADOT_STAGING_TELEMETRY_URL.to_string(), 0)])
+                .expect("Polkadot telemetry url is valid; qed"),
+        ),
+        // Protocol ID
+        Some(ROCOCO_LOCAL_PROTOCOL_ID),
+        // Fork ID
         None,
-        None,
-        None,
+        // Properties
         Some(properties),
+        // Extensions
         Extensions {
             relay_chain: "rococo-local".into(),
             para_id: 2000,
@@ -273,7 +325,7 @@ pub fn datahighway_chachacha_development_config() -> ChainSpec {
                 ],
                 get_account_id_from_seed::<sr25519::Public>("Alice"),
                 vec![
-                    dhx_unlocked_reserves_account_development(),
+                    dhx_unlocked_reserves_account(),
                     get_account_id_from_seed::<sr25519::Public>("Alice"),
                     get_account_id_from_seed::<sr25519::Public>("Bob"),
                     get_account_id_from_seed::<sr25519::Public>("Charlie"),
@@ -288,13 +340,23 @@ pub fn datahighway_chachacha_development_config() -> ChainSpec {
                     get_account_id_from_seed::<sr25519::Public>("Ferdie//stash"),
                 ],
                 2000.into(),
+                true,
             )
         },
+        // Bootnodes
         vec![],
+        // Telemetry Endpoints
+        Some(
+            TelemetryEndpoints::new(vec![(POLKADOT_STAGING_TELEMETRY_URL.to_string(), 0)])
+                .expect("Polkadot telemetry url is valid; qed"),
+        ),
+        // Protocol ID
+        Some(CHACHACHA_DEV_PROTOCOL_ID),
+        // Fork ID
         None,
-        None,
-        None,
+        // Properties
         Some(properties),
+        // Extensions
         Extensions {
             relay_chain: "chachacha-dev".into(),
             para_id: 2000,
@@ -326,7 +388,7 @@ pub fn datahighway_chachacha_local_testnet_config() -> ChainSpec {
                 ],
                 get_account_id_from_seed::<sr25519::Public>("Alice"),
                 vec![
-                    dhx_unlocked_reserves_account_development(),
+                    dhx_unlocked_reserves_account(),
                     get_account_id_from_seed::<sr25519::Public>("Alice"),
                     get_account_id_from_seed::<sr25519::Public>("Bob"),
                     get_account_id_from_seed::<sr25519::Public>("Charlie"),
@@ -341,13 +403,23 @@ pub fn datahighway_chachacha_local_testnet_config() -> ChainSpec {
                     get_account_id_from_seed::<sr25519::Public>("Ferdie//stash"),
                 ],
                 2000.into(),
+                true,
             )
         },
-        Vec::new(),
+        // Bootnodes
+        vec![],
+        // Telemetry Endpoints
+        Some(
+            TelemetryEndpoints::new(vec![(POLKADOT_STAGING_TELEMETRY_URL.to_string(), 0)])
+                .expect("Polkadot telemetry url is valid; qed"),
+        ),
+        // Protocol ID
+        Some(CHACHACHA_LOCAL_PROTOCOL_ID),
+        // Fork ID
         None,
-        None,
-        None,
+        // Properties
         Some(properties),
+        // Extensions
         Extensions {
             relay_chain: "chachacha-local".into(),
             para_id: 2000,
@@ -359,7 +431,6 @@ pub fn datahighway_rococo_parachain_config() -> ChainSpec {
     let mut properties = sc_chain_spec::Properties::new();
     properties.insert("tokenSymbol".into(), "DHX".into());
     properties.insert("tokenDecimals".into(), 18.into());
-    let boot_nodes = vec![];
     ChainSpec::from_genesis(
         "DataHighway Spreehafen Rococo Parachain Testnet",
         "datahighway-spreehafen-rococo-parachain-testnet",
@@ -431,14 +502,18 @@ pub fn datahighway_rococo_parachain_config() -> ChainSpec {
                     hex!["ea239700d67f53d30e39bee0c056f1165a6fb59ad4d5dd495c06d001af366c02"].into(),
                 ],
                 2026.into(),
+                true,
             )
         },
         // Bootnodes
-        boot_nodes,
-        // Telemetry
-        None,
+        vec![],
+        // Telemetry Endpoints
+        Some(
+            TelemetryEndpoints::new(vec![(POLKADOT_STAGING_TELEMETRY_URL.to_string(), 0)])
+                .expect("Polkadot telemetry url is valid; qed"),
+        ),
         // Protocol ID
-        Some(DEFAULT_PROTOCOL_ID),
+        Some(ROCOCO_SPREEHAFEN_PROTOCOL_ID),
         // Fork ID
         None,
         // Properties
@@ -455,7 +530,6 @@ pub fn datahighway_chachacha_parachain_config() -> ChainSpec {
     let mut properties = sc_chain_spec::Properties::new();
     properties.insert("tokenSymbol".into(), "DHX".into());
     properties.insert("tokenDecimals".into(), 18.into());
-    let boot_nodes = vec![];
     ChainSpec::from_genesis(
         "DataHighway Spreehafen ChaChaCha Parachain Testnet",
         "datahighway-spreehafen-chachacha-parachain-testnet",
@@ -527,13 +601,23 @@ pub fn datahighway_chachacha_parachain_config() -> ChainSpec {
                     hex!["ea239700d67f53d30e39bee0c056f1165a6fb59ad4d5dd495c06d001af366c02"].into(),
                 ],
                 2002.into(),
+                true,
             )
         },
-        boot_nodes,
+        // Bootnodes
+        vec![],
+        // Telemetry Endpoints
+        Some(
+            TelemetryEndpoints::new(vec![(POLKADOT_STAGING_TELEMETRY_URL.to_string(), 0)])
+                .expect("Polkadot telemetry url is valid; qed"),
+        ),
+        // Protocol ID
+        Some(CHACHACHA_SPREEHAFEN_PROTOCOL_ID),
+        // Fork ID
         None,
-        Some(DEFAULT_PROTOCOL_ID),
-        None,
+        // Properties
         Some(properties),
+        // Extensions
         Extensions {
             relay_chain: "chachacha".into(),
             para_id: 2002,
@@ -565,7 +649,7 @@ pub fn datahighway_westend_development_config() -> ChainSpec {
                 ],
                 get_account_id_from_seed::<sr25519::Public>("Alice"),
                 vec![
-                    dhx_unlocked_reserves_account_development(),
+                    dhx_unlocked_reserves_account(),
                     get_account_id_from_seed::<sr25519::Public>("Alice"),
                     get_account_id_from_seed::<sr25519::Public>("Bob"),
                     get_account_id_from_seed::<sr25519::Public>("Charlie"),
@@ -580,13 +664,23 @@ pub fn datahighway_westend_development_config() -> ChainSpec {
                     get_account_id_from_seed::<sr25519::Public>("Ferdie//stash"),
                 ],
                 2000.into(),
+                true,
             )
         },
+        // Bootnodes
         vec![],
+        // Telemetry Endpoints
+        Some(
+            TelemetryEndpoints::new(vec![(POLKADOT_STAGING_TELEMETRY_URL.to_string(), 0)])
+                .expect("Polkadot telemetry url is valid; qed"),
+        ),
+        // Protocol ID
+        Some(WESTEND_DEV_PROTOCOL_ID),
+        // Fork ID
         None,
-        None,
-        None,
+        // Properties
         Some(properties),
+        // Extensions
         Extensions {
             relay_chain: "westend-dev".into(),
             para_id: 2000,
@@ -618,7 +712,7 @@ pub fn datahighway_westend_local_testnet_config() -> ChainSpec {
                 ],
                 get_account_id_from_seed::<sr25519::Public>("Alice"),
                 vec![
-                    dhx_unlocked_reserves_account_development(),
+                    dhx_unlocked_reserves_account(),
                     get_account_id_from_seed::<sr25519::Public>("Alice"),
                     get_account_id_from_seed::<sr25519::Public>("Bob"),
                     get_account_id_from_seed::<sr25519::Public>("Charlie"),
@@ -633,13 +727,23 @@ pub fn datahighway_westend_local_testnet_config() -> ChainSpec {
                     get_account_id_from_seed::<sr25519::Public>("Ferdie//stash"),
                 ],
                 2000.into(),
+                true,
             )
         },
-        Vec::new(),
+        // Bootnodes
+        vec![],
+        // Telemetry Endpoints
+        Some(
+            TelemetryEndpoints::new(vec![(POLKADOT_STAGING_TELEMETRY_URL.to_string(), 0)])
+                .expect("Polkadot telemetry url is valid; qed"),
+        ),
+        // Protocol ID
+        Some(WESTEND_LOCAL_PROTOCOL_ID),
+        // Fork ID
         None,
-        None,
-        None,
+        // Properties
         Some(properties),
+        // Extensions
         Extensions {
             relay_chain: "westend-local".into(),
             para_id: 2000,
@@ -671,7 +775,7 @@ pub fn datahighway_kusama_development_config() -> ChainSpec {
                 ],
                 get_account_id_from_seed::<sr25519::Public>("Alice"),
                 vec![
-                    dhx_unlocked_reserves_account_development(),
+                    dhx_unlocked_reserves_account(),
                     get_account_id_from_seed::<sr25519::Public>("Alice"),
                     get_account_id_from_seed::<sr25519::Public>("Bob"),
                     get_account_id_from_seed::<sr25519::Public>("Charlie"),
@@ -686,13 +790,23 @@ pub fn datahighway_kusama_development_config() -> ChainSpec {
                     get_account_id_from_seed::<sr25519::Public>("Ferdie//stash"),
                 ],
                 2000.into(),
+                true,
             )
         },
+        // Bootnodes
         vec![],
+        // Telemetry Endpoints
+        Some(
+            TelemetryEndpoints::new(vec![(POLKADOT_STAGING_TELEMETRY_URL.to_string(), 0)])
+                .expect("Polkadot telemetry url is valid; qed"),
+        ),
+        // Protocol ID
+        Some(KUSAMA_DEV_PROTOCOL_ID),
+        // Fork ID
         None,
-        None,
-        None,
+        // Properties
         Some(properties),
+        // Extensions
         Extensions {
             relay_chain: "kusama-dev".into(),
             para_id: 2000,
@@ -724,7 +838,7 @@ pub fn datahighway_kusama_local_testnet_config() -> ChainSpec {
                 ],
                 get_account_id_from_seed::<sr25519::Public>("Alice"),
                 vec![
-                    dhx_unlocked_reserves_account_development(),
+                    dhx_unlocked_reserves_account(),
                     get_account_id_from_seed::<sr25519::Public>("Alice"),
                     get_account_id_from_seed::<sr25519::Public>("Bob"),
                     get_account_id_from_seed::<sr25519::Public>("Charlie"),
@@ -739,13 +853,23 @@ pub fn datahighway_kusama_local_testnet_config() -> ChainSpec {
                     get_account_id_from_seed::<sr25519::Public>("Ferdie//stash"),
                 ],
                 2000.into(),
+                true,
             )
         },
-        Vec::new(),
+        // Bootnodes
+        vec![],
+        // Telemetry Endpoints
+        Some(
+            TelemetryEndpoints::new(vec![(POLKADOT_STAGING_TELEMETRY_URL.to_string(), 0)])
+                .expect("Polkadot telemetry url is valid; qed"),
+        ),
+        // Protocol ID
+        Some(KUSAMA_LOCAL_PROTOCOL_ID),
+        // Fork ID
         None,
-        None,
-        None,
+        // Properties
         Some(properties),
+        // Extensions
         Extensions {
             relay_chain: "kusama-local".into(),
             para_id: 2000,
@@ -757,7 +881,6 @@ pub fn datahighway_westend_parachain_config() -> ChainSpec {
     let mut properties = sc_chain_spec::Properties::new();
     properties.insert("tokenSymbol".into(), "BKL".into());
     properties.insert("tokenDecimals".into(), 18.into());
-    let boot_nodes = vec![];
     ChainSpec::from_genesis(
         "DataHighway Baikal Westend Parachain Testnet",
         "datahighway-baikal-westend-parachain-testnet",
@@ -793,7 +916,6 @@ pub fn datahighway_westend_parachain_config() -> ChainSpec {
                         // aura
                         hex!["c27631914b41a8f58e24277158817d064a4144df430dd2cf7baeaa17414deb3e"].unchecked_into()
                     )
-
                 ],
                 sudo_account_westend_baikal(),
                 vec![
@@ -829,13 +951,23 @@ pub fn datahighway_westend_parachain_config() -> ChainSpec {
                     hex!["c27631914b41a8f58e24277158817d064a4144df430dd2cf7baeaa17414deb3e"].into(),
                 ],
                 2000.into(),
+                true,
             )
         },
-        boot_nodes,
+        // Bootnodes
+        vec![],
+        // Telemetry Endpoints
+        Some(
+            TelemetryEndpoints::new(vec![(POLKADOT_STAGING_TELEMETRY_URL.to_string(), 0)])
+                .expect("Polkadot telemetry url is valid; qed"),
+        ),
+        // Protocol ID
+        Some(WESTEND_BAIKAL_PROTOCOL_ID),
+        // Fork ID
         None,
-        Some(DEFAULT_PROTOCOL_ID),
-        None,
+        // Properties
         Some(properties),
+        // Extensions
         Extensions {
             relay_chain: "westend".into(),
             para_id: 2000,
@@ -847,10 +979,9 @@ pub fn datahighway_kusama_parachain_config() -> ChainSpec {
     let mut properties = sc_chain_spec::Properties::new();
     properties.insert("tokenSymbol".into(), "DHX".into());
     properties.insert("tokenDecimals".into(), 18.into());
-    let boot_nodes = vec![];
     ChainSpec::from_genesis(
         "DataHighway Tanganika Kusama Parachain",
-        "datahighway-kusama-polkadot-parachain",
+        "datahighway-tanganika-kusama-parachain",
         ChainType::Live,
         move || {
             tanganika_testnet_genesis(
@@ -883,7 +1014,6 @@ pub fn datahighway_kusama_parachain_config() -> ChainSpec {
                         // aura
                         hex!["10a3d6854dc35e4b3fd77af4beda98f79dbe9edf5c29c14c8d57bec4bd733c0f"].unchecked_into()
                     )
-
                 ],
                 sudo_account_kusama_tanganika(),
                 vec![
@@ -919,13 +1049,23 @@ pub fn datahighway_kusama_parachain_config() -> ChainSpec {
                     hex!["10a3d6854dc35e4b3fd77af4beda98f79dbe9edf5c29c14c8d57bec4bd733c0f"].into(),
                 ],
                 2000.into(),
+                true,
             )
         },
-        boot_nodes,
+        // Bootnodes
+        vec![],
+        // Telemetry Endpoints
+        Some(
+            TelemetryEndpoints::new(vec![(POLKADOT_STAGING_TELEMETRY_URL.to_string(), 0)])
+                .expect("Polkadot telemetry url is valid; qed"),
+        ),
+        // Protocol ID
+        Some(KUSAMA_TANGANIKA_PROTOCOL_ID),
+        // Fork ID
         None,
-        Some(DEFAULT_PROTOCOL_ID),
-        None,
+        // Properties
         Some(properties),
+        // Extensions
         Extensions {
             relay_chain: "kusama".into(),
             para_id: 2000,
@@ -933,39 +1073,41 @@ pub fn datahighway_kusama_parachain_config() -> ChainSpec {
     )
 }
 
-// total supply should be 100m, with 30m (30%) going to DHX DAO unlocked reserves, and the remaining
-// 70m split between the initial 8x accounts other than the reserves such that each should receive 8750
-const INITIAL_BALANCE: u128 = 8_750_000_000_000_000_000_000_u128; // $70M 70_000_000_000_000_000_000_000_u128
-const INITIAL_DHX_DAO_TREASURY_UNLOCKED_RESERVES_BALANCE: u128 = 30_000_000_000_000_000_000_000_000_u128; // $30M
-// const INITIAL_STAKING: u128 = 1_000_000_000_000_000_000_u128;
+const INITIAL_ENDOWMENT: u128 = 10_000_000_000_000_000_000_u128; // 10 DHX
+const INITIAL_DHX_DAO_TREASURY_UNLOCKED_RESERVES_BALANCE: u128 = 30_000_000_000_000_000_000_000_000_u128; // 30M DHX
+
+fn get_balances(endowed_accounts: Vec<AccountId>) -> Vec<(AccountId32, Balance)> {
+    let mut endowed_accounts_with_balances: Vec<(AccountId, Balance)> = vec![];
+    for x in endowed_accounts {
+        if x == dhx_unlocked_reserves_account() {
+            endowed_accounts_with_balances.push((x, INITIAL_DHX_DAO_TREASURY_UNLOCKED_RESERVES_BALANCE));
+        } else {
+            endowed_accounts_with_balances.push((x, INITIAL_ENDOWMENT));
+        }
+    }
+    let allocation = get_allocation(endowed_accounts_with_balances.clone()).unwrap();
+    return allocation;
+}
 
 fn spreehafen_testnet_genesis(
     invulnerables: Vec<(AccountId, AuraId)>,
     root_key: AccountId,
     endowed_accounts: Vec<AccountId>,
-    id: ParaId
+    id: ParaId,
+    _enable_println: bool,
 ) -> GenesisConfig {
+
+    let hardspoon_balances = get_balances(endowed_accounts.clone());
+
     GenesisConfig {
         system: datahighway_parachain_runtime::SystemConfig {
             code: datahighway_parachain_runtime::WASM_BINARY.expect("WASM binary was not build, please build it!").to_vec(),
         },
         balances: BalancesConfig {
-            balances: endowed_accounts
+            balances: hardspoon_balances
                 .iter()
                 .cloned()
-                .map(|x| {
-                    // Insert Public key (hex) of the account without the 0x prefix below
-                    if x == dhx_unlocked_reserves_account() {
-                        // If we use println, then the top of the chain specification file that gets
-                        // generated contains the println, and then we have to remove the println from
-                        // the top of that file to generate the "raw" chain definition
-                        // println!("endowed_account treasury {:?}", x.clone());
-                        return (x, INITIAL_DHX_DAO_TREASURY_UNLOCKED_RESERVES_BALANCE);
-                    } else {
-                        // println!("endowed_account {:?}", x.clone());
-                        return (x, INITIAL_BALANCE);
-                    }
-                })
+                .map(|x| (x.0.clone(), x.1.clone()))
                 .collect(),
         },
         general_council: Default::default(),
@@ -1013,19 +1155,10 @@ fn testnet_genesis(
     root_key: AccountId,
     endowed_accounts: Vec<AccountId>,
     id: ParaId,
+    _enable_println: bool,
 ) -> GenesisConfig {
 
-    let mut endowed_accounts_with_balances: Vec<(AccountId, Balance)> = vec![];
-    for x in endowed_accounts {
-        if x == dhx_unlocked_reserves_account_development() {
-            endowed_accounts_with_balances.push((x, INITIAL_DHX_DAO_TREASURY_UNLOCKED_RESERVES_BALANCE));
-        } else {
-            endowed_accounts_with_balances.push((x, INITIAL_BALANCE));
-        }
-    }
-
-    let allocation = get_allocation(endowed_accounts_with_balances.clone()).unwrap();
-    let hardspoon_balances = allocation;
+    let hardspoon_balances = get_balances(endowed_accounts.clone());
 
     GenesisConfig {
         system: datahighway_parachain_runtime::SystemConfig {
@@ -1083,28 +1216,20 @@ fn dev_genesis(
     root_key: AccountId,
     endowed_accounts: Vec<AccountId>,
     id: ParaId,
+    _enable_println: bool,
 ) -> datahighway_parachain_runtime::GenesisConfig {
+
+    let hardspoon_balances = get_balances(endowed_accounts.clone());
+
     datahighway_parachain_runtime::GenesisConfig {
         system: datahighway_parachain_runtime::SystemConfig {
             code: datahighway_parachain_runtime::WASM_BINARY.expect("WASM binary was not build, please build it!").to_vec(),
         },
         balances: BalancesConfig {
-            balances: endowed_accounts
+            balances: hardspoon_balances
                 .iter()
                 .cloned()
-                .map(|x| {
-                    // Insert Public key (hex) of the account without the 0x prefix below
-                    if x == dhx_unlocked_reserves_account_development() {
-                        // If we use println, then the top of the chain specification file that gets
-                        // generated contains the println, and then we have to remove the println from
-                        // the top of that file to generate the "raw" chain definition
-                        // println!("endowed_account treasury {:?}", x.clone());
-                        return (x, INITIAL_DHX_DAO_TREASURY_UNLOCKED_RESERVES_BALANCE);
-                    } else {
-                        // println!("endowed_account {:?}", x.clone());
-                        return (x, INITIAL_BALANCE);
-                    }
-                })
+                .map(|x| (x.0.clone(), x.1.clone()))
                 .collect(),
         },
         sudo: SudoConfig {
@@ -1151,7 +1276,8 @@ fn baikal_testnet_genesis(
     invulnerables: Vec<(AccountId, AuraId)>,
     root_key: AccountId,
     endowed_accounts: Vec<AccountId>,
-    id: ParaId
+    id: ParaId,
+    _enable_println: bool,
 ) -> GenesisConfig {
     GenesisConfig {
         system: datahighway_parachain_runtime::SystemConfig {
@@ -1171,7 +1297,7 @@ fn baikal_testnet_genesis(
                         return (x, INITIAL_DHX_DAO_TREASURY_UNLOCKED_RESERVES_BALANCE);
                     } else {
                         // println!("endowed_account {:?}", x.clone());
-                        return (x, INITIAL_BALANCE);
+                        return (x, INITIAL_ENDOWMENT);
                     }
                 })
                 .collect(),
@@ -1220,29 +1346,21 @@ fn tanganika_testnet_genesis(
     invulnerables: Vec<(AccountId, AuraId)>,
     root_key: AccountId,
     endowed_accounts: Vec<AccountId>,
-    id: ParaId
+    id: ParaId,
+    _enable_println: bool,
 ) -> GenesisConfig {
+
+    let hardspoon_balances = get_balances(endowed_accounts.clone());
+
     GenesisConfig {
         system: datahighway_parachain_runtime::SystemConfig {
             code: datahighway_parachain_runtime::WASM_BINARY.expect("WASM binary was not build, please build it!").to_vec(),
         },
         balances: BalancesConfig {
-            balances: endowed_accounts
+            balances: hardspoon_balances
                 .iter()
                 .cloned()
-                .map(|x| {
-                    // Insert Public key (hex) of the account without the 0x prefix below
-                    if x == dhx_unlocked_reserves_account() {
-                        // If we use println, then the top of the chain specification file that gets
-                        // generated contains the println, and then we have to remove the println from
-                        // the top of that file to generate the "raw" chain definition
-                        // println!("endowed_account treasury {:?}", x.clone());
-                        return (x, INITIAL_DHX_DAO_TREASURY_UNLOCKED_RESERVES_BALANCE);
-                    } else {
-                        // println!("endowed_account {:?}", x.clone());
-                        return (x, INITIAL_BALANCE);
-                    }
-                })
+                .map(|x| (x.0.clone(), x.1.clone()))
                 .collect(),
         },
         general_council: Default::default(),

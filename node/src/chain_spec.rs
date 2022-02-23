@@ -368,6 +368,7 @@ pub fn datahighway_chachacha_local_testnet_config() -> ChainSpec {
     let mut properties = sc_chain_spec::Properties::new();
     properties.insert("tokenSymbol".into(), "UNIT".into());
     properties.insert("tokenDecimals".into(), 18.into());
+    properties.insert("ss58Format".into(), 33.into());
     ChainSpec::from_genesis(
         // Name
         "DataHighway ChaChaCha Local Testnet",
@@ -431,6 +432,7 @@ pub fn datahighway_rococo_parachain_config() -> ChainSpec {
     let mut properties = sc_chain_spec::Properties::new();
     properties.insert("tokenSymbol".into(), "DHX".into());
     properties.insert("tokenDecimals".into(), 18.into());
+    properties.insert("ss58Format".into(), 33.into());
     ChainSpec::from_genesis(
         "DataHighway Spreehafen Rococo Parachain Testnet",
         "datahighway-spreehafen-rococo-parachain-testnet",
@@ -530,6 +532,7 @@ pub fn datahighway_chachacha_parachain_config() -> ChainSpec {
     let mut properties = sc_chain_spec::Properties::new();
     properties.insert("tokenSymbol".into(), "DHX".into());
     properties.insert("tokenDecimals".into(), 18.into());
+    properties.insert("ss58Format".into(), 33.into());
     ChainSpec::from_genesis(
         "DataHighway Spreehafen ChaChaCha Parachain Testnet",
         "datahighway-spreehafen-chachacha-parachain-testnet",
@@ -629,6 +632,7 @@ pub fn datahighway_westend_development_config() -> ChainSpec {
     let mut properties = sc_chain_spec::Properties::new();
     properties.insert("tokenSymbol".into(), "UNIT".into());
     properties.insert("tokenDecimals".into(), 18.into());
+    properties.insert("ss58Format".into(), 33.into());
     ChainSpec::from_genesis(
         // Name
         "DataHighway Westend Development Testnet",
@@ -692,6 +696,7 @@ pub fn datahighway_westend_local_testnet_config() -> ChainSpec {
     let mut properties = sc_chain_spec::Properties::new();
     properties.insert("tokenSymbol".into(), "UNIT".into());
     properties.insert("tokenDecimals".into(), 18.into());
+    properties.insert("ss58Format".into(), 33.into());
     ChainSpec::from_genesis(
         // Name
         "DataHighway Westend Local Testnet",
@@ -755,6 +760,7 @@ pub fn datahighway_kusama_development_config() -> ChainSpec {
     let mut properties = sc_chain_spec::Properties::new();
     properties.insert("tokenSymbol".into(), "UNIT".into());
     properties.insert("tokenDecimals".into(), 18.into());
+    properties.insert("ss58Format".into(), 33.into());
     ChainSpec::from_genesis(
         // Name
         "DataHighway Kusama Development Testnet",
@@ -818,6 +824,7 @@ pub fn datahighway_kusama_local_testnet_config() -> ChainSpec {
     let mut properties = sc_chain_spec::Properties::new();
     properties.insert("tokenSymbol".into(), "UNIT".into());
     properties.insert("tokenDecimals".into(), 18.into());
+    properties.insert("ss58Format".into(), 33.into());
     ChainSpec::from_genesis(
         // Name
         "DataHighway Kusama Local Testnet",
@@ -881,6 +888,7 @@ pub fn datahighway_westend_parachain_config() -> ChainSpec {
     let mut properties = sc_chain_spec::Properties::new();
     properties.insert("tokenSymbol".into(), "BKL".into());
     properties.insert("tokenDecimals".into(), 18.into());
+    properties.insert("ss58Format".into(), 33.into());
     ChainSpec::from_genesis(
         "DataHighway Baikal Westend Parachain Testnet",
         "datahighway-baikal-westend-parachain-testnet",
@@ -979,6 +987,7 @@ pub fn datahighway_kusama_parachain_config() -> ChainSpec {
     let mut properties = sc_chain_spec::Properties::new();
     properties.insert("tokenSymbol".into(), "DHX".into());
     properties.insert("tokenDecimals".into(), 18.into());
+    properties.insert("ss58Format".into(), 33.into());
     ChainSpec::from_genesis(
         "DataHighway Tanganika Kusama Parachain",
         "datahighway-tanganika-kusama-parachain",

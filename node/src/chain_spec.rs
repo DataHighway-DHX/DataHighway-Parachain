@@ -319,6 +319,7 @@ pub fn datahighway_rococo_parachain_config() -> ChainSpec {
     let mut properties = sc_chain_spec::Properties::new();
     properties.insert("tokenSymbol".into(), "DHX".into());
     properties.insert("tokenDecimals".into(), 18.into());
+    properties.insert("ss58Format".into(), 33.into());
     let boot_nodes = vec![];
     ChainSpec::from_genesis(
         "DataHighway Spreehafen Rococo Parachain Testnet",

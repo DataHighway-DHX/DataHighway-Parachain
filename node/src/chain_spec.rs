@@ -14,6 +14,8 @@ use datahighway_parachain_runtime::{
     SudoConfig,
     EXISTENTIAL_DEPOSIT,
 };
+// required for AccountId::from_str
+use std::str::FromStr;
 use log::{error, info, debug, trace};
 use hex as hex_runtime; // for runtime string parsing use hex_runtime::encode("...");
 use hex_literal::{

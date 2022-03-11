@@ -366,7 +366,7 @@ parameter_types! {
 }
 
 impl pallet_balances::Config for Runtime {
-    // TODO - is `System` the same as `frame_system::Module<Runtime>`?
+    // TODO - is `System` the same as `frame_system::Pallet<Runtime>`?
     type AccountStore = System;
     type Balance = Balance;
     type DustRemoval = ();
@@ -921,7 +921,7 @@ impl roaming_accounting_policies::Config for Runtime {
 impl roaming_agreement_policies::Config for Runtime {
     type Event = Event;
     type RoamingAgreementPolicyActivationType = Vec<u8>;
-    type RoamingAgreementPolicyIndex = u64; // <pallet_timestamp::Module<Runtime> as Config>::Moment` timestamp::Module<Runtime>::Moment;
+    type RoamingAgreementPolicyIndex = u64; // <pallet_timestamp::Pallet<Runtime> as Config>::Moment` timestamp::Pallet<Runtime>::Moment;
 }
 
 impl roaming_network_profiles::Config for Runtime {

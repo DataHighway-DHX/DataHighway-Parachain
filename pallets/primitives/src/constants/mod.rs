@@ -1,3 +1,5 @@
+#![cfg_attr(not(feature = "std"), no_std)]
+
 /// Money matters.
 pub mod currency {
     use crate::types::Balance;

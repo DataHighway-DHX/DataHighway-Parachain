@@ -1,11 +1,11 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
+use log::{warn, info};
 use codec::{
     Decode,
     Encode,
 };
 use frame_support::{
-    log,
     decl_event,
     decl_module,
     decl_storage,
@@ -18,6 +18,7 @@ use frame_support::{
     Parameter,
 };
 use frame_system::ensure_signed;
+use scale_info::TypeInfo;
 use sp_io::hashing::blake2_128;
 use sp_runtime::{
     traits::{
@@ -29,7 +30,6 @@ use sp_runtime::{
     DispatchError,
 };
 use sp_std::prelude::*; // Imports Vec
-use scale_info::TypeInfo;
 
 #[cfg(test)]
 mod mock;
@@ -183,7 +183,7 @@ decl_module! {
             // Check if a roaming accounting policy config already exists with the given roaming accounting policy id
             // to determine whether to insert new or mutate existing.
             if Self::has_value_for_accounting_policy_setting_index(roaming_accounting_policy_id).is_ok() {
-                log::info!("Mutating values");
+                info!("Mutating values");
                 <RoamingAccountingPolicySettings<T>>::mutate(roaming_accounting_policy_id, |policy_setting| {
                     if let Some(_policy_setting) = policy_setting {
                         // Only update the value of a key in a KV pair if the corresponding parameter value has been provided
@@ -193,16 +193,16 @@ decl_module! {
                         _policy_setting.downlink_fee_factor = downlink_fee_factor.clone();
                     }
                 });
-                log::info!("Checking mutated values");
+                info!("Checking mutated values");
                 let fetched_policy_setting = <RoamingAccountingPolicySettings<T>>::get(roaming_accounting_policy_id);
                 if let Some(_policy_setting) = fetched_policy_setting {
-                    log::info!("Latest field policy_type {:#?}", _policy_setting.policy_type);
-                    log::info!("Latest field subscription_fee {:#?}", _policy_setting.subscription_fee);
-                    log::info!("Latest field uplink_fee_factor {:#?}", _policy_setting.uplink_fee_factor);
-                    log::info!("Latest field downlink_fee_factor {:#?}", _policy_setting.downlink_fee_factor);
+                    info!("Latest field policy_type {:#?}", _policy_setting.policy_type);
+                    info!("Latest field subscription_fee {:#?}", _policy_setting.subscription_fee);
+                    info!("Latest field uplink_fee_factor {:#?}", _policy_setting.uplink_fee_factor);
+                    info!("Latest field downlink_fee_factor {:#?}", _policy_setting.downlink_fee_factor);
                 }
             } else {
-                log::info!("Inserting values");
+                info!("Inserting values");
 
                 // Create a new roaming accounting_policy config instance with the input params
                 let roaming_accounting_policy_setting_instance = RoamingAccountingPolicySetting {
@@ -219,13 +219,13 @@ decl_module! {
                     &roaming_accounting_policy_setting_instance
                 );
 
-                log::info!("Checking inserted values");
+                info!("Checking inserted values");
                 let fetched_policy_setting = <RoamingAccountingPolicySettings<T>>::get(roaming_accounting_policy_id);
                 if let Some(_policy_setting) = fetched_policy_setting {
-                    log::info!("Inserted field policy_type {:#?}", _policy_setting.policy_type);
-                    log::info!("Inserted field subscription_fee {:#?}", _policy_setting.subscription_fee);
-                    log::info!("Inserted field uplink_fee_factor {:#?}", _policy_setting.uplink_fee_factor);
-                    log::info!("Inserted field downlink_fee_factor {:#?}", _policy_setting.downlink_fee_factor);
+                    info!("Inserted field policy_type {:#?}", _policy_setting.policy_type);
+                    info!("Inserted field subscription_fee {:#?}", _policy_setting.subscription_fee);
+                    info!("Inserted field uplink_fee_factor {:#?}", _policy_setting.uplink_fee_factor);
+                    info!("Inserted field downlink_fee_factor {:#?}", _policy_setting.downlink_fee_factor);
                 }
             }
 
@@ -293,7 +293,7 @@ impl<T: Config> Module<T> {
 
     // Note: Not required
     // pub fn is_owned_by_required_parent_relationship(roaming_accounting_policy_id: T::RoamingAccountingPolicyIndex,
-    // sender: T::AccountId) -> Result<(), DispatchError> {     log::info!("Get the network id associated with the
+    // sender: T::AccountId) -> Result<(), DispatchError> {     info!("Get the network id associated with the
     // network of the given accounting policy id");     let accounting_policy_network_id =
     // Self::roaming_accounting_policy_network(roaming_accounting_policy_id);
 
@@ -332,13 +332,13 @@ impl<T: Config> Module<T> {
     pub fn has_value_for_accounting_policy_setting_index(
         roaming_accounting_policy_id: T::RoamingAccountingPolicyIndex,
     ) -> Result<(), DispatchError> {
-        log::info!("Checking if accounting policy config has a value that is defined");
+        info!("Checking if accounting policy config has a value that is defined");
         let fetched_policy_setting = <RoamingAccountingPolicySettings<T>>::get(roaming_accounting_policy_id);
         if let Some(_value) = fetched_policy_setting {
-            log::info!("Found value for accounting policy config");
+            info!("Found value for accounting policy config");
             return Ok(());
         }
-        log::info!("No value for accounting policy config");
+        warn!("No value for accounting policy config");
         Err(DispatchError::Other("No value for accounting policy config"))
     }
 
@@ -350,24 +350,24 @@ impl<T: Config> Module<T> {
         // Early exit with error since do not want to append if the given network id already exists as a key,
         // and where its corresponding value is a vector that already contains the given accounting policy id
         if let Some(network_accounting_policies) = Self::roaming_network_accounting_policies(roaming_network_id) {
-            log::info!("Network id key {:?} exists with value {:?}", roaming_network_id, network_accounting_policies);
+            info!("Network id key {:?} exists with value {:?}", roaming_network_id, network_accounting_policies);
             let not_network_contains_accounting_policy =
                 !network_accounting_policies.contains(&roaming_accounting_policy_id);
             ensure!(not_network_contains_accounting_policy, "Network already contains the given accounting policy id");
-            log::info!("Network id key exists but its vector value does not contain the given accounting policy id");
+            info!("Network id key exists but its vector value does not contain the given accounting policy id");
             <RoamingNetworkAccountingPolicies<T>>::mutate(roaming_network_id, |v| {
                 if let Some(value) = v {
                     value.push(roaming_accounting_policy_id);
                 }
             });
-            log::info!(
+            info!(
                 "Associated accounting policy {:?} with network {:?}",
                 roaming_accounting_policy_id,
                 roaming_network_id
             );
             Ok(())
         } else {
-            log::info!(
+            info!(
                 "Network id key does not yet exist. Creating the network key {:?} and appending the accounting policy \
                  id {:?} to its vector value",
                 roaming_network_id,
@@ -382,8 +382,8 @@ impl<T: Config> Module<T> {
         let payload = (
             T::Randomness::random(&[0]),
             sender,
-            <frame_system::Module<T>>::extrinsic_index(),
-            <frame_system::Module<T>>::block_number(),
+            <frame_system::Pallet<T>>::extrinsic_index(),
+            <frame_system::Pallet<T>>::block_number(),
         );
         payload.using_encoded(blake2_128)
     }

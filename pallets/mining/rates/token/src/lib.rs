@@ -1,11 +1,11 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
+use log::{warn, info};
 use codec::{
     Decode,
     Encode,
 };
 use frame_support::{
-    log,
     decl_event,
     decl_module,
     decl_storage,
@@ -17,6 +17,7 @@ use frame_support::{
     Parameter,
 };
 use frame_system::ensure_signed;
+use scale_info::TypeInfo;
 use sp_io::hashing::blake2_128;
 use sp_runtime::{
     traits::{
@@ -28,7 +29,7 @@ use sp_runtime::{
     DispatchError,
 };
 use sp_std::prelude::*; // Imports Vec
-use scale_info::TypeInfo;
+
 // FIXME - remove roaming_operators here, only use this approach since do not know how to use BalanceOf using only
 // mining runtime module
 
@@ -187,7 +188,7 @@ decl_module! {
             // FIXME - how to use float and overcome error:
             //  the trait `std::str::FromStr` is not implemented for `<T as Config>::MiningRatesTokenMaxToken
             // if token_token_mxc > "1.2".parse().unwrap() || token_token_iota > "1.2".parse().unwrap() || token_token_dot > "1.2".parse().unwrap() || token_max_token > "1.6".parse().unwrap() || token_max_loyalty > "1.2".parse().unwrap() {
-            //   log::info!("Token rate cannot be this large");
+            //   warn!("Token rate cannot be this large");
 
             //   return Ok(());
             // }
@@ -195,7 +196,7 @@ decl_module! {
             // Check if a mining_rates_token_rates_config already exists with the given mining_rates_token_id
             // to determine whether to insert new or mutate existing.
             if Self::has_value_for_mining_rates_token_rates_config_index(mining_rates_token_id).is_ok() {
-                log::info!("Mutating values");
+                info!("Mutating values");
                 <MiningRatesTokenSettings<T>>::mutate(mining_rates_token_id, |mining_rates_token_rates_config| {
                     if let Some(_mining_rates_token_rates_config) = mining_rates_token_rates_config {
                         // Only update the value of a key in a KV pair if the corresponding parameter value has been provided
@@ -206,17 +207,17 @@ decl_module! {
                         _mining_rates_token_rates_config.token_max_loyalty = token_max_loyalty.clone();
                     }
                 });
-                log::info!("Checking mutated values");
+                info!("Checking mutated values");
                 let fetched_mining_rates_token_rates_config = <MiningRatesTokenSettings<T>>::get(mining_rates_token_id);
                 if let Some(_mining_rates_token_rates_config) = fetched_mining_rates_token_rates_config {
-                    log::info!("Latest field token_token_mxc {:#?}", _mining_rates_token_rates_config.token_token_mxc);
-                    log::info!("Latest field token_token_iota {:#?}", _mining_rates_token_rates_config.token_token_iota);
-                    log::info!("Latest field token_token_dot {:#?}", _mining_rates_token_rates_config.token_token_dot);
-                    log::info!("Latest field token_max_token {:#?}", _mining_rates_token_rates_config.token_max_token);
-                    log::info!("Latest field token_max_loyalty {:#?}", _mining_rates_token_rates_config.token_max_loyalty);
+                    info!("Latest field token_token_mxc {:#?}", _mining_rates_token_rates_config.token_token_mxc);
+                    info!("Latest field token_token_iota {:#?}", _mining_rates_token_rates_config.token_token_iota);
+                    info!("Latest field token_token_dot {:#?}", _mining_rates_token_rates_config.token_token_dot);
+                    info!("Latest field token_max_token {:#?}", _mining_rates_token_rates_config.token_max_token);
+                    info!("Latest field token_max_loyalty {:#?}", _mining_rates_token_rates_config.token_max_loyalty);
                 }
             } else {
-                log::info!("Inserting values");
+                info!("Inserting values");
 
                 // Create a new mining mining_rates_token_rates_config instance with the input params
                 let mining_rates_token_rates_config_instance = MiningRatesTokenSetting {
@@ -234,14 +235,14 @@ decl_module! {
                     &mining_rates_token_rates_config_instance
                 );
 
-                log::info!("Checking inserted values");
+                info!("Checking inserted values");
                 let fetched_mining_rates_token_rates_config = <MiningRatesTokenSettings<T>>::get(mining_rates_token_id);
                 if let Some(_mining_rates_token_rates_config) = fetched_mining_rates_token_rates_config {
-                    log::info!("Inserted field token_token_mxc {:#?}", _mining_rates_token_rates_config.token_token_mxc);
-                    log::info!("Inserted field token_token_iota {:#?}", _mining_rates_token_rates_config.token_token_iota);
-                    log::info!("Inserted field token_token_dot {:#?}", _mining_rates_token_rates_config.token_token_dot);
-                    log::info!("Inserted field token_max_token {:#?}", _mining_rates_token_rates_config.token_max_token);
-                    log::info!("Inserted field token_max_loyalty {:#?}", _mining_rates_token_rates_config.token_max_loyalty);
+                    info!("Inserted field token_token_mxc {:#?}", _mining_rates_token_rates_config.token_token_mxc);
+                    info!("Inserted field token_token_iota {:#?}", _mining_rates_token_rates_config.token_token_iota);
+                    info!("Inserted field token_token_dot {:#?}", _mining_rates_token_rates_config.token_token_dot);
+                    info!("Inserted field token_max_token {:#?}", _mining_rates_token_rates_config.token_max_token);
+                    info!("Inserted field token_max_loyalty {:#?}", _mining_rates_token_rates_config.token_max_loyalty);
                 }
             }
 
@@ -291,13 +292,13 @@ impl<T: Config> Module<T> {
     pub fn has_value_for_mining_rates_token_rates_config_index(
         mining_rates_token_id: T::MiningRatesTokenIndex,
     ) -> Result<(), DispatchError> {
-        log::info!("Checking if mining_rates_token_rates_config has a value that is defined");
+        info!("Checking if mining_rates_token_rates_config has a value that is defined");
         let fetched_mining_rates_token_rates_config = <MiningRatesTokenSettings<T>>::get(mining_rates_token_id);
         if let Some(_value) = fetched_mining_rates_token_rates_config {
-            log::info!("Found value for mining_rates_token_rates_config");
+            info!("Found value for mining_rates_token_rates_config");
             return Ok(());
         }
-        log::info!("No value for mining_rates_token_rates_config");
+        warn!("No value for mining_rates_token_rates_config");
         Err(DispatchError::Other("No value for mining_rates_token_rates_config"))
     }
 
@@ -305,8 +306,8 @@ impl<T: Config> Module<T> {
         let payload = (
             T::Randomness::random(&[0]),
             sender,
-            <frame_system::Module<T>>::extrinsic_index(),
-            <frame_system::Module<T>>::block_number(),
+            <frame_system::Pallet<T>>::extrinsic_index(),
+            <frame_system::Pallet<T>>::block_number(),
         );
         payload.using_encoded(blake2_128)
     }

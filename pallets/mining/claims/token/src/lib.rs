@@ -1,11 +1,11 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
+use log::{warn, info};
 use codec::{
     Decode,
     Encode,
 };
 use frame_support::{
-    log,
     decl_event,
     decl_module,
     decl_storage,
@@ -17,6 +17,7 @@ use frame_support::{
     Parameter,
 };
 use frame_system::ensure_signed;
+use scale_info::TypeInfo;
 use sp_io::hashing::blake2_128;
 use sp_runtime::{
     traits::{
@@ -35,7 +36,6 @@ use mining_setting_token;
 use mining_eligibility_token;
 use mining_rates_token;
 use mining_sampling_token;
-use scale_info::TypeInfo;
 
 #[cfg(test)]
 mod mock;
@@ -183,7 +183,7 @@ decl_module! {
             // Check that the extrinsic call is made after the end date defined in the provided configuration
 
             // FIXME
-            // let current_block = <frame_system::Module<T>>::block_number();
+            // let current_block = <frame_system::Pallet<T>>::block_number();
             // // Get the config associated with the given configuration_token
             // if let Some(configuration_token_setting) = <mining_setting_token::Module<T>>::mining_setting_token_token_settings(mining_setting_token_id) {
             //   if let _token_lock_interval_blocks = configuration_token_setting.token_lock_interval_blocks {
@@ -205,7 +205,7 @@ decl_module! {
 
             // Record the claim associated with their configuration/eligibility
             let token_claim_amount: T::MiningClaimsTokenClaimAmount = 0u32.into();
-            let token_claim_block_redeemed: T::BlockNumber = <frame_system::Module<T>>::block_number();
+            let token_claim_block_redeemed: T::BlockNumber = <frame_system::Pallet<T>>::block_number();
             if let Some(eligibility_token) = <mining_eligibility_token::Module<T>>::mining_eligibility_token_eligibility_results((mining_setting_token_id, mining_eligibility_token_id)) {
               if let token_calculated_eligibility = eligibility_token.token_calculated_eligibility {
                 ensure!(token_calculated_eligibility > 0u32.into(), "Calculated eligibility is zero. Nothing to claim.");
@@ -221,7 +221,7 @@ decl_module! {
             // Check if a mining_claims_token_claims_result already exists with the given mining_claims_token_id
             // to determine whether to insert new or mutate existing.
             if Self::has_value_for_mining_claims_token_claims_result_index(mining_setting_token_id, mining_claims_token_id).is_ok() {
-                log::info!("Mutating values");
+                info!("Mutating values");
                 <MiningClaimsTokenClaimResults<T>>::mutate((mining_setting_token_id, mining_claims_token_id), |mining_claims_token_claims_result| {
                     if let Some(_mining_claims_token_claims_result) = mining_claims_token_claims_result {
                         // Only update the value of a key in a KV pair if the corresponding parameter value has been provided
@@ -229,14 +229,14 @@ decl_module! {
                         _mining_claims_token_claims_result.token_claim_block_redeemed = token_claim_block_redeemed.clone();
                     }
                 });
-                log::info!("Checking mutated values");
+                info!("Checking mutated values");
                 let fetched_mining_claims_token_claims_result = <MiningClaimsTokenClaimResults<T>>::get((mining_setting_token_id, mining_claims_token_id));
                 if let Some(_mining_claims_token_claims_result) = fetched_mining_claims_token_claims_result {
-                    log::info!("Latest field token_claim_amount {:#?}", _mining_claims_token_claims_result.token_claim_amount);
-                    log::info!("Latest field token_claim_block_redeemed {:#?}", _mining_claims_token_claims_result.token_claim_block_redeemed);
+                    info!("Latest field token_claim_amount {:#?}", _mining_claims_token_claims_result.token_claim_amount);
+                    info!("Latest field token_claim_block_redeemed {:#?}", _mining_claims_token_claims_result.token_claim_block_redeemed);
                 }
             } else {
-                log::info!("Inserting values");
+                info!("Inserting values");
 
                 // Create a new mining mining_claims_token_claims_result instance with the input params
                 let mining_claims_token_claims_result_instance = MiningClaimsTokenClaimResult {
@@ -251,11 +251,11 @@ decl_module! {
                     &mining_claims_token_claims_result_instance
                 );
 
-                log::info!("Checking inserted values");
+                info!("Checking inserted values");
                 let fetched_mining_claims_token_claims_result = <MiningClaimsTokenClaimResults<T>>::get((mining_setting_token_id, mining_claims_token_id));
                 if let Some(_mining_claims_token_claims_result) = fetched_mining_claims_token_claims_result {
-                    log::info!("Inserted field token_claim_amount {:#?}", _mining_claims_token_claims_result.token_claim_amount);
-                    log::info!("Inserted field token_claim_block_redeemed {:#?}", _mining_claims_token_claims_result.token_claim_block_redeemed);
+                    info!("Inserted field token_claim_amount {:#?}", _mining_claims_token_claims_result.token_claim_amount);
+                    info!("Inserted field token_claim_block_redeemed {:#?}", _mining_claims_token_claims_result.token_claim_block_redeemed);
                 }
             }
 
@@ -298,13 +298,13 @@ decl_module! {
             };
             let token_claim_block_redeemed = match _token_claim_block_redeemed {
                 Some(value) => value,
-                None => <frame_system::Module<T>>::block_number()
+                None => <frame_system::Pallet<T>>::block_number()
             };
 
             // Check if a mining_claims_token_claims_result already exists with the given mining_claims_token_id
             // to determine whether to insert new or mutate existing.
             if Self::has_value_for_mining_claims_token_claims_result_index(mining_setting_token_id, mining_claims_token_id).is_ok() {
-                log::info!("Mutating values");
+                info!("Mutating values");
                 <MiningClaimsTokenClaimResults<T>>::mutate((mining_setting_token_id, mining_claims_token_id), |mining_claims_token_claims_result| {
                     if let Some(_mining_claims_token_claims_result) = mining_claims_token_claims_result {
                         // Only update the value of a key in a KV pair if the corresponding parameter value has been provided
@@ -312,14 +312,14 @@ decl_module! {
                         _mining_claims_token_claims_result.token_claim_block_redeemed = token_claim_block_redeemed.clone();
                     }
                 });
-                log::info!("Checking mutated values");
+                info!("Checking mutated values");
                 let fetched_mining_claims_token_claims_result = <MiningClaimsTokenClaimResults<T>>::get((mining_setting_token_id, mining_claims_token_id));
                 if let Some(_mining_claims_token_claims_result) = fetched_mining_claims_token_claims_result {
-                    log::info!("Latest field token_claim_amount {:#?}", _mining_claims_token_claims_result.token_claim_amount);
-                    log::info!("Latest field token_claim_block_redeemed {:#?}", _mining_claims_token_claims_result.token_claim_block_redeemed);
+                    info!("Latest field token_claim_amount {:#?}", _mining_claims_token_claims_result.token_claim_amount);
+                    info!("Latest field token_claim_block_redeemed {:#?}", _mining_claims_token_claims_result.token_claim_block_redeemed);
                 }
             } else {
-                log::info!("Inserting values");
+                info!("Inserting values");
 
                 // Create a new mining mining_claims_token_claims_result instance with the input params
                 let mining_claims_token_claims_result_instance = MiningClaimsTokenClaimResult {
@@ -334,11 +334,11 @@ decl_module! {
                     &mining_claims_token_claims_result_instance
                 );
 
-                log::info!("Checking inserted values");
+                info!("Checking inserted values");
                 let fetched_mining_claims_token_claims_result = <MiningClaimsTokenClaimResults<T>>::get((mining_setting_token_id, mining_claims_token_id));
                 if let Some(_mining_claims_token_claims_result) = fetched_mining_claims_token_claims_result {
-                    log::info!("Inserted field token_claim_amount {:#?}", _mining_claims_token_claims_result.token_claim_amount);
-                    log::info!("Inserted field token_claim_block_redeemed {:#?}", _mining_claims_token_claims_result.token_claim_block_redeemed);
+                    info!("Inserted field token_claim_amount {:#?}", _mining_claims_token_claims_result.token_claim_amount);
+                    info!("Inserted field token_claim_block_redeemed {:#?}", _mining_claims_token_claims_result.token_claim_block_redeemed);
                 }
             }
 
@@ -424,14 +424,14 @@ impl<T: Config> Module<T> {
         mining_setting_token_id: T::MiningSettingTokenIndex,
         mining_claims_token_id: T::MiningClaimsTokenIndex,
     ) -> Result<(), DispatchError> {
-        log::info!("Checking if mining_claims_token_claims_result has a value that is defined");
+        info!("Checking if mining_claims_token_claims_result has a value that is defined");
         let fetched_mining_claims_token_claims_result =
             <MiningClaimsTokenClaimResults<T>>::get((mining_setting_token_id, mining_claims_token_id));
         if let Some(_value) = fetched_mining_claims_token_claims_result {
-            log::info!("Found value for mining_claims_token_claims_result");
+            info!("Found value for mining_claims_token_claims_result");
             return Ok(());
         }
-        log::info!("No value for mining_claims_token_claims_result");
+        warn!("No value for mining_claims_token_claims_result");
         Err(DispatchError::Other("No value for mining_claims_token_claims_result"))
     }
 
@@ -443,27 +443,27 @@ impl<T: Config> Module<T> {
         // Early exit with error since do not want to append if the given configuration id already exists as a key,
         // and where its corresponding value is a vector that already contains the given claim id
         if let Some(configuration_claims) = Self::token_setting_claims(mining_setting_token_id) {
-            log::info!(
+            info!(
                 "Configuration id key {:?} exists with value {:?}",
                 mining_setting_token_id,
                 configuration_claims
             );
             let not_configuration_contains_claim = !configuration_claims.contains(&mining_claims_token_id);
             ensure!(not_configuration_contains_claim, "Configuration already contains the given claim id");
-            log::info!("Configuration id key exists but its vector value does not contain the given claim id");
+            info!("Configuration id key exists but its vector value does not contain the given claim id");
             <TokenSettingClaims<T>>::mutate(mining_setting_token_id, |v| {
                 if let Some(value) = v {
                     value.push(mining_claims_token_id);
                 }
             });
-            log::info!(
+            info!(
                 "Associated claim {:?} with configuration {:?}",
                 mining_claims_token_id,
                 mining_setting_token_id
             );
             Ok(())
         } else {
-            log::info!(
+            info!(
                 "Configuration id key does not yet exist. Creating the configuration key {:?} and appending the claim \
                  id {:?} to its vector value",
                 mining_setting_token_id,
@@ -478,8 +478,8 @@ impl<T: Config> Module<T> {
         let payload = (
             T::Randomness::random(&[0]),
             sender,
-            <frame_system::Module<T>>::extrinsic_index(),
-            <frame_system::Module<T>>::block_number(),
+            <frame_system::Pallet<T>>::extrinsic_index(),
+            <frame_system::Pallet<T>>::block_number(),
         );
         payload.using_encoded(blake2_128)
     }

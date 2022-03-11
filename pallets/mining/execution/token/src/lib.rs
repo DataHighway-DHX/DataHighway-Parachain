@@ -1,11 +1,11 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
+use log::{warn, info};
 use codec::{
     Decode,
     Encode,
 };
 use frame_support::{
-    log,
     decl_event,
     decl_module,
     decl_storage,
@@ -17,6 +17,7 @@ use frame_support::{
     Parameter,
 };
 use frame_system::ensure_signed;
+use scale_info::TypeInfo;
 use sp_io::hashing::blake2_128;
 use sp_runtime::{
     traits::{
@@ -36,7 +37,6 @@ use mining_setting_token;
 use mining_eligibility_token;
 use mining_rates_token;
 use mining_sampling_token;
-use scale_info::TypeInfo;
 
 // #[cfg(test)]
 // mod mock;
@@ -194,11 +194,11 @@ decl_module! {
             let token_execution_executor_account_id = sender.clone();
             let token_execution_started_block = match _token_execution_started_block.clone() {
                 Some(value) => value,
-                None => <frame_system::Module<T>>::block_number()
+                None => <frame_system::Pallet<T>>::block_number()
             };
             let token_execution_ended_block = match _token_execution_ended_block {
                 Some(value) => value,
-                None => <frame_system::Module<T>>::block_number() + 1u32.into() // Default
+                None => <frame_system::Pallet<T>>::block_number() + 1u32.into() // Default
             };
 
             // FIXME
@@ -218,7 +218,7 @@ decl_module! {
             // Check if a mining_execution_token_execution_result already exists with the given mining_execution_token_id
             // to determine whether to insert new or mutate existing.
             if Self::has_value_for_mining_execution_token_execution_result_index(mining_setting_token_id, mining_execution_token_id).is_ok() {
-                log::info!("Mutating values");
+                info!("Mutating values");
                 <MiningExecutionTokenExecutionResults<T>>::mutate((mining_setting_token_id, mining_execution_token_id), |mining_execution_token_execution_result| {
                     if let Some(_mining_execution_token_execution_result) = mining_execution_token_execution_result {
                         // Only update the value of a key in a KV pair if the corresponding parameter value has been provided
@@ -227,15 +227,15 @@ decl_module! {
                         _mining_execution_token_execution_result.token_execution_ended_block = token_execution_ended_block.clone();
                     }
                 });
-                log::info!("Checking mutated values");
+                info!("Checking mutated values");
                 let fetched_mining_execution_token_execution_result = <MiningExecutionTokenExecutionResults<T>>::get((mining_setting_token_id, mining_execution_token_id));
                 if let Some(_mining_execution_token_execution_result) = fetched_mining_execution_token_execution_result {
-                    log::info!("Latest field token_execution_executor_account_id {:#?}", _mining_execution_token_execution_result.token_execution_executor_account_id);
-                    log::info!("Latest field token_execution_started_block {:#?}", _mining_execution_token_execution_result.token_execution_started_block);
-                    log::info!("Latest field token_execution_ended_block {:#?}", _mining_execution_token_execution_result.token_execution_ended_block);
+                    info!("Latest field token_execution_executor_account_id {:#?}", _mining_execution_token_execution_result.token_execution_executor_account_id);
+                    info!("Latest field token_execution_started_block {:#?}", _mining_execution_token_execution_result.token_execution_started_block);
+                    info!("Latest field token_execution_ended_block {:#?}", _mining_execution_token_execution_result.token_execution_ended_block);
                 }
             } else {
-                log::info!("Inserting values");
+                info!("Inserting values");
 
                 // Create a new mining mining_execution_token_execution_result instance with the input params
                 let mining_execution_token_execution_result_instance = MiningExecutionTokenExecutionResult {
@@ -251,12 +251,12 @@ decl_module! {
                     &mining_execution_token_execution_result_instance
                 );
 
-                log::info!("Checking inserted values");
+                info!("Checking inserted values");
                 let fetched_mining_execution_token_execution_result = <MiningExecutionTokenExecutionResults<T>>::get((mining_setting_token_id, mining_execution_token_id));
                 if let Some(_mining_execution_token_execution_result) = fetched_mining_execution_token_execution_result {
-                    log::info!("Inserted field token_execution_executor_account_id {:#?}", _mining_execution_token_execution_result.token_execution_executor_account_id);
-                    log::info!("Inserted field token_execution_started_block {:#?}", _mining_execution_token_execution_result.token_execution_started_block);
-                    log::info!("Inserted field token_execution_ended_block {:#?}", _mining_execution_token_execution_result.token_execution_ended_block);
+                    info!("Inserted field token_execution_executor_account_id {:#?}", _mining_execution_token_execution_result.token_execution_executor_account_id);
+                    info!("Inserted field token_execution_started_block {:#?}", _mining_execution_token_execution_result.token_execution_started_block);
+                    info!("Inserted field token_execution_ended_block {:#?}", _mining_execution_token_execution_result.token_execution_ended_block);
                 }
             }
 
@@ -279,9 +279,9 @@ decl_module! {
                 token_execution_started_block,
                 token_execution_ended_block,
             ).is_ok() {
-                log::info!("Executed");
+                info!("Executed");
             } else {
-                log::info!("Cannot execute");
+                warn!("Cannot execute");
             }
         }
 
@@ -363,7 +363,7 @@ impl<T: Config> Module<T> {
     ) -> Result<(), DispatchError> {
         // Check that the extrinsic call is made after the start date defined in the provided configuration
 
-        let current_block = <frame_system::Module<T>>::block_number();
+        let current_block = <frame_system::Pallet<T>>::block_number();
         // Get the config associated with the given configuration_token
         if let Some(configuration_token_setting) =
             <mining_setting_token::Module<T>>::mining_setting_token_token_settings(mining_setting_token_id)
@@ -478,14 +478,14 @@ impl<T: Config> Module<T> {
         mining_setting_token_id: T::MiningSettingTokenIndex,
         mining_execution_token_id: T::MiningExecutionTokenIndex,
     ) -> Result<(), DispatchError> {
-        log::info!("Checking if mining_execution_token_execution_result has a value that is defined");
+        info!("Checking if mining_execution_token_execution_result has a value that is defined");
         let fetched_mining_execution_token_execution_result =
             <MiningExecutionTokenExecutionResults<T>>::get((mining_setting_token_id, mining_execution_token_id));
         if let Some(_value) = fetched_mining_execution_token_execution_result {
-            log::info!("Found value for mining_execution_token_execution_result");
+            info!("Found value for mining_execution_token_execution_result");
             return Ok(());
         }
-        log::info!("No value for mining_execution_token_execution_result");
+        warn!("No value for mining_execution_token_execution_result");
         Err(DispatchError::Other("No value for mining_execution_token_execution_result"))
     }
 
@@ -497,27 +497,27 @@ impl<T: Config> Module<T> {
         // Early exit with error since do not want to append if the given configuration id already exists as a key,
         // and where its corresponding value is a vector that already contains the given execution id
         if let Some(configuration_execution) = Self::token_setting_execution(mining_setting_token_id) {
-            log::info!(
+            info!(
                 "Configuration id key {:?} exists with value {:?}",
                 mining_setting_token_id,
                 configuration_execution
             );
             let not_configuration_contains_execution = !configuration_execution.contains(&mining_execution_token_id);
             ensure!(not_configuration_contains_execution, "Configuration already contains the given execution id");
-            log::info!("Configuration id key exists but its vector value does not contain the given execution id");
+            info!("Configuration id key exists but its vector value does not contain the given execution id");
             <TokenSettingExecution<T>>::mutate(mining_setting_token_id, |v| {
                 if let Some(value) = v {
                     value.push(mining_execution_token_id);
                 }
             });
-            log::info!(
+            info!(
                 "Associated execution {:?} with configuration {:?}",
                 mining_execution_token_id,
                 mining_setting_token_id
             );
             Ok(())
         } else {
-            log::info!(
+            info!(
                 "Configuration id key does not yet exist. Creating the configuration key {:?} and appending the \
                  execution id {:?} to its vector value",
                 mining_setting_token_id,
@@ -532,8 +532,8 @@ impl<T: Config> Module<T> {
         let payload = (
             T::Randomness::random(&[0]),
             sender,
-            <frame_system::Module<T>>::extrinsic_index(),
-            <frame_system::Module<T>>::block_number(),
+            <frame_system::Pallet<T>>::extrinsic_index(),
+            <frame_system::Pallet<T>>::block_number(),
         );
         payload.using_encoded(blake2_128)
     }

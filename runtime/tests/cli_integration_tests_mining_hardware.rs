@@ -1,9 +1,9 @@
 // extern crate env as env;
 extern crate mining_claims_hardware as mining_claims_hardware;
+extern crate mining_setting_hardware as mining_setting_hardware;
 extern crate mining_eligibility_hardware as mining_eligibility_hardware;
 extern crate mining_rates_hardware as mining_rates_hardware;
 extern crate mining_sampling_hardware as mining_sampling_hardware;
-extern crate mining_setting_hardware as mining_setting_hardware;
 extern crate roaming_operators as roaming_operators;
 
 #[cfg(test)]
@@ -13,12 +13,18 @@ mod tests {
     use frame_support::{
         assert_ok,
         parameter_types,
+        traits::{
+            ConstU8,
+            ConstU16,
+            ConstU32,
+            ConstU64,
+            ConstU128,
+        },
         weights::{
             IdentityFee,
             Weight,
         },
     };
-    use frame_support::traits::Everything;
 
     use sp_core::H256;
     use sp_runtime::{
@@ -26,37 +32,36 @@ mod tests {
         traits::{
             BlakeTwo256,
             IdentityLookup,
-            Zero,
         },
-        DispatchResult,
-        Perbill,
-        Permill,
+    };
+    pub use pallet_transaction_payment::{
+        CurrencyAdapter,
     };
     // Import Config for each runtime module being tested
     use mining_claims_hardware::{
-        Config as MiningClaimsHardwareConfig,
         MiningClaimsHardwareClaimResult,
         Module as MiningClaimsHardwareModule,
-    };
-    use mining_eligibility_hardware::{
-        Config as MiningEligibilityHardwareConfig,
-        MiningEligibilityHardwareResult,
-        Module as MiningEligibilityHardwareModule,
-    };
-    use mining_rates_hardware::{
-        Config as MiningRatesHardwareConfig,
-        MiningRatesHardwareSetting,
-        Module as MiningRatesHardwareModule,
-    };
-    use mining_sampling_hardware::{
-        Config as MiningSamplingHardwareConfig,
-        MiningSamplingHardwareSetting,
-        Module as MiningSamplingHardwareModule,
+        Config as MiningClaimsHardwareConfig,
     };
     use mining_setting_hardware::{
-        Config as MiningSettingHardwareConfig,
         MiningSettingHardwareSetting,
         Module as MiningSettingHardwareModule,
+        Config as MiningSettingHardwareConfig,
+    };
+    use mining_eligibility_hardware::{
+        MiningEligibilityHardwareResult,
+        Module as MiningEligibilityHardwareModule,
+        Config as MiningEligibilityHardwareConfig,
+    };
+    use mining_rates_hardware::{
+        MiningRatesHardwareSetting,
+        Module as MiningRatesHardwareModule,
+        Config as MiningRatesHardwareConfig,
+    };
+    use mining_sampling_hardware::{
+        MiningSamplingHardwareSetting,
+        Module as MiningSamplingHardwareModule,
+        Config as MiningSamplingHardwareConfig,
     };
     use roaming_operators;
 
@@ -81,68 +86,63 @@ mod tests {
     );
 
     parameter_types! {
-        pub const BlockHashCount: u64 = 250;
-        pub const SS58Prefix: u8 = 33;
+        pub const BlockHashCount: u32 = 250;
+        pub const SS58Prefix: u16 = 33;
     }
     impl frame_system::Config for Test {
-        type AccountData = pallet_balances::AccountData<u64>;
-        type AccountId = u64;
-        type BaseCallFilter = Everything;
-        type BlockHashCount = BlockHashCount;
-        type BlockLength = ();
-        type BlockNumber = u64;
+        type BaseCallFilter = frame_support::traits::Everything;
         type BlockWeights = ();
-        type Call = Call;
+        type BlockLength = ();
         type DbWeight = ();
-        type Event = ();
+        type Origin = Origin;
+        type Call = Call;
+        type Index = u64;
+        type BlockNumber = u64;
         type Hash = H256;
         type Hashing = BlakeTwo256;
-        type Header = Header;
-        type Index = u64;
+        type AccountId = u128; // u64 is not enough to hold bytes used to generate bounty account
         type Lookup = IdentityLookup<Self::AccountId>;
-    type MaxConsumers = frame_support::traits::ConstU32<16>;
-        type OnKilledAccount = ();
-        type OnNewAccount = ();
-        type OnSetCode = ();
-        type Origin = Origin;
-        type PalletInfo = PalletInfo;
-        type SS58Prefix = ();
-        type SystemWeightInfo = ();
+        type Header = Header;
+        type Event = ();
+        type BlockHashCount = ();
         type Version = ();
+        type PalletInfo = PalletInfo;
+        type AccountData = pallet_balances::AccountData<u64>;
+        type OnNewAccount = ();
+        type OnKilledAccount = ();
+        type SystemWeightInfo = ();
+        type SS58Prefix = ();
+    	type OnSetCode = ();
+	    type MaxConsumers = frame_support::traits::ConstU32<16>;
     }
+    impl pallet_randomness_collective_flip::Config for Test {}
+    pub const ExistentialDepositAsConst: u64 = 1;
     parameter_types! {
-        pub const ExistentialDeposit: u64 = 1;
+        pub const ExistentialDeposit: u64 = ExistentialDepositAsConst;
     }
     impl pallet_balances::Config for Test {
-        type AccountStore = System;
-        type Balance = u64;
-        type DustRemoval = ();
-        type Event = ();
-        type ExistentialDeposit = ExistentialDeposit;
         type MaxLocks = ();
         type MaxReserves = ();
         type ReserveIdentifier = [u8; 8];
+        type Balance = u64;
+        type DustRemoval = ();
+        type Event = ();
+        type ExistentialDeposit = ConstU64<ExistentialDepositAsConst>;
+        type AccountStore = System;
         type WeightInfo = ();
     }
-
-    parameter_types! {
-        pub const OperationalFeeMultiplier: u8 = 5;
-        pub const TransactionByteFee: u64 = 1;
-    }
-
-    impl pallet_randomness_collective_flip::Config for Test {}
     impl pallet_transaction_payment::Config for Test {
-        type OperationalFeeMultiplier = OperationalFeeMultiplier;
         type FeeMultiplierUpdate = ();
-        type OnChargeTransaction = pallet_transaction_payment::CurrencyAdapter<Balances, ()>;
-        type TransactionByteFee = TransactionByteFee;
+        type OnChargeTransaction = CurrencyAdapter<Balances, ()>;
+        type TransactionByteFee = ();
+        type OperationalFeeMultiplier = ();
         type WeightToFee = IdentityFee<u64>;
     }
     // FIXME - remove this when figure out how to use these types within mining-speed-boost runtime module itself
     impl roaming_operators::Config for Test {
         type Currency = Balances;
         type Event = ();
-        type Randomness = Randomness;
+        type Randomness = RandomnessCollectiveFlip;
         type RoamingOperatorIndex = u64;
     }
     impl MiningSettingHardwareConfig for Test {
@@ -194,7 +194,7 @@ mod tests {
     pub type MiningSamplingHardwareTestModule = MiningSamplingHardwareModule<Test>;
     pub type MiningEligibilityHardwareTestModule = MiningEligibilityHardwareModule<Test>;
     pub type MiningClaimsHardwareTestModule = MiningClaimsHardwareModule<Test>;
-    pub type Randomness = pallet_randomness_collective_flip::Module<Test>;
+    pub type Randomness = pallet_randomness_collective_flip::Pallet<Test>;
 
     // This function basically just builds a genesis storage key/value store according to
     // our desired mockup.
@@ -234,7 +234,7 @@ mod tests {
             assert_ok!(MiningRatesHardwareTestModule::create(Origin::signed(0)));
             assert_ok!(MiningRatesHardwareTestModule::set_mining_rates_hardware_rates_config(
                 Origin::signed(0),
-                0, // mining_speed_boosts_rates_hardware_mining_id
+                0, // mining_rates_hardware_id
                 // FIXME - convert all below types to Vec<u8> since float values? i.e. b"1.025".to_vec()
                 Some(1), // hardware_hardware_secure
                 Some(1), // hardware_hardware_insecure
@@ -319,19 +319,20 @@ mod tests {
             // Create Mining Speed Boost Eligibility Hardware Mining
 
             // Call Functions
-            assert_ok!(MiningEligibilityHardwareTestModule::create(Origin::signed(0))); // assert_eq!(
-            //     MiningSpeedBoostEligibilityTestModule::
-            // calculate_mining_speed_boosts_eligibility_hardware_mining_result(         Origin::signed(0),
-            //         0, // mining_speed_boosts_configuration_hardware_mining_id
-            //         0, // mining_speed_boosts_eligibility_hardware_mining_id
+            assert_ok!(MiningEligibilityHardwareTestModule::create(Origin::signed(0)));
+            // assert_eq!(
+            //     MiningEligibilityTestModule::calculate_mining_eligibility_hardware_result(
+            //         Origin::signed(0),
+            //         0, // mining_setting_hardware_id
+            //         0, // mining_eligibility_hardware_id
             //     ),
             //     Some(
-            //         MiningSpeedBoostEligibilityHardwareMiningEligibilityResult {
-            //             eligibility_hardware_mining_calculated_eligibility: 1.1
+            //         MiningEligibilityHardwareResult {
+            //             hardware_calculated_eligibility: 1.1
             //             // to determine eligibility for proportion (incase user moves funds around during lock
-            // period)             eligibility_hardware_mining_hardware_uptime_percentage: 0.3,
-            //             // eligibility_hardware_mining_date_audited: 123,
-            //             // eligibility_hardware_mining_auditor_account_id: 123
+            // period)             hardware_uptime_percentage: 0.3,
+            //             // hardware_block_audited: 123,
+            //             // hardware_auditor_account_id: 123
             //         }
             //     )
             // ))
@@ -376,7 +377,7 @@ mod tests {
                 })
             );
 
-            // Create Mining Speed Boost Lodgements Hardware Mining
+            // Create Mining Speed Boost Claims Hardware Mining
 
             // // Call Functions
             assert_ok!(MiningClaimsHardwareTestModule::create(Origin::signed(0)));

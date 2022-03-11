@@ -1,5 +1,6 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
+use log::{warn, info};
 use account_set::AccountSet;
 use chrono::{
     NaiveDate,
@@ -11,7 +12,6 @@ use codec::{
     Encode,
 };
 use frame_support::{
-    log,
     decl_error,
     decl_event,
     decl_module,
@@ -29,6 +29,7 @@ use frame_system::{
     ensure_signed,
     ensure_root,
 };
+use scale_info::TypeInfo;
 use module_primitives::{
     constants::time::MILLISECS_PER_BLOCK,
     types::*,
@@ -53,7 +54,6 @@ use sp_std::{
     },
     prelude::*,
 };
-use scale_info::TypeInfo;
 
 /// The module's configuration trait.
 pub trait Config:
@@ -89,6 +89,7 @@ pub struct MiningEligibilityProxyRewardRequest<U, V, W> {
 
 #[derive(Encode, Decode, Debug, Default, Clone, Eq, PartialEq, TypeInfo)]
 #[cfg_attr(feature = "std", derive())]
+// #[scale_info(skip_type_params(U))]
 pub struct MiningEligibilityProxyClaimRewardeeData<U, V, W, X> {
     pub proxy_claim_rewardee_account_id: U, // Rewardee miner associated with supernode (proxy) account id
     pub proxy_claim_reward_amount: V,       // Reward in DHX tokens for specific rewardee miner
@@ -320,7 +321,7 @@ decl_module! {
             let sender = ensure_signed(origin)?;
 
             // get the current block & current date/time
-            let current_block = <frame_system::Module<T>>::block_number();
+            let current_block = <frame_system::Pallet<T>>::block_number();
             let requested_date = <pallet_timestamp::Module<T>>::get();
 
             // convert the current date/time to the start of the current day date/time.
@@ -332,27 +333,27 @@ decl_module! {
             } else {
                 return Err(DispatchError::Other("Unable to convert Moment to i64 for requested_date"));
             }
-            log::info!("requested_date_as_u64: {:?}", requested_date_as_u64.clone());
+            info!("requested_date_as_u64: {:?}", requested_date_as_u64.clone());
 
             let requested_date_as_u64_secs = requested_date_as_u64.clone() / 1000u64;
             // https://docs.rs/chrono/0.4.6/chrono/naive/struct.NaiveDateTime.html#method.from_timestamp
             let sent_date = NaiveDateTime::from_timestamp(i64::try_from(requested_date_as_u64_secs).unwrap(), 0).date();
-            log::info!("requested_date_as_u64_secs: {:?}", requested_date_as_u64_secs.clone());
-            log::info!("sent_date: {:?}", sent_date.clone());
+            info!("requested_date_as_u64_secs: {:?}", requested_date_as_u64_secs.clone());
+            info!("sent_date: {:?}", sent_date.clone());
 
             let sent_date_millis = sent_date.and_hms(0, 0, 0).timestamp() * 1000;
-            log::info!("sent_date_millis: {:?}", sent_date_millis.clone());
-            log::info!("Timestamp sent Date: {:?}", sent_date);
+            info!("sent_date_millis: {:?}", sent_date_millis.clone());
+            info!("Timestamp sent Date: {:?}", sent_date);
 
             ensure!(Self::is_origin_whitelisted_member_supernodes(sender.clone()).is_ok(), "Only whitelisted Supernode account members may request proxy rewards");
 
             let member_kind = T::MembershipSource::account_kind(sender.clone());
-            log::info!("Requestor account kind: {:?}", member_kind.clone());
+            info!("Requestor account kind: {:?}", member_kind.clone());
 
             // TODO - determine whether we'll allow the recipient to be provided by the sender
             // and how to restrict who the recipients are by membership or similar
             let recipient_member_kind = T::MembershipSource::account_kind(sender.clone());
-            log::info!("Recipient account kind: {:?}", recipient_member_kind.clone());
+            info!("Recipient account kind: {:?}", recipient_member_kind.clone());
 
             // Validate inputs (i.e. run `is_valid_reward_data` before we generate the `mining_eligibility_proxy_id` or insert any data in storage
             // as we do not want it to panic if inputs are invalid and have have only partially added some data in storage,
@@ -365,7 +366,7 @@ decl_module! {
 
             match Self::is_valid_reward_data(_proxy_claim_total_reward_amount.clone(), _proxy_claim_rewardees_data.clone()) {
                 Ok(_) => {
-                    log::info!("Valid reward data");
+                    info!("Valid reward data");
                 },
                 Err(dispatch_error) => {
                     return Err(dispatch_error);
@@ -377,9 +378,9 @@ decl_module! {
             // Only available in Substrate 3 is pot()
             // let max_payout = pallet_treasury::Module::<T>::pot();
             let max_payout = pallet_balances::Module::<T>::usable_balance(treasury_account_id.clone());
-            log::info!("Treasury account id: {:?}", treasury_account_id.clone());
-            log::info!("Requestor to receive reward: {:?}", sender.clone());
-            log::info!("Treasury balance max payout: {:?}", max_payout.clone());
+            info!("Treasury account id: {:?}", treasury_account_id.clone());
+            info!("Requestor to receive reward: {:?}", sender.clone());
+            info!("Treasury balance max payout: {:?}", max_payout.clone());
 
             // Validate inputs so the total_reward_amount is less than the max_payout
 
@@ -391,7 +392,7 @@ decl_module! {
             } else {
                 return Err(DispatchError::Other("Unable to convert Balance to u128 for reward_to_pay"));
             }
-            log::info!("reward_to_pay_as_u128: {:?}", reward_to_pay_as_u128.clone());
+            info!("reward_to_pay_as_u128: {:?}", reward_to_pay_as_u128.clone());
 
             let max_payout_as_u128;
             if let Some(_max_payout_as_u128) = TryInto::<u128>::try_into(max_payout).ok() {
@@ -399,7 +400,7 @@ decl_module! {
             } else {
                 return Err(DispatchError::Other("Unable to convert Balance to u128 for max_payout"));
             }
-            log::info!("max_payout_as_u128: {:?}", max_payout_as_u128.clone());
+            info!("max_payout_as_u128: {:?}", max_payout_as_u128.clone());
 
             ensure!(reward_to_pay_as_u128 > 0u128, "Reward must be greater than zero");
             ensure!(max_payout_as_u128 > reward_to_pay_as_u128, "Reward cannot exceed treasury balance");
@@ -415,7 +416,7 @@ decl_module! {
                 }
             }
 
-            log::info!("Transferring claim to proxy Supernode");
+            info!("Transferring claim to proxy Supernode");
 
             // Store Requestor of the reward
 
@@ -433,17 +434,17 @@ decl_module! {
                     requested_date: requested_date.clone(),
                 };
 
-                log::info!("Setting the proxy eligibility reward requestor");
+                info!("Setting the proxy eligibility reward requestor");
 
                 Self::insert_mining_eligibility_proxy_reward_requestor(
                     &sender.clone(),
                     reward_requestor_data.clone(),
                 );
 
-                log::info!("Inserted reward Requestor: {:?}", sender.clone());
-                log::info!("Inserted reward Requestor Data: {:?}", reward_requestor_data.clone());
+                info!("Inserted reward Requestor: {:?}", sender.clone());
+                info!("Inserted reward Requestor Data: {:?}", reward_requestor_data.clone());
 
-                log::info!("Treasury paying reward");
+                info!("Treasury paying reward");
 
                 <T as Config>::Currency::transfer(
                     &treasury_account_id,
@@ -452,7 +453,7 @@ decl_module! {
                     ExistenceRequirement::KeepAlive
                 );
 
-                log::info!("Success paying the reward amount: {:?}", reward_to_pay.clone());
+                info!("Success paying the reward amount: {:?}", reward_to_pay.clone());
 
                 let reward_amount_item: DailyData<T> = RewardDailyData {
                     mining_eligibility_proxy_id: mining_eligibility_proxy_id.clone(),
@@ -467,27 +468,27 @@ decl_module! {
                     reward_amount_item.clone(),
                 );
 
-                log::info!("Appended new rewards_per_day at Date: {:?}", sent_date_millis.clone());
-                log::info!("Appended new rewards_per_day in storage item: {:?}", reward_amount_item.clone());
+                info!("Appended new rewards_per_day at Date: {:?}", sent_date_millis.clone());
+                info!("Appended new rewards_per_day in storage item: {:?}", reward_amount_item.clone());
 
                 let rewards_per_day_retrieved = <RewardsPerDay<T>>::get(
                     sent_date_millis.clone(),
                 );
-                log::info!("Retrieved new rewards_per_day storage item: {:?}", rewards_per_day_retrieved.clone());
+                info!("Retrieved new rewards_per_day storage item: {:?}", rewards_per_day_retrieved.clone());
 
                 // Update in storage the total rewards distributed so far for the current day
                 // so users may query state and have the latest calculated total returned.
                 match Self::total_rewards_daily(sent_date_millis.clone()) {
                     None => {
-                        log::info!("Creating new total rewards entry for a given day");
+                        info!("Creating new total rewards entry for a given day");
 
                         <TotalRewardsPerDay<T>>::insert(
                             sent_date_millis.clone(),
                             _proxy_claim_total_reward_amount.clone(),
                         );
 
-                        log::info!("Created new total_rewards_daily at Date millis: {:?}", sent_date_millis.clone());
-                        log::info!("Creating new total_rewards_daily at Date with Amount: {:?}", _proxy_claim_total_reward_amount.clone());
+                        info!("Created new total_rewards_daily at Date millis: {:?}", sent_date_millis.clone());
+                        info!("Creating new total_rewards_daily at Date with Amount: {:?}", _proxy_claim_total_reward_amount.clone());
 
                         // Emit event
                         Self::deposit_event(RawEvent::TotalRewardsPerDayUpdated(
@@ -497,7 +498,7 @@ decl_module! {
                         ));
                     },
                     Some(old_total_rewards_for_day) => {
-                        log::info!("TotalRewardsPerDay entry mapping already exists for given day. Updating...");
+                        info!("TotalRewardsPerDay entry mapping already exists for given day. Updating...");
 
                         // Add, handling overflow
                         let new_total_rewards_for_day =
@@ -510,10 +511,10 @@ decl_module! {
                                     *_reward_moment = new_total_rewards_for_day.clone();
                                 }
 
-                                log::info!("Updated total_rewards_daily at Date: {:?}",  sent_date);
-                                log::info!("Updated total_rewards_daily at Date. Existing Amount: {:?}", old_total_rewards_for_day.clone());
-                                log::info!("Updated total_rewards_daily at Date. Reward Amount: {:?}", _proxy_claim_total_reward_amount.clone());
-                                log::info!("Updated total_rewards_daily at Date. New Amount: {:?}", new_total_rewards_for_day.clone());
+                                info!("Updated total_rewards_daily at Date: {:?}",  sent_date);
+                                info!("Updated total_rewards_daily at Date. Existing Amount: {:?}", old_total_rewards_for_day.clone());
+                                info!("Updated total_rewards_daily at Date. Reward Amount: {:?}", _proxy_claim_total_reward_amount.clone());
+                                info!("Updated total_rewards_daily at Date. New Amount: {:?}", new_total_rewards_for_day.clone());
                             },
                         );
 
@@ -537,17 +538,17 @@ decl_module! {
                     requested_date: requested_date.clone(),
                 };
 
-                log::info!("Setting the proxy eligibility reward transfer");
+                info!("Setting the proxy eligibility reward transfer");
 
                 Self::insert_mining_eligibility_proxy_reward_transfer(
                     &sender.clone(),
                     reward_transfer_data.clone(),
                 );
 
-                log::info!("Inserted proxy_reward_transfer for Sender: {:?}", sender.clone());
-                log::info!("Inserted proxy_reward_transfer for Sender with Data: {:?}", reward_transfer_data.clone());
+                info!("Inserted proxy_reward_transfer for Sender: {:?}", sender.clone());
+                info!("Inserted proxy_reward_transfer for Sender with Data: {:?}", reward_transfer_data.clone());
 
-                log::info!("Setting the proxy eligibility reward_request");
+                info!("Setting the proxy eligibility reward_request");
 
                 Self::set_mining_eligibility_proxy_eligibility_reward_request(
                     sender.clone(),
@@ -556,9 +557,9 @@ decl_module! {
                     _proxy_claim_rewardees_data.clone(),
                 );
 
-                log::info!("Inserted proxy_eligibility_reward_request for Proxy ID: {:?}", mining_eligibility_proxy_id.clone());
-                log::info!("Inserted proxy_eligibility_reward_request for Proxy ID with reward amount: {:?}", _proxy_claim_total_reward_amount.clone());
-                log::info!("Inserted proxy_eligibility_reward_request for Proxy ID with _proxy_claim_rewardees_data: {:?}", _proxy_claim_rewardees_data.clone());
+                info!("Inserted proxy_eligibility_reward_request for Proxy ID: {:?}", mining_eligibility_proxy_id.clone());
+                info!("Inserted proxy_eligibility_reward_request for Proxy ID with reward amount: {:?}", _proxy_claim_total_reward_amount.clone());
+                info!("Inserted proxy_eligibility_reward_request for Proxy ID with _proxy_claim_rewardees_data: {:?}", _proxy_claim_rewardees_data.clone());
 
                 <MiningEligibilityProxyStatus<T>>::insert(
                     mining_eligibility_proxy_id.clone(),
@@ -569,11 +570,11 @@ decl_module! {
                     mining_eligibility_proxy_id.clone(),
                 ));
 
-                log::info!("Completed Transfer");
+                info!("Completed Transfer");
 
                 return Ok(());
             } else {
-                log::info!("Unable to convert _proxy_claim_rewardees_data");
+                warn!("Unable to convert _proxy_claim_rewardees_data");
                 return Err(DispatchError::Other("Unable to convert _proxy_claim_rewardees_data"));
             }
         }
@@ -618,7 +619,7 @@ impl<T: Config> Module<T> {
         proxy_claim_total_reward_amount: BalanceOf<T>,
         sent_date_millis: Date,
     ) -> Result<(), DispatchError> {
-        let current_block = <frame_system::Module<T>>::block_number();
+        let current_block = <frame_system::Pallet<T>>::block_number();
         // block reward max is 5000 DHX per day until year 2023, so by 2024 we'd be up to
         // 20000 * 4 * 365 = 29200000 block, then reduces to 4800 DHX per day, and so on per halving cycle.
         // assume worse case scenario of only one supernode requesting
@@ -632,28 +633,28 @@ impl<T: Config> Module<T> {
         if let Some(total_rewards_per_day_retrieved) = <TotalRewardsPerDay<T>>::get(sent_date_millis.clone()) {
             let total_rewards_per_day_retrieved_as_u128 =
                     TryInto::<u128>::try_into(total_rewards_per_day_retrieved).ok().unwrap();
-            log::info!("Retrieved new total_rewards_per_day_retrieved_as_u128 storage item: {:?}", total_rewards_per_day_retrieved_as_u128.clone());
+            info!("Retrieved new total_rewards_per_day_retrieved_as_u128 storage item: {:?}", total_rewards_per_day_retrieved_as_u128.clone());
 
             let sum = total_rewards_per_day_retrieved_as_u128 + proxy_claim_total_reward_amount_as_u128;
             // println!("sum {:#?}", sum);
-            log::info!("sum {:#?}", sum);
+            info!("sum {:#?}", sum);
             if sum > DAILY_WITHDRAWAL_LIMIT.clone().into() {
                 // println!("Sum exceeds daily withdrawal limit");
-                log::info!("Sum exceeds daily withdrawal limit");
+                warn!("Sum exceeds daily withdrawal limit");
                 is_valid = 0;
             }
         } else if proxy_claim_total_reward_amount_as_u128 > DAILY_WITHDRAWAL_LIMIT.clone().into() {
             // println!("Total reward amount exceeds daily withdrawal limit");
-            log::info!("Total reward amount exceeds daily withdrawal limit");
+            warn!("Total reward amount exceeds daily withdrawal limit");
             is_valid = 0;
         }
 
         // println!("proxy_claim_total_reward_amount {:#?}", proxy_claim_total_reward_amount);
         // println!("proxy_claim_total_reward_amount_as_u128 {:#?}", proxy_claim_total_reward_amount_as_u128);
         // println!("DAILY_WITHDRAWAL_LIMIT {:#?}", DAILY_WITHDRAWAL_LIMIT);
-        log::info!("proxy_claim_total_reward_amount {:#?}", proxy_claim_total_reward_amount);
-        log::info!("proxy_claim_total_reward_amount_as_u128 {:#?}", proxy_claim_total_reward_amount_as_u128);
-        log::info!("DAILY_WITHDRAWAL_LIMIT {:#?}", DAILY_WITHDRAWAL_LIMIT);
+        info!("proxy_claim_total_reward_amount {:#?}", proxy_claim_total_reward_amount);
+        info!("proxy_claim_total_reward_amount_as_u128 {:#?}", proxy_claim_total_reward_amount_as_u128);
+        info!("DAILY_WITHDRAWAL_LIMIT {:#?}", DAILY_WITHDRAWAL_LIMIT);
 
         if is_valid == 0 {
             return Err(DispatchError::Other("Supernode claim has been deemed unreasonable"));
@@ -686,7 +687,7 @@ impl<T: Config> Module<T> {
         // Iterate through all rewardees data
         for (index, rewardees_data) in _proxy_claim_rewardees_data.iter().enumerate() {
             rewardees_data_count += 1;
-            log::info!("rewardees_data_count {:#?}", rewardees_data_count);
+            info!("rewardees_data_count {:#?}", rewardees_data_count);
 
             if let _proxy_claim_start_date = &rewardees_data.proxy_claim_start_date {
                 if let _proxy_claim_end_date = &rewardees_data.proxy_claim_end_date {
@@ -697,11 +698,11 @@ impl<T: Config> Module<T> {
                     let claim_duration = proxy_claim_end_date.signed_duration_since(proxy_claim_start_date);
 
                     if proxy_claim_end_date >= current_date {
-                        log::info!("invalid proxy_claim_end_date must be prior to current_date: {:#?}", proxy_claim_end_date);
+                        warn!("invalid proxy_claim_end_date must be prior to current_date: {:#?}", proxy_claim_end_date);
                         is_valid = 0;
                         break;
                     } else if claim_duration <= MIN_COOLDOWN_PERIOD_DAYS {
-                        log::info!("unable to claim reward for lock duration less than cooldown period");
+                        warn!("unable to claim reward for lock duration less than cooldown period");
                         is_valid = 0;
                         break;
                     } else {
@@ -715,7 +716,7 @@ impl<T: Config> Module<T> {
         }
 
         // Check that sum _proxy_claim_total_reward_amount equals sum of all the rewardee's proxy_claim_reward_amount
-        log::info!("Verifying that total reward amount requested equals sum of all rewardee data claim amounts");
+        info!("Verifying that total reward amount requested equals sum of all rewardee data claim amounts");
 
         let mut sum_reward_amounts = 0u128;
         rewardees_data_count = 0; // Reset count
@@ -723,14 +724,14 @@ impl<T: Config> Module<T> {
         // Iterate through all rewardees data
         for (index, rewardees_data) in _proxy_claim_rewardees_data.iter().enumerate() {
             rewardees_data_count += 1;
-            log::info!("rewardees_data_count {:#?}", rewardees_data_count);
+            info!("rewardees_data_count {:#?}", rewardees_data_count);
 
             if let _proxy_claim_reward_amount = rewardees_data.proxy_claim_reward_amount.clone() {
                 let _proxy_claim_reward_amount_as_u128 =
                     TryInto::<u128>::try_into(_proxy_claim_reward_amount).ok().unwrap();
                 sum_reward_amounts += _proxy_claim_reward_amount_as_u128;
             } else {
-                log::info!("unable to interpret proxy_claim_reward_amount");
+                warn!("unable to interpret proxy_claim_reward_amount");
                 is_valid = 0;
                 break;
             }
@@ -779,17 +780,17 @@ impl<T: Config> Module<T> {
     pub fn has_value_for_mining_eligibility_proxy_reward_requestor_account_id(
         requestor: &T::AccountId,
     ) -> Result<(), DispatchError> {
-        log::info!(
+        info!(
             "Checking if mining_eligibility_proxy_reward_requestor has a value for the given account id that is \
              defined"
         );
         let fetched_mining_eligibility_proxy_reward_requestor =
             <MiningEligibilityProxyRewardRequestors<T>>::get(requestor);
         if let Some(_value) = fetched_mining_eligibility_proxy_reward_requestor {
-            log::info!("Found value for mining_eligibility_proxy_reward_requestor");
+            info!("Found value for mining_eligibility_proxy_reward_requestor");
             return Ok(());
         }
-        log::info!("No value for mining_eligibility_proxy_reward_requestor");
+        warn!("No value for mining_eligibility_proxy_reward_requestor");
         Err(DispatchError::Other("No value for mining_eligibility_proxy_reward_requestor"))
     }
 
@@ -797,8 +798,8 @@ impl<T: Config> Module<T> {
         let payload = (
             T::Randomness::random(&[0]),
             sender,
-            <frame_system::Module<T>>::extrinsic_index(),
-            <frame_system::Module<T>>::block_number(),
+            <frame_system::Pallet<T>>::extrinsic_index(),
+            <frame_system::Pallet<T>>::block_number(),
         );
         payload.using_encoded(blake2_128)
     }
@@ -826,7 +827,7 @@ impl<T: Config> Module<T> {
         requestor: &T::AccountId,
         reward_requestor_data: RequestorData<T>,
     ) {
-        log::info!("Appending reward requestor data");
+        info!("Appending reward requestor data");
 
         <MiningEligibilityProxyRewardRequestors<T>>::append(requestor.clone(), &reward_requestor_data.clone());
 
@@ -837,7 +838,7 @@ impl<T: Config> Module<T> {
     }
 
     fn insert_mining_eligibility_proxy_reward_transfer(transfer: &T::AccountId, reward_transfer_data: TransferData<T>) {
-        log::info!("Appending reward transfer data");
+        info!("Appending reward transfer data");
 
         <MiningEligibilityProxyRewardTransfers<T>>::append(transfer.clone(), &reward_transfer_data.clone());
 
@@ -848,7 +849,7 @@ impl<T: Config> Module<T> {
     }
 
     fn insert_mining_eligibility_proxy_reward_daily(sent_date: &Date, reward_daily_data: DailyData<T>) {
-        log::info!("Appending reward daily data");
+        info!("Appending reward daily data");
 
         <RewardsPerDay<T>>::append(sent_date.clone(), &reward_daily_data.clone());
 
@@ -866,7 +867,7 @@ impl<T: Config> Module<T> {
         let is_mining_eligibility_proxy = Self::exists_mining_eligibility_proxy(mining_eligibility_proxy_id);
 
         if !is_mining_eligibility_proxy.is_ok() {
-            log::info!("Error no supernode exists with given id");
+            warn!("Error no supernode exists with given id");
         }
 
         // Ensure that the caller is owner of the mining_eligibility_proxy_reward_request they are trying to change
@@ -875,11 +876,11 @@ impl<T: Config> Module<T> {
         let proxy_claim_requestor_account_id = _proxy_claim_requestor_account_id.clone();
         let proxy_claim_total_reward_amount = _proxy_claim_total_reward_amount.clone();
         let proxy_claim_rewardees_data = _proxy_claim_rewardees_data.clone();
-        let current_block = <frame_system::Module<T>>::block_number();
+        let current_block = <frame_system::Pallet<T>>::block_number();
         let proxy_claim_block_redeemed = current_block;
         let proxy_claim_timestamp_redeemed = <pallet_timestamp::Module<T>>::get();
 
-        log::info!("Inserting reward requests");
+        info!("Inserting reward requests");
 
         // Create a new mining mining_eligibility_proxy_reward_request instance with the input params
         let mining_eligibility_proxy_reward_request_instance = MiningEligibilityProxyRewardRequest {
@@ -895,7 +896,7 @@ impl<T: Config> Module<T> {
             mining_eligibility_proxy_reward_request_instance.clone(),
         );
 
-        log::info!("Insert rewardees {:#?}", proxy_claim_rewardees_data.clone());
+        info!("Insert rewardees {:#?}", proxy_claim_rewardees_data.clone());
         <MiningEligibilityProxyRewardees<T>>::insert(
             mining_eligibility_proxy_id,
             proxy_claim_rewardees_data.clone(),
@@ -910,7 +911,7 @@ impl<T: Config> Module<T> {
         .date();
 
         let date_redeemed_millis = proxy_claim_date_redeemed.and_hms(0, 0, 0).timestamp() * 1000;
-        log::info!("proxy_claim_date_redeemed.timestamp {:#?}", date_redeemed_millis.clone());
+        info!("proxy_claim_date_redeemed.timestamp {:#?}", date_redeemed_millis.clone());
 
         Self::deposit_event(RawEvent::MiningEligibilityProxyRewardRequestSet(
             proxy_claim_requestor_account_id,

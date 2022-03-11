@@ -41,22 +41,31 @@ rm -rf /tmp/parachain/alice
 
 ```bash
 ./target/release/datahighway-collator \
---name "Data Highway Development Chain" \
+--name "DataHighway Development Parachain Collator Node" \
 --alice \
 --collator \
 --force-authoring \
---chain <para chain raw chain spec> \
+--chain <insert parachain raw chain spec> \
 --base-path /tmp/parachain/alice \
+--bootnodes <insert other existing collator bootnodes> \
 --port 40333 \
+--rpc-port 9933 \
 --ws-port 8844 \
+--unsafe-ws-external \
+--unsafe-rpc-external \
+--rpc-cors=all \
+--rpc-methods=Unsafe \
 -- \
 --execution wasm \
---chain <relay chain raw chain spec> \
+--chain <insert relay chain raw chain spec> \
 --port 30343 \
+--rpc-port 9943 \
 --ws-port 9977
 ```
 
 ## Run a Collator node as a parachain to Rococo <a id="chapter-f0264f"></a>
+
+Note: Refer to [this](https://github.com/DataHighway-DHX/documentation/blob/master/docs/tutorials/tutorials-node-polkadot-launch-datahighway-rococo-local.md) DataHighway tutorial for more information
 
 #### Fetch repository and dependencies
 
@@ -70,27 +79,31 @@ curl https://getsubstrate.io -sSf | bash -s -- --fast && \
 cargo build --release
 ```
 
-#### Build runtime code
-
-```bash
-cargo build --release
-```
-
 #### Create custom chain spec
 
 ```bash
-rm rococo-parachain-plain.json
+rm rococo-parachain-2026-plain.json
 rm rococo-parachain-2026-raw.json
-./target/release/datahighway-collator build-spec --chain rococo --disable-default-bootnode > rococo-parachain-plain.json
-./target/release/datahighway-collator build-spec --chain rococo-parachain-plain.json --raw --disable-default-bootnode > rococo-parachain-2026-raw.json
-
+./target/release/datahighway-collator build-spec --chain "rococo" --disable-default-bootnode > rococo-parachain-2026-plain.json
+./target/release/datahighway-collator build-spec --chain rococo-parachain-2026-plain.json --raw --disable-default-bootnode > rococo-parachain-2026-raw.json
 ```
 
+Copy the "rococo" relay chain specification into the `./res` folder of the DataHighway-Parachain directory (i.e. `./res/rococo.json`).
+
+Since on Rococo you would likely be using a chain specification with custom keys rather than defaults like Alice, and running the node without the flag `--alice` then it is necessary to add the keys to the keystore.
+
+```
+./target/release/datahighway-collator key insert --base-path /tmp/parachain/datahighway-collator \
+--chain rococo-parachain-2026-raw.json \
+--scheme sr25519 \
+--suri <secret seed> \
+--key-type aura
+```
 
 > Remember to purge the chain state if you change anything (database and keys)
 
 ```bash
-./target/release/datahighway-collator purge-chain --chain "local" --base-path /tmp/parachain/alice
+./target/release/datahighway-collator purge-chain --chain "rococo" --base-path /tmp/parachain/alice
 
 ```
 
@@ -105,12 +118,12 @@ Run Alice's bootnode using the raw chain definition file that was generated
 
 ```bash
 ./target/release/datahighway-collator \
---name "Data Highway Development Chain" \
+--name "DataHighway Rococo Parachain Collator Node" \
 --alice \
 --collator \
 --force-authoring \
 --chain rococo-parachain-2026-raw.json \
---base-path /tmp/parachain/alice \
+--base-path /tmp/parachain/datahighway-collator \
 --port 40333 \
 --ws-port 8844 \
 -- \

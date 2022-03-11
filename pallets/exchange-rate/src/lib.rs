@@ -1,11 +1,11 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
+use log::{warn, info};
 use codec::{
     Decode,
     Encode,
 };
 use frame_support::{
-    log,
     decl_event,
     decl_module,
     decl_storage,
@@ -17,6 +17,7 @@ use frame_support::{
     Parameter,
 };
 use frame_system::ensure_signed;
+use scale_info::TypeInfo;
 use sp_io::hashing::blake2_128;
 use sp_runtime::{
     traits::{
@@ -28,7 +29,7 @@ use sp_runtime::{
     DispatchError,
 };
 use sp_std::prelude::*;
-use scale_info::TypeInfo;
+
 #[cfg(test)]
 mod mock;
 
@@ -174,7 +175,7 @@ decl_module! {
             // Check if a exchange_rate_setting already exists with the given exchange_rate_id
             // to determine whether to insert new or mutate existing.
             if Self::has_value_for_exchange_rates_index(exchange_rate_id).is_ok() {
-                log::info!("Mutating values");
+                info!("Mutating values");
                 <ExchangeRateSettings<T>>::mutate(exchange_rate_id, |exchange_rate_setting| {
                     if let Some(_exchange_rate_setting) = exchange_rate_setting {
                         // Only update the value of a key in a KV pair if the corresponding parameter value has been provided
@@ -185,17 +186,17 @@ decl_module! {
                         _exchange_rate_setting.decimals_after_point = out_decimals_after_point.clone();
                     }
                 });
-                log::info!("Checking mutated values");
+                info!("Checking mutated values");
                 let fetched_exchange_rate_setting = <ExchangeRateSettings<T>>::get(exchange_rate_id);
                 if let Some(_exchange_rate_setting) = fetched_exchange_rate_setting {
-                    log::info!("Latest field hbtc {:#?}", _exchange_rate_setting.hbtc);
-                    log::info!("Latest field dot {:#?}", _exchange_rate_setting.dot);
-                    log::info!("Latest field iota {:#?}", _exchange_rate_setting.iota);
-                    log::info!("Latest field fil {:#?}", _exchange_rate_setting.fil);
-                    log::info!("Latest field decimals_after_point {:#?}", _exchange_rate_setting.decimals_after_point);
+                    info!("Latest field hbtc {:#?}", _exchange_rate_setting.hbtc);
+                    info!("Latest field dot {:#?}", _exchange_rate_setting.dot);
+                    info!("Latest field iota {:#?}", _exchange_rate_setting.iota);
+                    info!("Latest field fil {:#?}", _exchange_rate_setting.fil);
+                    info!("Latest field decimals_after_point {:#?}", _exchange_rate_setting.decimals_after_point);
                 }
             } else {
-                log::info!("Inserting values");
+                info!("Inserting values");
 
                 // Create a new mining exchange_rate_setting instance with the input params
                 let exchange_rate_setting = ExchangeRateSetting {
@@ -213,14 +214,14 @@ decl_module! {
                     &exchange_rate_setting
                 );
 
-                log::info!("Checking inserted values");
+                info!("Checking inserted values");
                 let fetched_exchange_rate_setting = <ExchangeRateSettings<T>>::get(exchange_rate_id);
                 if let Some(_exchange_rate_setting) = fetched_exchange_rate_setting {
-                    log::info!("Latest field hbtc {:#?}", _exchange_rate_setting.hbtc);
-                    log::info!("Latest field dot {:#?}", _exchange_rate_setting.dot);
-                    log::info!("Latest field iota {:#?}", _exchange_rate_setting.iota);
-                    log::info!("Latest field fil {:#?}", _exchange_rate_setting.fil);
-                    log::info!("Latest field decimals_after_point {:#?}", _exchange_rate_setting.decimals_after_point);
+                    info!("Latest field hbtc {:#?}", _exchange_rate_setting.hbtc);
+                    info!("Latest field dot {:#?}", _exchange_rate_setting.dot);
+                    info!("Latest field iota {:#?}", _exchange_rate_setting.iota);
+                    info!("Latest field fil {:#?}", _exchange_rate_setting.fil);
+                    info!("Latest field decimals_after_point {:#?}", _exchange_rate_setting.decimals_after_point);
                 }
             }
 
@@ -257,13 +258,13 @@ impl<T: Config> Module<T> {
     }
 
     pub fn has_value_for_exchange_rates_index(exchange_rate_id: T::ExchangeRateIndex) -> Result<(), DispatchError> {
-        log::info!("Checking if exchange_rate_setting has a value that is defined");
+        info!("Checking if exchange_rate_setting has a value that is defined");
         let fetched_exchange_rate_setting = <ExchangeRateSettings<T>>::get(exchange_rate_id);
         if let Some(_value) = fetched_exchange_rate_setting {
-            log::info!("Found value for exchange_rate_setting");
+            info!("Found value for exchange_rate_setting");
             return Ok(());
         }
-        log::info!("No value for exchange_rate_setting");
+        warn!("No value for exchange_rate_setting");
         Err(DispatchError::Other("No value for exchange_rate_setting"))
     }
 
@@ -271,8 +272,8 @@ impl<T: Config> Module<T> {
         let payload = (
             T::Randomness::random(&[0]),
             sender,
-            <frame_system::Module<T>>::extrinsic_index(),
-            <frame_system::Module<T>>::block_number(),
+            <frame_system::Pallet<T>>::extrinsic_index(),
+            <frame_system::Pallet<T>>::block_number(),
         );
         payload.using_encoded(blake2_128)
     }

@@ -1,11 +1,11 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
+use log::{warn, info};
 use codec::{
     Decode,
     Encode,
 };
 use frame_support::{
-    log,
     decl_event,
     decl_module,
     decl_storage,
@@ -17,6 +17,7 @@ use frame_support::{
     Parameter,
 };
 use frame_system::ensure_signed;
+use scale_info::TypeInfo;
 use sp_io::hashing::blake2_128;
 use sp_runtime::{
     traits::{
@@ -28,7 +29,7 @@ use sp_runtime::{
     DispatchError,
 };
 use sp_std::prelude::*; // Imports Vec
-use scale_info::TypeInfo;
+
 // FIXME - remove roaming_operators here, only use this approach since do not know how to use BalanceOf using only
 // mining runtime module
 
@@ -198,7 +199,7 @@ decl_module! {
             // Check if a mining_setting_hardware_hardware_config already exists with the given mining_setting_hardware_id
             // to determine whether to insert new or mutate existing.
             if Self::has_value_for_mining_setting_hardware_hardware_config_index(mining_setting_hardware_id).is_ok() {
-                log::info!("Mutating values");
+                info!("Mutating values");
                 // TODO
                 <MiningSettingHardwareSettings<T>>::mutate(mining_setting_hardware_id, |mining_setting_hardware_hardware_config| {
                     if let Some(_mining_setting_hardware_hardware_config) = mining_setting_hardware_hardware_config {
@@ -211,18 +212,18 @@ decl_module! {
                         _mining_setting_hardware_hardware_config.hardware_lock_interval_blocks = hardware_lock_interval_blocks.clone();
                     }
                 });
-                log::info!("Checking mutated values");
+                info!("Checking mutated values");
                 let fetched_mining_setting_hardware_hardware_config = <MiningSettingHardwareSettings<T>>::get(mining_setting_hardware_id);
                 if let Some(_mining_setting_hardware_hardware_config) = fetched_mining_setting_hardware_hardware_config {
-                    log::info!("Latest field hardware_secure {:#?}", _mining_setting_hardware_hardware_config.hardware_secure);
-                    log::info!("Latest field hardware_type {:#?}", _mining_setting_hardware_hardware_config.hardware_type);
-                    log::info!("Latest field hardware_id {:#?}", _mining_setting_hardware_hardware_config.hardware_id);
-                    log::info!("Latest field hardware_dev_eui {:#?}", _mining_setting_hardware_hardware_config.hardware_dev_eui);
-                    log::info!("Latest field hardware_lock_start_block {:#?}", _mining_setting_hardware_hardware_config.hardware_lock_start_block);
-                    log::info!("Latest field hardware_lock_interval_blocks {:#?}", _mining_setting_hardware_hardware_config.hardware_lock_interval_blocks);
+                    info!("Latest field hardware_secure {:#?}", _mining_setting_hardware_hardware_config.hardware_secure);
+                    info!("Latest field hardware_type {:#?}", _mining_setting_hardware_hardware_config.hardware_type);
+                    info!("Latest field hardware_id {:#?}", _mining_setting_hardware_hardware_config.hardware_id);
+                    info!("Latest field hardware_dev_eui {:#?}", _mining_setting_hardware_hardware_config.hardware_dev_eui);
+                    info!("Latest field hardware_lock_start_block {:#?}", _mining_setting_hardware_hardware_config.hardware_lock_start_block);
+                    info!("Latest field hardware_lock_interval_blocks {:#?}", _mining_setting_hardware_hardware_config.hardware_lock_interval_blocks);
                 }
             } else {
-                log::info!("Inserting values");
+                info!("Inserting values");
 
                 // Create a new mining mining_setting_hardware_hardware_config instance with the input params
                 let mining_setting_hardware_hardware_config_instance = MiningSettingHardwareSetting {
@@ -241,15 +242,15 @@ decl_module! {
                     &mining_setting_hardware_hardware_config_instance
                 );
 
-                log::info!("Checking inserted values");
+                info!("Checking inserted values");
                 let fetched_mining_setting_hardware_hardware_config = <MiningSettingHardwareSettings<T>>::get(mining_setting_hardware_id);
                 if let Some(_mining_setting_hardware_hardware_config) = fetched_mining_setting_hardware_hardware_config {
-                    log::info!("Inserted field hardware_secure {:#?}", _mining_setting_hardware_hardware_config.hardware_secure);
-                    log::info!("Inserted field hardware_type {:#?}", _mining_setting_hardware_hardware_config.hardware_type);
-                    log::info!("Inserted field hardware_id {:#?}", _mining_setting_hardware_hardware_config.hardware_id);
-                    log::info!("Inserted field hardware_dev_eui {:#?}", _mining_setting_hardware_hardware_config.hardware_dev_eui);
-                    log::info!("Inserted field hardware_lock_start_block {:#?}", _mining_setting_hardware_hardware_config.hardware_lock_start_block);
-                    log::info!("Inserted field hardware_lock_interval_blocks {:#?}", _mining_setting_hardware_hardware_config.hardware_lock_interval_blocks);
+                    info!("Inserted field hardware_secure {:#?}", _mining_setting_hardware_hardware_config.hardware_secure);
+                    info!("Inserted field hardware_type {:#?}", _mining_setting_hardware_hardware_config.hardware_type);
+                    info!("Inserted field hardware_id {:#?}", _mining_setting_hardware_hardware_config.hardware_id);
+                    info!("Inserted field hardware_dev_eui {:#?}", _mining_setting_hardware_hardware_config.hardware_dev_eui);
+                    info!("Inserted field hardware_lock_start_block {:#?}", _mining_setting_hardware_hardware_config.hardware_lock_start_block);
+                    info!("Inserted field hardware_lock_interval_blocks {:#?}", _mining_setting_hardware_hardware_config.hardware_lock_interval_blocks);
                 }
             }
 
@@ -302,14 +303,14 @@ impl<T: Config> Module<T> {
     pub fn has_value_for_mining_setting_hardware_hardware_config_index(
         mining_setting_hardware_id: T::MiningSettingHardwareIndex,
     ) -> Result<(), DispatchError> {
-        log::info!("Checking if mining_setting_hardware_hardware_config has a value that is defined");
+        info!("Checking if mining_setting_hardware_hardware_config has a value that is defined");
         let fetched_mining_setting_hardware_hardware_config =
             <MiningSettingHardwareSettings<T>>::get(mining_setting_hardware_id);
         if let Some(_value) = fetched_mining_setting_hardware_hardware_config {
-            log::info!("Found value for mining_setting_hardware_hardware_config");
+            info!("Found value for mining_setting_hardware_hardware_config");
             return Ok(());
         }
-        log::info!("No value for mining_setting_hardware_hardware_config");
+        warn!("No value for mining_setting_hardware_hardware_config");
         Err(DispatchError::Other("No value for mining_setting_hardware_hardware_config"))
     }
 
@@ -317,8 +318,8 @@ impl<T: Config> Module<T> {
         let payload = (
             T::Randomness::random(&[0]),
             sender,
-            <frame_system::Module<T>>::extrinsic_index(),
-            <frame_system::Module<T>>::block_number(),
+            <frame_system::Pallet<T>>::extrinsic_index(),
+            <frame_system::Pallet<T>>::block_number(),
         );
         payload.using_encoded(blake2_128)
     }

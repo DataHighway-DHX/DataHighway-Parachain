@@ -1,11 +1,11 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
+use log::{warn, info};
 use codec::{
     Decode,
     Encode,
 };
 use frame_support::{
-    log,
     decl_event,
     decl_module,
     decl_storage,
@@ -21,6 +21,7 @@ use frame_support::{
     StorageValue,
 };
 use frame_system::ensure_signed;
+use scale_info::TypeInfo;
 use sp_io::hashing::blake2_128;
 use sp_runtime::{
     traits::{
@@ -32,7 +33,6 @@ use sp_runtime::{
     DispatchError,
 };
 use sp_std::prelude::*; // Imports Vec
-use scale_info::TypeInfo;
 
 #[cfg(test)]
 mod mock;
@@ -237,19 +237,19 @@ impl<T: Config> Module<T> {
         // Early exit with error since do not want to append if the given operator id already exists as a key,
         // and where its corresponding value is a vector that already contains the given network id
         if let Some(operator_networks) = Self::roaming_operator_networks(roaming_operator_id) {
-            log::info!("Operator id key {:?} exists with value {:?}", roaming_operator_id, operator_networks);
+            info!("Operator id key {:?} exists with value {:?}", roaming_operator_id, operator_networks);
             let not_operator_contains_network = !operator_networks.contains(&roaming_network_id);
             ensure!(not_operator_contains_network, "Operator already contains the given network id");
-            log::info!("Operator id key exists but its vector value does not contain the given network id");
+            info!("Operator id key exists but its vector value does not contain the given network id");
             <RoamingOperatorNetworks<T>>::mutate(roaming_operator_id, |v| {
                 if let Some(value) = v {
                     value.push(roaming_network_id);
                 }
             });
-            log::info!("Associated network {:?} with operator {:?}", roaming_network_id, roaming_operator_id);
+            info!("Associated network {:?} with operator {:?}", roaming_network_id, roaming_operator_id);
             Ok(())
         } else {
-            log::info!(
+            info!(
                 "Operator id key does not yet exist. Creating the operator key {:?} and appending the network id {:?} \
                  to its vector value",
                 roaming_operator_id,
@@ -264,8 +264,8 @@ impl<T: Config> Module<T> {
         let payload = (
             T::Randomness::random(&[0]),
             sender,
-            <frame_system::Module<T>>::extrinsic_index(),
-            <frame_system::Module<T>>::block_number(),
+            <frame_system::Pallet<T>>::extrinsic_index(),
+            <frame_system::Pallet<T>>::block_number(),
         );
         payload.using_encoded(blake2_128)
     }

@@ -1,11 +1,11 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
+use log::{warn, info};
 use codec::{
     Decode,
     Encode,
 };
 use frame_support::{
-    log,
     decl_event,
     decl_module,
     decl_storage,
@@ -17,6 +17,7 @@ use frame_support::{
     Parameter,
 };
 use frame_system::ensure_signed;
+use scale_info::TypeInfo;
 use sp_io::hashing::blake2_128;
 use sp_runtime::{
     traits::{
@@ -28,7 +29,6 @@ use sp_runtime::{
     DispatchError,
 };
 use sp_std::prelude::*; // Imports Vec
-use scale_info::TypeInfo;
 
 #[cfg(test)]
 mod mock;
@@ -218,7 +218,7 @@ impl<T: Config> Module<T> {
     }
 
     // pub fn is_owned_by_required_parent_relationship(roaming_service_profile_id: T::RoamingServiceProfileIndex,
-    // sender: T::AccountId) -> Result<(), DispatchError> {     log::info!("Get the network_server id associated
+    // sender: T::AccountId) -> Result<(), DispatchError> {     info!("Get the network_server id associated
     // with the network_server of the given service profile id");     let service_profile_network_server_id =
     // Self::roaming_service_profile_network_server(roaming_service_profile_id);
 
@@ -246,7 +246,7 @@ impl<T: Config> Module<T> {
         if let Some(network_server_service_profiles) =
             Self::roaming_network_server_service_profiles(roaming_network_server_id)
         {
-            log::info!(
+            info!(
                 "NetworkServer id key {:?} exists with value {:?}",
                 roaming_network_server_id,
                 network_server_service_profiles
@@ -257,7 +257,7 @@ impl<T: Config> Module<T> {
                 not_network_server_contains_service_profile,
                 "NetworkServer already contains the given service_profile id"
             );
-            log::info!(
+            info!(
                 "NetworkServer id key exists but its vector value does not contain the given service_profile id"
             );
             <RoamingNetworkServerServiceProfiles<T>>::mutate(roaming_network_server_id, |v| {
@@ -265,14 +265,14 @@ impl<T: Config> Module<T> {
                     value.push(roaming_service_profile_id);
                 }
             });
-            log::info!(
+            info!(
                 "Associated service_profile {:?} with network_server {:?}",
                 roaming_service_profile_id,
                 roaming_network_server_id
             );
             Ok(())
         } else {
-            log::info!(
+            info!(
                 "NetworkServer id key does not yet exist. Creating the network_server key {:?} and appending the \
                  service_profile id {:?} to its vector value",
                 roaming_network_server_id,
@@ -290,8 +290,8 @@ impl<T: Config> Module<T> {
         let payload = (
             T::Randomness::random(&[0]),
             sender,
-            <frame_system::Module<T>>::extrinsic_index(),
-            <frame_system::Module<T>>::block_number(),
+            <frame_system::Pallet<T>>::extrinsic_index(),
+            <frame_system::Pallet<T>>::block_number(),
         );
         payload.using_encoded(blake2_128)
     }

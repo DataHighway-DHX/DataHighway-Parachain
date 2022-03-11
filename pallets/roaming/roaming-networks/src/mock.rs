@@ -1,12 +1,19 @@
 // Creating mock runtime here
 
 use crate::{
-    Module,
+    Pallet,
     Config,
 };
 
 use frame_support::{
-    parameter_types, traits::Everything,
+    parameter_types,
+    traits::{
+        ConstU8,
+        ConstU16,
+        ConstU32,
+        ConstU64,
+        ConstU128,
+    },
     weights::{
         IdentityFee,
         Weight,
@@ -40,62 +47,62 @@ frame_support::construct_runtime!(
 );
 
 parameter_types! {
-    pub const BlockHashCount: u64 = 250;
+    pub const BlockHashCount: u32 = 250;
 }
 impl frame_system::Config for Test {
-    type AccountData = pallet_balances::AccountData<u64>;
-    type AccountId = u64;
-    type BaseCallFilter = Everything;
-    type BlockHashCount = BlockHashCount;
-    type BlockNumber = u64;
-    type BlockLength = ();
+    type BaseCallFilter = frame_support::traits::Everything;
     type BlockWeights = ();
-    type Call = Call;
+    type BlockLength = ();
     type DbWeight = ();
-    type Event = ();
+    type Origin = Origin;
+    type Call = Call;
+    type Index = u64;
+    type BlockNumber = u64;
     type Hash = H256;
     type Hashing = BlakeTwo256;
-    type Header = Header;
-    type Index = u64;
+    type AccountId = u128; // u64 is not enough to hold bytes used to generate bounty account
     type Lookup = IdentityLookup<Self::AccountId>;
-    type MaxConsumers = frame_support::traits::ConstU32<16>;
-    type OnKilledAccount = ();
-    type OnNewAccount = ();
-    type OnSetCode = ();
-    type Origin = Origin;
-    type PalletInfo = PalletInfo;
-    type SS58Prefix = ();
-    type SystemWeightInfo = ();
+    type Header = Header;
+    type Event = ();
+    type BlockHashCount = ();
     type Version = ();
+    type PalletInfo = PalletInfo;
+    type AccountData = pallet_balances::AccountData<u64>;
+    type OnNewAccount = ();
+    type OnKilledAccount = ();
+    type SystemWeightInfo = ();
+    type SS58Prefix = ();
+    type OnSetCode = ();
+    type MaxConsumers = frame_support::traits::ConstU32<16>;
 }
+impl pallet_randomness_collective_flip::Config for Test {}
+pub const ExistentialDepositAsConst: u64 = 1;
 parameter_types! {
-    pub const ExistentialDeposit: u64 = 1;
+    pub const ExistentialDeposit: u64 = ExistentialDepositAsConst;
 }
 impl pallet_balances::Config for Test {
-    type AccountStore = System;
+    type MaxLocks = ();
+	type MaxReserves = ();
+	type ReserveIdentifier = [u8; 8];
     type Balance = u64;
     type DustRemoval = ();
     type Event = ();
-    type ExistentialDeposit = ExistentialDeposit;
-    type MaxLocks = ();
-    type MaxReserves = ();
-    type ReserveIdentifier = [u8; 8];
+    type ExistentialDeposit = ConstU64<ExistentialDepositAsConst>;
+    type AccountStore = System;
     type WeightInfo = ();
 }
+pub const OperationalFeeMultiplierAsConst: u8 = 5;
 parameter_types! {
-    pub const OperationalFeeMultiplier: u8 = 5;
     pub const TransactionByteFee: u64 = 1;
+    pub OperationalFeeMultiplier: u8 = OperationalFeeMultiplierAsConst;
 }
 impl pallet_transaction_payment::Config for Test {
-    type OperationalFeeMultiplier = OperationalFeeMultiplier;
     type FeeMultiplierUpdate = ();
     type OnChargeTransaction = pallet_transaction_payment::CurrencyAdapter<Balances, ()>;
     type TransactionByteFee = TransactionByteFee;
+    type OperationalFeeMultiplier = ConstU8<OperationalFeeMultiplierAsConst>;
     type WeightToFee = IdentityFee<u64>;
 }
-
-impl pallet_randomness_collective_flip::Config for Test {}
-
 impl roaming_operators::Config for Test {
     type Currency = Balances;
     type Event = ();
@@ -107,7 +114,7 @@ impl Config for Test {
     type RoamingNetworkIndex = u64;
 }
 
-pub type RoamingNetworkModule = Module<Test>;
+pub type RoamingNetworkModule = Pallet<Test>;
 
 
 // This function basically just builds a genesis storage key/value store according to

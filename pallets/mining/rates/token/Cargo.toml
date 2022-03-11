@@ -2,15 +2,17 @@
 name = "mining-rates-token"
 version = "0.1.0"
 authors = ["Luke Schoen"]
-edition = "2018"
+edition = "2021"
 
 [features]
 default = ['std']
 std = [
     'codec/std',
+    'scale-info/std',
+    'log/std',
+    'safe-mix/std',
     'frame-support/std',
     'frame-system/std',
-    'safe-mix/std',
     'pallet-balances/std',
     'pallet-randomness-collective-flip/std',
     'pallet-transaction-payment/std',
@@ -18,62 +20,28 @@ std = [
     'sp-io/std',
     'sp-runtime/std',
     'sp-std/std',
-    'scale-info/std',
+
     'roaming-operators/std',
     'serde',
-    'scale-info/std',
 ]
 
 [dependencies]
-scale-info = { version = "1.0.0", default-features = false, features = ["derive"] }
-codec = { version = '2.0.0', package = 'parity-scale-codec', default-features = false, features = ['derive'] }
+codec = { version = '2.0.0', package = 'parity-scale-codec', default-features = false, features = ['derive', 'max-encoded-len'] }
+scale-info = { version = '1.0', default-features = false, features = ['derive'] }
+log = { version = '0.4.14', default-features = false }
 safe-mix = { version = '1.0.0', default-features = false }
+frame-support = { git = 'https://github.com/paritytech/substrate', branch = 'polkadot-v0.9.17', default-features = false }
+frame-system = { git = 'https://github.com/paritytech/substrate', branch = 'polkadot-v0.9.17', default-features = false }
+pallet-balances = { git = 'https://github.com/paritytech/substrate', branch = 'polkadot-v0.9.17', default-features = false }
+pallet-randomness-collective-flip = { git = 'https://github.com/paritytech/substrate', branch = 'polkadot-v0.9.17', default-features = false }
+pallet-transaction-payment = { git = 'https://github.com/paritytech/substrate', branch = 'polkadot-v0.9.17', default-features = false }
+sp-core = { git = 'https://github.com/paritytech/substrate', branch = 'polkadot-v0.9.17', default-features = false }
+sp-io = { git = 'https://github.com/paritytech/substrate', branch = 'polkadot-v0.9.17', default-features = false }
+sp-runtime = { git = 'https://github.com/paritytech/substrate', branch = 'polkadot-v0.9.17', default-features = false }
+sp-std = { git = 'https://github.com/paritytech/substrate', branch = 'polkadot-v0.9.17', default-features = false }
+
 roaming-operators = { default-features = false, package = 'roaming-operators', path = '../../../roaming/roaming-operators' }
-serde = { version = '1.0.101', optional = true, features = ['derive'] }
 
-[dependencies.pallet-balances]
-default-features = false
-git = 'https://github.com/paritytech/substrate.git'
-branch = "polkadot-v0.9.17"
-
-[dependencies.pallet-randomness-collective-flip]
-default-features = false
-git = 'https://github.com/paritytech/substrate.git'
-branch = "polkadot-v0.9.17"
-
-[dependencies.pallet-transaction-payment]
-default-features = false
-git = 'https://github.com/paritytech/substrate.git'
-branch = "polkadot-v0.9.17"
-
-[dependencies.frame-support]
-default-features = false
-git = 'https://github.com/paritytech/substrate.git'
-branch = "polkadot-v0.9.17"
-
-[dependencies.frame-system]
-default-features = false
-git = 'https://github.com/paritytech/substrate.git'
-branch = "polkadot-v0.9.17"
-
-[dependencies.sp-std]
-default-features = false
-git = 'https://github.com/paritytech/substrate.git'
-branch = "polkadot-v0.9.17"
-
-[dependencies.sp-core]
-default-features = false
-git = 'https://github.com/paritytech/substrate.git'
-branch = "polkadot-v0.9.17"
-
-[dependencies.sp-io]
-default-features = false
-git = 'https://github.com/paritytech/substrate.git'
-branch = "polkadot-v0.9.17"
-
-[dependencies.sp-runtime]
-default-features = false
-git = 'https://github.com/paritytech/substrate.git'
-branch = "polkadot-v0.9.17"
+serde = { version = '1.0.136', optional = true, features = ['derive'] }
 
 [dev-dependencies]

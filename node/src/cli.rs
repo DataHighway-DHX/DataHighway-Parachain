@@ -5,7 +5,6 @@ use clap::Parser;
 /// Sub-commands supported by the collator.
 #[derive(Debug, clap::Subcommand)]
 pub enum Subcommand {
-
     /// Key management CLI utilities
     #[clap(subcommand)]
     Key(sc_cli::KeySubcommand),

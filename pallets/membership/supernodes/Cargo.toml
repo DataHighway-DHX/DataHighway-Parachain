@@ -1,7 +1,7 @@
 [package]
 name = "membership-supernodes"
 version = "2.0.0"
-edition = "2018"
+edition = "2021"
 repository = 'https://github.com/substrate-developer-hub/recipes'
 authors = ['Substrate DevHub <https://github.com/substrate-developer-hub>']
 description = "Fork of Substrate Recipe pallet vec-set. A pallet that implements a storage Set on top of a Vec"
@@ -16,61 +16,31 @@ categories = [
 compatibility_version = "2.0.0"
 
 [dependencies]
-codec = { version = '2.0.0', package = 'parity-scale-codec', default-features = false, features = ['derive'] }
-scale-info = { version = "1.0.0", default-features = false, features = ["derive"] }
+codec = { version = '2.0.0', package = 'parity-scale-codec', default-features = false, features = ['derive', 'max-encoded-len'] }
+scale-info = { version = '1.0', default-features = false, features = ['derive'] }
+
+# Substrate packages
+frame-support = { git = 'https://github.com/paritytech/substrate', branch = 'polkadot-v0.9.17', default-features = false }
+frame-system = { git = 'https://github.com/paritytech/substrate', branch = 'polkadot-v0.9.17', default-features = false }
+pallet-balances = { git = 'https://github.com/paritytech/substrate', branch = 'polkadot-v0.9.17', default-features = false }
+sp-runtime = { git = 'https://github.com/paritytech/substrate', branch = 'polkadot-v0.9.17', default-features = false }
+sp-std = { git = 'https://github.com/paritytech/substrate', branch = 'polkadot-v0.9.17', default-features = false }
 
 # local packages
 account-set = { path = '../../../traits/account-set', default-features = false }
 
-
-[dependencies.frame-support]
-default-features = false
-git = 'https://github.com/paritytech/substrate.git'
-branch = "polkadot-v0.9.17"
-
-
-[dependencies.frame-system]
-default-features = false
-git = 'https://github.com/paritytech/substrate.git'
-branch = "polkadot-v0.9.17"
-
-[dependencies.pallet-balances]
-default-features = false
-git = 'https://github.com/paritytech/substrate.git'
-branch = "polkadot-v0.9.17"
-
-[dependencies.sp-runtime]
-default-features = false
-git = 'https://github.com/paritytech/substrate.git'
-branch = "polkadot-v0.9.17"
-
-[dependencies.sp-std]
-default-features = false
-git = 'https://github.com/paritytech/substrate.git'
-branch = "polkadot-v0.9.17"
-
 [dev-dependencies]
-[dependencies.sp-io]
-default-features = false
-git = 'https://github.com/paritytech/substrate.git'
-branch = "polkadot-v0.9.17"
-
-[dependencies.sp-core]
-default-features = false
-git = 'https://github.com/paritytech/substrate.git'
-branch = "polkadot-v0.9.17"
+sp-core = { git = 'https://github.com/paritytech/substrate', branch = 'polkadot-v0.9.17', default-features = false }
+sp-io = { git = 'https://github.com/paritytech/substrate', branch = 'polkadot-v0.9.17', default-features = false }
 
 [features]
 default = ['std']
 std = [
     'account-set/std',
     'codec/std',
+    'scale-info/std',
     'frame-support/std',
     'frame-system/std',
     'pallet-balances/std',
-    'sp-core/std',
-    'sp-io/std',
     'sp-runtime/std',
-    'sp-std/std',
-    'scale-info/std',
 ]

@@ -1,18 +1,35 @@
 use crate::fixtures::get_allocation;
 use cumulus_primitives_core::ParaId;
 use datahighway_parachain_runtime::{
-    AccountId,
-    AuraId,
+    // AuthorityDiscoveryConfig,
     AuraConfig,
-    Balance,
     BalancesConfig,
     CollatorSelectionConfig,
-    GeneralCouncilMembershipConfig,
+    // GeneralCouncilMembershipConfig,
+    CouncilConfig,
+    DemocracyConfig,
+    ElectionsConfig,
     GenesisConfig,
+    IndicesConfig,
     SessionConfig,
-    Signature,
+    SessionKeys,
     SudoConfig,
+    SystemConfig,
+    TechnicalCommitteeConfig,
+    TechnicalMembershipConfig,
+    TransactionPaymentConfig,
+    TreasuryConfig,
     EXISTENTIAL_DEPOSIT,
+};
+use module_primitives::{
+    constants::currency::{
+        DOLLARS,
+    },
+	types::{
+        AccountId,
+        Balance,
+        Signature,
+    },
 };
 // required for AccountId::from_str
 use std::str::FromStr;
@@ -21,17 +38,20 @@ use hex as hex_runtime; // for runtime string parsing use hex_runtime::encode(".
 use hex_literal::{
     hex, // for parsing string literal at compile time use hex!("...");
 };
-
+// use sp_authority_discovery::AuthorityId as AuthorityDiscoveryId;
+// use pallet_im_online::sr25519::AuthorityId as ImOnlineId;
 use sc_chain_spec::{
     ChainSpecExtension,
     ChainSpecGroup,
 };
 use sc_service::ChainType;
+use sp_consensus_aura::sr25519::AuthorityId as AuraId;
 use sc_telemetry::TelemetryEndpoints;
 use serde::{
     Deserialize,
     Serialize,
 };
+use serde_json::map::Map;
 use sp_core::{
     crypto::{
         UncheckedFrom,
@@ -48,6 +68,7 @@ use sp_runtime::traits::{
     Verify,
 };
 pub use sp_runtime::{
+    AccountId32,
     Perbill,
     Permill,
 };
@@ -68,12 +89,17 @@ const KUSAMA_TANGANIKA_PROTOCOL_ID: &str = "dhx-kusama-tanganika";
 /// Specialized `ChainSpec` for the normal parachain runtime.
 pub type ChainSpec = sc_service::GenericChainSpec<datahighway_parachain_runtime::GenesisConfig, Extensions>;
 
+// Note this is the URL for the telemetry server
+const POLKADOT_STAGING_TELEMETRY_URL: &str = "wss://telemetry.polkadot.io/submit/";
+
 /// The default XCM version to set in genesis config.
 const SAFE_XCM_VERSION: u32 = xcm::prelude::XCM_VERSION;
 
 /// Helper function to generate a crypto pair from seed
 pub fn get_public_from_seed<TPublic: Public>(seed: &str) -> <TPublic::Pair as Pair>::Public {
-    TPublic::Pair::from_string(&format!("//{}", seed), None).expect("static values are valid; qed").public()
+    TPublic::Pair::from_string(&format!("//{}", seed), None)
+        .expect("static values are valid; qed")
+        .public()
 }
 
 /// The extensions for the [`ChainSpec`].
@@ -101,9 +127,6 @@ type AccountPublic = <Signature as Verify>::Signer;
 pub fn get_collator_keys_from_seed(seed: &str) -> AuraId {
     get_public_from_seed::<AuraId>(seed)
 }
-
-// Note this is the URL for the telemetry server
-const POLKADOT_STAGING_TELEMETRY_URL: &str = "wss://telemetry.polkadot.io/submit/";
 
 /// Helper function to generate an account ID from seed
 pub fn get_account_id_from_seed<TPublic: Public>(seed: &str) -> AccountId
@@ -185,6 +208,7 @@ pub fn datahighway_rococo_development_config() -> ChainSpec {
         ChainType::Development,
         move || {
             dev_genesis(
+                // Initial collators
                 vec![
                     (
                         get_account_id_from_seed::<sr25519::Public>("Alice"),
@@ -195,7 +219,9 @@ pub fn datahighway_rococo_development_config() -> ChainSpec {
                         get_collator_keys_from_seed("Bob"),
                     ),
                 ],
+                // Sudo root key
                 get_account_id_from_seed::<sr25519::Public>("Alice"),
+                // Endowed keys
                 vec![
                     dhx_unlocked_reserves_account(),
                     get_account_id_from_seed::<sr25519::Public>("Alice"),
@@ -211,7 +237,9 @@ pub fn datahighway_rococo_development_config() -> ChainSpec {
                     get_account_id_from_seed::<sr25519::Public>("Eve//stash"),
                     get_account_id_from_seed::<sr25519::Public>("Ferdie//stash"),
                 ],
+                // Parachain ID
                 2000.into(),
+                // Enable println
                 true,
             )
         },
@@ -1105,7 +1133,7 @@ fn spreehafen_testnet_genesis(
     id: ParaId,
     _enable_println: bool,
 ) -> GenesisConfig {
-
+    let num_endowed_accounts = endowed_accounts.len();
     let hardspoon_balances = get_balances(endowed_accounts.clone());
 
     GenesisConfig {
@@ -1119,11 +1147,14 @@ fn spreehafen_testnet_genesis(
                 .map(|x| (x.0.clone(), x.1.clone()))
                 .collect(),
         },
-        general_council: Default::default(),
-        general_council_membership: GeneralCouncilMembershipConfig {
-            members: vec![root_key.clone()],
-            phantom: Default::default(),
+        indices: IndicesConfig {
+            indices: endowed_accounts.iter().enumerate().map(|(index, x)| (index as u32, (*x).clone())).collect(),
         },
+        // general_council: Default::default(),
+        // general_council_membership: GeneralCouncilMembershipConfig {
+        //     members: vec![root_key.clone()],
+        //     phantom: Default::default(),
+        // },
         pallet_treasury: Default::default(),
         sudo: SudoConfig {
             key: Some(root_key.clone()),
@@ -1141,16 +1172,41 @@ fn spreehafen_testnet_genesis(
                 .into_iter()
                 .map(|(acc, aura)| {
                     (
-                        acc.clone(),                 // account id
-                        acc,                         // validator id
+                        acc.clone(),                    // account id
+                        acc,                            // validator id
                         datahighway_session_keys(aura), // session keys
                     )
                 })
                 .collect(),
         },
+        democracy: DemocracyConfig::default(),
+        elections: ElectionsConfig {
+            members: endowed_accounts
+                .iter()
+                .take((num_endowed_accounts + 1) / 2)
+                .cloned()
+                .map(|member| (member, INITIAL_ENDOWMENT))
+                .collect(),
+        },
+        // https://github.com/paritytech/substrate/commit/d6ac9f551b71d9c7b69afcebfc68ace310ef74ee
+        // collective_Instance1
+        council: CouncilConfig::default(),
+        // collective_Instance2
+        technical_committee: TechnicalCommitteeConfig::default(),
+		sudo: SudoConfig {
+			// Assign network admin rights.
+			key: Some(root_key.clone()),
+        },
         // no need to pass anything to aura, in fact it will panic if we do. Session will take care
         // of this.
         aura: Default::default(),
+        // pallet_membership_Instance1
+        technical_membership: TechnicalMembershipConfig {
+            members: vec![root_key.clone()],
+            phantom: Default::default(),
+        },
+        treasury: TreasuryConfig::default(),
+		transaction_payment: TransactionPaymentConfig::default(),
         aura_ext: Default::default(),
         parachain_system: Default::default(),
 		polkadot_xcm: datahighway_parachain_runtime::PolkadotXcmConfig {
@@ -1166,7 +1222,7 @@ fn testnet_genesis(
     id: ParaId,
     _enable_println: bool,
 ) -> GenesisConfig {
-
+    let num_endowed_accounts = endowed_accounts.len();
     let hardspoon_balances = get_balances(endowed_accounts.clone());
 
     GenesisConfig {
@@ -1180,15 +1236,18 @@ fn testnet_genesis(
                 .map(|x| (x.0.clone(), x.1.clone()))
                 .collect(),
         },
+        indices: IndicesConfig {
+            indices: endowed_accounts.iter().enumerate().map(|(index, x)| (index as u32, (*x).clone())).collect(),
+        },
+        // general_council: Default::default(),
+        // general_council_membership: GeneralCouncilMembershipConfig {
+        //     members: vec![root_key.clone()],
+        //     phantom: Default::default(),
+        // },
+        pallet_treasury: Default::default(),
         sudo: SudoConfig {
             key: Some(root_key.clone()),
         },
-        general_council: Default::default(),
-        general_council_membership: GeneralCouncilMembershipConfig {
-            members: vec![root_key.clone()],
-            phantom: Default::default(),
-        },
-        pallet_treasury: Default::default(),
         parachain_info: datahighway_parachain_runtime::ParachainInfoConfig {
             parachain_id: id,
         },
@@ -1202,16 +1261,41 @@ fn testnet_genesis(
                 .into_iter()
                 .map(|(acc, aura)| {
                     (
-                        acc.clone(),                 // account id
-                        acc,                         // validator id
+                        acc.clone(),                    // account id
+                        acc,                            // validator id
                         datahighway_session_keys(aura), // session keys
                     )
                 })
                 .collect(),
         },
+        democracy: DemocracyConfig::default(),
+        elections: ElectionsConfig {
+            members: endowed_accounts
+                .iter()
+                .take((num_endowed_accounts + 1) / 2)
+                .cloned()
+                .map(|member| (member, INITIAL_ENDOWMENT))
+                .collect(),
+        },
+        // https://github.com/paritytech/substrate/commit/d6ac9f551b71d9c7b69afcebfc68ace310ef74ee
+        // collective_Instance1
+        council: CouncilConfig::default(),
+        // collective_Instance2
+        technical_committee: TechnicalCommitteeConfig::default(),
+		sudo: SudoConfig {
+			// Assign network admin rights.
+			key: Some(root_key.clone()),
+        },
         // no need to pass anything to aura, in fact it will panic if we do. Session will take care
         // of this.
         aura: Default::default(),
+        // pallet_membership_Instance1
+        technical_membership: TechnicalMembershipConfig {
+            members: vec![root_key.clone()],
+            phantom: Default::default(),
+        },
+        treasury: TreasuryConfig::default(),
+		transaction_payment: TransactionPaymentConfig::default(),
         aura_ext: Default::default(),
         parachain_system: Default::default(),
 		polkadot_xcm: datahighway_parachain_runtime::PolkadotXcmConfig {
@@ -1227,7 +1311,7 @@ fn dev_genesis(
     id: ParaId,
     _enable_println: bool,
 ) -> datahighway_parachain_runtime::GenesisConfig {
-
+    let num_endowed_accounts = endowed_accounts.len();
     let hardspoon_balances = get_balances(endowed_accounts.clone());
 
     datahighway_parachain_runtime::GenesisConfig {
@@ -1241,15 +1325,18 @@ fn dev_genesis(
                 .map(|x| (x.0.clone(), x.1.clone()))
                 .collect(),
         },
+        indices: IndicesConfig {
+            indices: endowed_accounts.iter().enumerate().map(|(index, x)| (index as u32, (*x).clone())).collect(),
+        },
+        // general_council: Default::default(),
+        // general_council_membership: GeneralCouncilMembershipConfig {
+        //     members: vec![root_key.clone()],
+        //     phantom: Default::default(),
+        // },
+        pallet_treasury: Default::default(),
         sudo: SudoConfig {
             key: Some(root_key.clone()),
         },
-        general_council: Default::default(),
-        general_council_membership: GeneralCouncilMembershipConfig {
-            members: vec![root_key],
-            phantom: Default::default(),
-        },
-        pallet_treasury: Default::default(),
         parachain_info: datahighway_parachain_runtime::ParachainInfoConfig {
             parachain_id: id,
         },
@@ -1263,16 +1350,41 @@ fn dev_genesis(
                 .into_iter()
                 .map(|(acc, aura)| {
                     (
-                        acc.clone(),                 // account id
-                        acc,                         // validator id
+                        acc.clone(),                    // account id
+                        acc,                            // validator id
                         datahighway_session_keys(aura), // session keys
                     )
                 })
                 .collect(),
         },
+        democracy: DemocracyConfig::default(),
+        elections: ElectionsConfig {
+            members: endowed_accounts
+                .iter()
+                .take((num_endowed_accounts + 1) / 2)
+                .cloned()
+                .map(|member| (member, INITIAL_ENDOWMENT))
+                .collect(),
+        },
+        // https://github.com/paritytech/substrate/commit/d6ac9f551b71d9c7b69afcebfc68ace310ef74ee
+        // collective_Instance1
+        council: CouncilConfig::default(),
+        // collective_Instance2
+        technical_committee: TechnicalCommitteeConfig::default(),
+		sudo: SudoConfig {
+			// Assign network admin rights.
+			key: Some(root_key.clone()),
+        },
         // no need to pass anything to aura, in fact it will panic if we do. Session will take care
         // of this.
         aura: Default::default(),
+        // pallet_membership_Instance1
+        technical_membership: TechnicalMembershipConfig {
+            members: vec![root_key.clone()],
+            phantom: Default::default(),
+        },
+        treasury: TreasuryConfig::default(),
+		transaction_payment: TransactionPaymentConfig::default(),
         aura_ext: Default::default(),
         parachain_system: Default::default(),
 		polkadot_xcm: datahighway_parachain_runtime::PolkadotXcmConfig {
@@ -1288,6 +1400,8 @@ fn baikal_testnet_genesis(
     id: ParaId,
     _enable_println: bool,
 ) -> GenesisConfig {
+    let num_endowed_accounts = endowed_accounts.len();
+
     GenesisConfig {
         system: datahighway_parachain_runtime::SystemConfig {
             code: datahighway_parachain_runtime::WASM_BINARY.expect("WASM binary was not build, please build it!").to_vec(),
@@ -1311,11 +1425,14 @@ fn baikal_testnet_genesis(
                 })
                 .collect(),
         },
-        general_council: Default::default(),
-        general_council_membership: GeneralCouncilMembershipConfig {
-            members: vec![root_key.clone()],
-            phantom: Default::default(),
+        indices: IndicesConfig {
+            indices: endowed_accounts.iter().enumerate().map(|(index, x)| (index as u32, (*x).clone())).collect(),
         },
+        // general_council: Default::default(),
+        // general_council_membership: GeneralCouncilMembershipConfig {
+        //     members: vec![root_key.clone()],
+        //     phantom: Default::default(),
+        // },
         pallet_treasury: Default::default(),
         sudo: SudoConfig {
             key: Some(root_key.clone()),
@@ -1333,16 +1450,41 @@ fn baikal_testnet_genesis(
                 .into_iter()
                 .map(|(acc, aura)| {
                     (
-                        acc.clone(),                 // account id
-                        acc,                         // validator id
+                        acc.clone(),                    // account id
+                        acc,                            // validator id
                         datahighway_session_keys(aura), // session keys
                     )
                 })
                 .collect(),
         },
+        democracy: DemocracyConfig::default(),
+        elections: ElectionsConfig {
+            members: endowed_accounts
+                .iter()
+                .take((num_endowed_accounts + 1) / 2)
+                .cloned()
+                .map(|member| (member, INITIAL_ENDOWMENT))
+                .collect(),
+        },
+        // https://github.com/paritytech/substrate/commit/d6ac9f551b71d9c7b69afcebfc68ace310ef74ee
+        // collective_Instance1
+        council: CouncilConfig::default(),
+        // collective_Instance2
+        technical_committee: TechnicalCommitteeConfig::default(),
+		sudo: SudoConfig {
+			// Assign network admin rights.
+			key: Some(root_key.clone()),
+        },
         // no need to pass anything to aura, in fact it will panic if we do. Session will take care
         // of this.
         aura: Default::default(),
+        // pallet_membership_Instance1
+        technical_membership: TechnicalMembershipConfig {
+            members: vec![root_key.clone()],
+            phantom: Default::default(),
+        },
+        treasury: TreasuryConfig::default(),
+		transaction_payment: TransactionPaymentConfig::default(),
         aura_ext: Default::default(),
         parachain_system: Default::default(),
 		polkadot_xcm: datahighway_parachain_runtime::PolkadotXcmConfig {
@@ -1358,7 +1500,7 @@ fn tanganika_testnet_genesis(
     id: ParaId,
     _enable_println: bool,
 ) -> GenesisConfig {
-
+    let num_endowed_accounts = endowed_accounts.len();
     let hardspoon_balances = get_balances(endowed_accounts.clone());
 
     GenesisConfig {
@@ -1372,11 +1514,14 @@ fn tanganika_testnet_genesis(
                 .map(|x| (x.0.clone(), x.1.clone()))
                 .collect(),
         },
-        general_council: Default::default(),
-        general_council_membership: GeneralCouncilMembershipConfig {
-            members: vec![root_key.clone()],
-            phantom: Default::default(),
+        indices: IndicesConfig {
+            indices: endowed_accounts.iter().enumerate().map(|(index, x)| (index as u32, (*x).clone())).collect(),
         },
+        // general_council: Default::default(),
+        // general_council_membership: GeneralCouncilMembershipConfig {
+        //     members: vec![root_key.clone()],
+        //     phantom: Default::default(),
+        // },
         pallet_treasury: Default::default(),
         sudo: SudoConfig {
             key: Some(root_key.clone()),
@@ -1394,16 +1539,41 @@ fn tanganika_testnet_genesis(
                 .into_iter()
                 .map(|(acc, aura)| {
                     (
-                        acc.clone(),                 // account id
-                        acc,                         // validator id
+                        acc.clone(),                    // account id
+                        acc,                            // validator id
                         datahighway_session_keys(aura), // session keys
                     )
                 })
                 .collect(),
         },
+        democracy: DemocracyConfig::default(),
+        elections: ElectionsConfig {
+            members: endowed_accounts
+                .iter()
+                .take((num_endowed_accounts + 1) / 2)
+                .cloned()
+                .map(|member| (member, INITIAL_ENDOWMENT))
+                .collect(),
+        },
+        // https://github.com/paritytech/substrate/commit/d6ac9f551b71d9c7b69afcebfc68ace310ef74ee
+        // collective_Instance1
+        council: CouncilConfig::default(),
+        // collective_Instance2
+        technical_committee: TechnicalCommitteeConfig::default(),
+		sudo: SudoConfig {
+			// Assign network admin rights.
+			key: Some(root_key.clone()),
+        },
         // no need to pass anything to aura, in fact it will panic if we do. Session will take care
         // of this.
         aura: Default::default(),
+        // pallet_membership_Instance1
+        technical_membership: TechnicalMembershipConfig {
+            members: vec![root_key.clone()],
+            phantom: Default::default(),
+        },
+        treasury: TreasuryConfig::default(),
+		transaction_payment: TransactionPaymentConfig::default(),
         aura_ext: Default::default(),
         parachain_system: Default::default(),
 		polkadot_xcm: datahighway_parachain_runtime::PolkadotXcmConfig {

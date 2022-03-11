@@ -18,6 +18,7 @@ use frame_support::{
     Parameter,
 };
 use frame_system::ensure_signed;
+use scale_info::TypeInfo;
 use sp_io::hashing::blake2_128;
 use sp_runtime::{
     traits::{
@@ -28,7 +29,6 @@ use sp_runtime::{
     },
     DispatchError,
 };
-use scale_info::TypeInfo;
 
 #[cfg(test)]
 mod mock;
@@ -187,8 +187,8 @@ impl<T: Config> Module<T> {
         let payload = (
             T::Randomness::random(&[0]),
             sender,
-            <frame_system::Module<T>>::extrinsic_index(),
-            <frame_system::Module<T>>::block_number(),
+            <frame_system::Pallet<T>>::extrinsic_index(),
+            <frame_system::Pallet<T>>::block_number(),
         );
         payload.using_encoded(blake2_128)
     }

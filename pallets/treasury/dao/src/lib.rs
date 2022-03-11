@@ -2,8 +2,8 @@
 
 //! A pallet that funds the pallet_treasury's account_id in the genesis block
 
+use log::{warn, info};
 use frame_support::{
-    log,
     decl_error,
     decl_event,
     decl_module,
@@ -48,12 +48,12 @@ decl_module! {
         fn deposit_event() = default;
 
         fn on_finalize(current_block_number: T::BlockNumber) {
-            log::info!("treasury-dao - on_finalize");
-            log::info!("treasury-dao - current block number {:#?}", current_block_number);
+            info!("treasury-dao - on_finalize");
+            info!("treasury-dao - current block number {:#?}", current_block_number);
 
-            if <frame_system::Module<T>>::block_number() == 0u32.into() {
-                log::info!("treasury-dao - on_finalize: Genesis block");
-                let treasury_account_id: T::AccountId = <pallet_treasury::Module<T>>::account_id();
+            if <frame_system::Pallet<T>>::block_number() == 0u32.into() {
+                info!("treasury-dao - on_finalize: Genesis block");
+                let treasury_account_id: T::AccountId = <pallet_treasury::Pallet<T>>::account_id();
                 // FIXME - why does this give error:
                 // `the trait Wraps is not implemented for <T as frame_system::Config>::AccountId`
                 // let endowed_account_id = UncheckedFrom::unchecked_from(hex!("6d6f646c70792f74727372790000000000000000000000000000000000000000").into());
@@ -75,7 +75,7 @@ decl_module! {
                 //     balance_to_deposit
                 // ));
             } else {
-                log::info!("treasury-dao - on_finalize: Not genesis block");
+                info!("treasury-dao - on_finalize: Not genesis block");
             }
         }
     }

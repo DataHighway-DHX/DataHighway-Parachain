@@ -1,11 +1,11 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
+use log::{warn, info};
 use codec::{
     Decode,
     Encode,
 };
 use frame_support::{
-    log,
     decl_event,
     decl_module,
     decl_storage,
@@ -19,6 +19,7 @@ use frame_support::{
     Parameter,
 };
 use frame_system::ensure_signed;
+use scale_info::TypeInfo;
 use sp_io::hashing::blake2_128;
 use sp_runtime::{
     traits::{
@@ -30,7 +31,6 @@ use sp_runtime::{
     DispatchError,
 };
 use sp_std::prelude::*; // Imports Vec
-use scale_info::TypeInfo;
 
 #[cfg(test)]
 mod mock;
@@ -178,13 +178,13 @@ decl_module! {
             let sender = ensure_signed(origin)?;
 
             // Ensure that the given network server id already exists
-            let is_roaming_network_server = <roaming_network_servers::Module<T>>
+            let is_roaming_network_server = <roaming_network_servers::Pallet<T>>
                 ::exists_roaming_network_server(roaming_network_server_id).is_ok();
             ensure!(is_roaming_network_server, "RoamingNetworkServer does not exist");
 
             // Ensure that caller of the function is the owner of the network server id to assign the organization to
             ensure!(
-                <roaming_network_servers::Module<T>>::is_roaming_network_server_owner(roaming_network_server_id, sender.clone()).is_ok(),
+                <roaming_network_servers::Pallet<T>>::is_roaming_network_server_owner(roaming_network_server_id, sender.clone()).is_ok(),
                 "Only the roaming network_server owner can assign itself a roaming organization"
             );
 
@@ -238,7 +238,7 @@ impl<T: Config> Module<T> {
         if let Some(network_server_organizations) =
             Self::roaming_network_server_organizations(roaming_network_server_id)
         {
-            log::info!(
+            info!(
                 "Network Server id key {:?} exists with value {:?}",
                 roaming_network_server_id,
                 network_server_organizations
@@ -249,7 +249,7 @@ impl<T: Config> Module<T> {
                 not_network_server_contains_organization,
                 "Network Server already contains the given organization id"
             );
-            log::info!(
+            info!(
                 "Network Server id key exists but its vector value does not contain the given organization id"
             );
             <RoamingNetworkServerOrganizations<T>>::mutate(roaming_network_server_id, |v| {
@@ -257,14 +257,14 @@ impl<T: Config> Module<T> {
                     value.push(roaming_organization_id);
                 }
             });
-            log::info!(
+            info!(
                 "Associated organization {:?} with network server {:?}",
                 roaming_organization_id,
                 roaming_network_server_id
             );
             Ok(())
         } else {
-            log::info!(
+            info!(
                 "Network Server id key does not yet exist. Creating the network server key {:?} and appending the \
                  organization id {:?} to its vector value",
                 roaming_network_server_id,
@@ -279,8 +279,8 @@ impl<T: Config> Module<T> {
         let payload = (
             T::Randomness::random(&[0]),
             sender,
-            <frame_system::Module<T>>::extrinsic_index(),
-            <frame_system::Module<T>>::block_number(),
+            <frame_system::Pallet<T>>::extrinsic_index(),
+            <frame_system::Pallet<T>>::block_number(),
         );
         payload.using_encoded(blake2_128)
     }

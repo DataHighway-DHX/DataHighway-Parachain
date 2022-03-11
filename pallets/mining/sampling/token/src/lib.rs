@@ -1,11 +1,11 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
+use log::{warn, info};
 use codec::{
     Decode,
     Encode,
 };
 use frame_support::{
-    log,
     decl_event,
     decl_module,
     decl_storage,
@@ -17,6 +17,7 @@ use frame_support::{
     Parameter,
 };
 use frame_system::ensure_signed;
+use scale_info::TypeInfo;
 use sp_io::hashing::blake2_128;
 use sp_runtime::{
     traits::{
@@ -32,7 +33,6 @@ use sp_std::prelude::*; // Imports Vec
 // FIXME - remove roaming_operators here, only use this approach since do not know how to use BalanceOf using only
 // mining runtime module
 use mining_setting_token;
-use scale_info::TypeInfo;
 
 #[cfg(test)]
 mod mock;
@@ -176,7 +176,7 @@ decl_module! {
             // Check if a mining_samplings_token_samplings_config already exists with the given mining_samplings_token_id
             // to determine whether to insert new or mutate existing.
             if Self::has_value_for_mining_samplings_token_samplings_config_index(mining_setting_token_id, mining_samplings_token_id).is_ok() {
-                log::info!("Mutating values");
+                info!("Mutating values");
                 <MiningSamplingTokenSettings<T>>::mutate((mining_setting_token_id, mining_samplings_token_id), |mining_samplings_token_samplings_config| {
                     if let Some(_mining_samplings_token_samplings_config) = mining_samplings_token_samplings_config {
                         // Only update the value of a key in a KV pair if the corresponding parameter value has been provided
@@ -184,14 +184,14 @@ decl_module! {
                         _mining_samplings_token_samplings_config.token_sample_locked_amount = token_sample_locked_amount.clone();
                     }
                 });
-                log::info!("Checking mutated values");
+                info!("Checking mutated values");
                 let fetched_mining_samplings_token_samplings_config = <MiningSamplingTokenSettings<T>>::get((mining_setting_token_id, mining_samplings_token_id));
                 if let Some(_mining_samplings_token_samplings_config) = fetched_mining_samplings_token_samplings_config {
-                    log::info!("Latest field token_sample_block {:#?}", _mining_samplings_token_samplings_config.token_sample_block);
-                    log::info!("Latest field token_sample_locked_amount {:#?}", _mining_samplings_token_samplings_config.token_sample_locked_amount);
+                    info!("Latest field token_sample_block {:#?}", _mining_samplings_token_samplings_config.token_sample_block);
+                    info!("Latest field token_sample_locked_amount {:#?}", _mining_samplings_token_samplings_config.token_sample_locked_amount);
                 }
             } else {
-                log::info!("Inserting values");
+                info!("Inserting values");
 
                 // Create a new mining mining_samplings_token_samplings_config instance with the input params
                 let mining_samplings_token_samplings_config_instance = MiningSamplingTokenSetting {
@@ -206,11 +206,11 @@ decl_module! {
                     &mining_samplings_token_samplings_config_instance
                 );
 
-                log::info!("Checking inserted values");
+                info!("Checking inserted values");
                 let fetched_mining_samplings_token_samplings_config = <MiningSamplingTokenSettings<T>>::get((mining_setting_token_id, mining_samplings_token_id));
                 if let Some(_mining_samplings_token_samplings_config) = fetched_mining_samplings_token_samplings_config {
-                    log::info!("Inserted field token_sample_block {:#?}", _mining_samplings_token_samplings_config.token_sample_block);
-                    log::info!("Inserted field token_sample_locked_amount {:#?}", _mining_samplings_token_samplings_config.token_sample_locked_amount);
+                    info!("Inserted field token_sample_block {:#?}", _mining_samplings_token_samplings_config.token_sample_block);
+                    info!("Inserted field token_sample_locked_amount {:#?}", _mining_samplings_token_samplings_config.token_sample_locked_amount);
                 }
             }
 
@@ -232,13 +232,13 @@ decl_module! {
             let sender = ensure_signed(origin)?;
 
             // Ensure that the given configuration id already exists
-            let is_configuration_token = <mining_setting_token::Module<T>>
+            let is_configuration_token = <mining_setting_token::Pallet<T>>
                 ::exists_mining_setting_token(mining_setting_token_id).is_ok();
             ensure!(is_configuration_token, "configuration_token does not exist");
 
             // Ensure that caller of the function is the owner of the configuration id to assign the sampling to
             ensure!(
-                <mining_setting_token::Module<T>>::is_mining_setting_token_owner(mining_setting_token_id, sender.clone()).is_ok(),
+                <mining_setting_token::Pallet<T>>::is_mining_setting_token_owner(mining_setting_token_id, sender.clone()).is_ok(),
                 "Only the configuration_token owner can assign itself a sampling"
             );
 
@@ -298,14 +298,14 @@ impl<T: Config> Module<T> {
         mining_setting_token_id: T::MiningSettingTokenIndex,
         mining_samplings_token_id: T::MiningSamplingTokenIndex,
     ) -> Result<(), DispatchError> {
-        log::info!("Checking if mining_samplings_token_samplings_config has a value that is defined");
+        info!("Checking if mining_samplings_token_samplings_config has a value that is defined");
         let fetched_mining_samplings_token_samplings_config =
             <MiningSamplingTokenSettings<T>>::get((mining_setting_token_id, mining_samplings_token_id));
         if let Some(_value) = fetched_mining_samplings_token_samplings_config {
-            log::info!("Found value for mining_samplings_token_samplings_config");
+            info!("Found value for mining_samplings_token_samplings_config");
             return Ok(());
         }
-        log::info!("No value for mining_samplings_token_samplings_config");
+        warn!("No value for mining_samplings_token_samplings_config");
         Err(DispatchError::Other("No value for mining_samplings_token_samplings_config"))
     }
 
@@ -317,27 +317,27 @@ impl<T: Config> Module<T> {
         // Early exit with error since do not want to append if the given configuration id already exists as a key,
         // and where its corresponding value is a vector that already contains the given sampling id
         if let Some(configuration_samplings) = Self::token_setting_samplings(mining_setting_token_id) {
-            log::info!(
+            info!(
                 "Configuration id key {:?} exists with value {:?}",
                 mining_setting_token_id,
                 configuration_samplings
             );
             let not_configuration_contains_sampling = !configuration_samplings.contains(&mining_samplings_token_id);
             ensure!(not_configuration_contains_sampling, "Configuration already contains the given sampling id");
-            log::info!("Configuration id key exists but its vector value does not contain the given sampling id");
+            info!("Configuration id key exists but its vector value does not contain the given sampling id");
             <TokenSettingSamplings<T>>::mutate(mining_setting_token_id, |v| {
                 if let Some(value) = v {
                     value.push(mining_samplings_token_id);
                 }
             });
-            log::info!(
+            info!(
                 "Associated sampling {:?} with configuration {:?}",
                 mining_samplings_token_id,
                 mining_setting_token_id
             );
             Ok(())
         } else {
-            log::info!(
+            info!(
                 "Configuration id key does not yet exist. Creating the configuration key {:?} and appending the \
                  sampling id {:?} to its vector value",
                 mining_setting_token_id,
@@ -352,8 +352,8 @@ impl<T: Config> Module<T> {
         let payload = (
             T::Randomness::random(&[0]),
             sender,
-            <frame_system::Module<T>>::extrinsic_index(),
-            <frame_system::Module<T>>::block_number(),
+            <frame_system::Pallet<T>>::extrinsic_index(),
+            <frame_system::Pallet<T>>::block_number(),
         );
         payload.using_encoded(blake2_128)
     }

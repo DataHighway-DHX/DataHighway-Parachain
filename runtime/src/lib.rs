@@ -219,7 +219,7 @@ pub mod opaque {
 
 impl_opaque_keys! {
     pub struct SessionKeys {
-        pub aura: Aura,
+        pub aura: Aura
         // pub grandpa: Grandpa,
         // pub im_online: ImOnline,
         // pub authority_discovery: AuthorityDiscovery,

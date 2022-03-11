@@ -27,7 +27,7 @@ try-runtime = [ 'datahighway-parachain-runtime/try-runtime' ]
 [dependencies]
 derive_more = '0.99.2'
 log = '0.4.14'
-codec = { package = 'parity-scale-codec', version = '2.0.0' }
+codec = { version = '2.0.0', package = 'parity-scale-codec', default-features = false, features = ['derive', 'max-encoded-len'] }
 clap = { version = '3.1', features = ['derive'] }
 serde = { version = '1.0.136', features = ['derive'] }
 serde_json = '1.0.74'

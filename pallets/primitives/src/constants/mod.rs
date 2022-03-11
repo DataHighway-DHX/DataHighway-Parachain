@@ -10,8 +10,8 @@ pub mod currency {
     pub const CENTS: Balance = DOLLARS / 100;
     pub const MILLICENTS: Balance = CENTS / 1_000;
 
-    pub const MILLIUNIT: Balance = UNITS / 1_000;
-    pub const MICROUNIT: Balance = MILLIUNIT / 1_000;
+    pub const MILLIUNITS: Balance = UNITS / 1_000;
+    pub const MICROUNITS: Balance = MILLIUNITS / 1_000;
 
     /// The existential deposit. Set to 1/10 of the Connected Relay Chain.
     // Note: Kusama relay chain's `ExistentialDeposit` is 1 * CENTS,

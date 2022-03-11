@@ -104,10 +104,10 @@ pub use module_primitives::{
         deposit,
         DOLLARS,
         EXISTENTIAL_DEPOSIT,
-        MICROUNIT,
-        MILLIUNIT,
+        MICROUNITS,
+        MILLIUNITS,
         MILLICENTS,
-        UNIT,
+        UNITS,
     },
     constants::time::{
         DAYS,
@@ -182,9 +182,9 @@ pub type Executive =
 // impl WeightToFeePolynomial for WeightToFee {
 //     type Balance = Balance;
 //     fn polynomial() -> WeightToFeeCoefficients<Self::Balance> {
-//         // in Rococo, extrinsic base weight (smallest non-zero weight) is mapped to 1 MILLIUNIT:
-//         // in our template, we map to 1/10 of that, or 1/10 MILLIUNIT
-//         let p = MILLIUNIT / 10;
+//         // in Rococo, extrinsic base weight (smallest non-zero weight) is mapped to 1 MILLIUNITS:
+//         // in our template, we map to 1/10 of that, or 1/10 MILLIUNITS
+//         let p = MILLIUNITS / 10;
 //         let q = 100 * Balance::from(ExtrinsicBaseWeight::get());
 //         smallvec![WeightToFeeCoefficient {
 //         	degree: 1,

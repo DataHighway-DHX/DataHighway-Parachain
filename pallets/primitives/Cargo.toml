@@ -9,7 +9,6 @@ bitmask = { version = '0.5.0', default-features = false }
 codec = { version = '2.0.0', package = 'parity-scale-codec', default-features = false, features = ['derive', 'max-encoded-len'] }
 serde = { version = '1.0.136', optional = true, features = ['derive'] }
 frame-support = { git = 'https://github.com/paritytech/substrate', branch = 'polkadot-v0.9.17', default-features = false }
-scale-info = { version = '1.0', default-features = false, features = ['derive'] }
 sp-core = { git = 'https://github.com/paritytech/substrate', branch = 'polkadot-v0.9.17', default-features = false }
 sp-runtime = { git = 'https://github.com/paritytech/substrate', branch = 'polkadot-v0.9.17', default-features = false }
 sp-std = { git = 'https://github.com/paritytech/substrate', branch = 'polkadot-v0.9.17', default-features = false }
@@ -20,7 +19,6 @@ std = [
     'bitmask/std',
     'codec/std',
     'frame-support/std',
-    'scale-info/std',
     'serde',
     'sp-core/std',
     'sp-runtime/std',

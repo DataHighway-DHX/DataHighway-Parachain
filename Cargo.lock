@@ -4854,7 +4854,6 @@ dependencies = [
  "bitmask",
  "frame-support",
  "parity-scale-codec",
- "scale-info",
  "serde",
  "sp-core",
  "sp-runtime",

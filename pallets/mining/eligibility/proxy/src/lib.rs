@@ -30,10 +30,6 @@ use frame_system::{
     ensure_root,
 };
 use scale_info::TypeInfo;
-use module_primitives::{
-    constants::time::MILLISECS_PER_BLOCK,
-    types::*,
-};
 use sp_io::hashing::blake2_128;
 use sp_runtime::{
     print,

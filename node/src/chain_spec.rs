@@ -1,18 +1,25 @@
 use crate::fixtures::get_allocation;
 use cumulus_primitives_core::ParaId;
 use datahighway_parachain_runtime::{
-    AccountId,
     AuraId,
     AuraConfig,
-    Balance,
     BalancesConfig,
     CollatorSelectionConfig,
     GeneralCouncilMembershipConfig,
     GenesisConfig,
     SessionConfig,
-    Signature,
     SudoConfig,
-    EXISTENTIAL_DEPOSIT,
+};
+use module_primitives::{
+    constants::currency::{
+        DOLLARS,
+        EXISTENTIAL_DEPOSIT,
+    },
+	types::{
+        AccountId,
+        Balance,
+        Signature,
+    },
 };
 // required for AccountId::from_str
 use std::str::FromStr;

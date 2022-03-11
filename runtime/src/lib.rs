@@ -50,28 +50,39 @@ use polkadot_runtime_common::{BlockHashCount, RocksDbWeight, SlowAdjustingFeeUpd
 use xcm::latest::prelude::BodyId;
 use xcm_executor::XcmExecutor;
 
-// Primitive types in separate pallet
-mod types;
-
-pub use types::*;
-pub use types::Index;
 pub use module_primitives::{
     constants::currency::{
         CENTS,
         deposit,
         DOLLARS,
         EXISTENTIAL_DEPOSIT,
-        MICROUNIT,
-        MILLIUNIT,
+        MICROUNITS,
+        MILLIUNITS,
         MILLICENTS,
-        UNIT,
+        UNITS,
     },
     constants::time::{
         DAYS,
         EPOCH_DURATION_IN_BLOCKS,
+        EPOCH_DURATION_IN_SLOTS,
         HOURS,
+        MILLISECS_PER_BLOCK,
+        MINUTES,
+        PRIMARY_PROBABILITY,
         SLOT_DURATION,
-    }
+    },
+    types::{
+        AccountIndex,
+        AccountId,
+        Amount,
+        Balance,
+        BlockNumber,
+        DigestItem,
+        Hash,
+        Index,
+        Moment,
+        Signature,
+    },
 };
 
 /// We assume that ~5% of the block weight is consumed by `on_initialize` handlers. This is
@@ -128,9 +139,9 @@ pub struct WeightToFee;
 impl WeightToFeePolynomial for WeightToFee {
     type Balance = Balance;
     fn polynomial() -> WeightToFeeCoefficients<Self::Balance> {
-        // in Rococo, extrinsic base weight (smallest non-zero weight) is mapped to 1 MILLIUNIT:
-        // in our template, we map to 1/10 of that, or 1/10 MILLIUNIT
-        let p = MILLIUNIT / 10;
+        // in Rococo, extrinsic base weight (smallest non-zero weight) is mapped to 1 MILLIUNITS:
+        // in our template, we map to 1/10 of that, or 1/10 MILLIUNITS
+        let p = MILLIUNITS / 10;
         let q = 100 * Balance::from(ExtrinsicBaseWeight::get());
         smallvec![WeightToFeeCoefficient {
         	degree: 1,

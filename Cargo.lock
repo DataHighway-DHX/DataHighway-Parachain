@@ -1706,6 +1706,7 @@ dependencies = [
  "hex-literal",
  "jsonrpc-core",
  "log",
+ "module-primitives",
  "pallet-transaction-payment-rpc",
  "parity-scale-codec",
  "polkadot-cli",

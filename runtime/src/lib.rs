@@ -271,12 +271,12 @@ impl OnUnbalanced<NegativeImbalance> for DealWithFees {
     }
 }
 
-pub const BlockHashCountAsConst: BlockNumber = BlockHashCountCommon;
-pub const SS58PrefixAsConst: u16 = 33;
-pub const MaxConsumersAsConst: u32 = 16;
+pub const BLOCK_HASH_COUNT_AS_CONST: BlockNumber = BlockHashCountCommon;
+pub const SS58_PREFIX_AS_CONST: u16 = 33;
+pub const MAX_CONSUMERS_AS_CONST: u32 = 16;
 
 parameter_types! {
-    pub const BlockHashCount: BlockNumber = BlockHashCountAsConst;
+    pub const BlockHashCount: BlockNumber = BLOCK_HASH_COUNT_AS_CONST;
     pub const Version: RuntimeVersion = VERSION;
     pub RuntimeBlockLength: BlockLength =
         BlockLength::max_with_normal_ratio(5 * 1024 * 1024, NORMAL_DISPATCH_RATIO);
@@ -298,8 +298,8 @@ parameter_types! {
         })
         .avg_block_initialization(AVERAGE_ON_INITIALIZE_RATIO)
         .build_or_panic();
-    pub const SS58Prefix: u16 = SS58PrefixAsConst;
-    pub const MaxConsumers: u32 = MaxConsumersAsConst;
+    pub const SS58Prefix: u16 = SS58_PREFIX_AS_CONST;
+    pub const MaxConsumers: u32 = MAX_CONSUMERS_AS_CONST;
 }
 
 // Configure FRAME pallets to include in runtime.
@@ -319,7 +319,7 @@ impl frame_system::Config for Runtime {
     type Lookup = AccountIdLookup<AccountId, ()>;
     type Header = generic::Header<BlockNumber, BlakeTwo256>;
     type Event = Event;
-    type BlockHashCount = ConstU32<BlockHashCountAsConst>;
+    type BlockHashCount = ConstU32<BLOCK_HASH_COUNT_AS_CONST>;
     type Version = Version;
     type PalletInfo = PalletInfo;
     type AccountData = pallet_balances::AccountData<Balance>;
@@ -327,11 +327,11 @@ impl frame_system::Config for Runtime {
     type OnKilledAccount = ();
     type SystemWeightInfo = frame_system::weights::SubstrateWeight<Runtime>;
     type OnSetCode = cumulus_pallet_parachain_system::ParachainSetCode<Self>;
-    type SS58Prefix = ConstU16<SS58PrefixAsConst>;
-    type MaxConsumers = ConstU32<MaxConsumersAsConst>;
+    type SS58Prefix = ConstU16<SS58_PREFIX_AS_CONST>;
+    type MaxConsumers = ConstU32<MAX_CONSUMERS_AS_CONST>;
 }
 
-pub const MaxAuthoritiesAsConst: u32 = 100;
+pub const MAX_AUTHORITIES_AS_CONST: u32 = 100;
 
 parameter_types! {
     pub const MinimumPeriod: u64 = SLOT_DURATION / 2;
@@ -356,12 +356,12 @@ impl pallet_authorship::Config for Runtime {
     type EventHandler = (CollatorSelection,);
 }
 
-pub const MaxLocksAsConst: u32 = 50;
-pub const ExistentialDepositAsConst: Balance = EXISTENTIAL_DEPOSIT;
+pub const MAX_LOCKS_AS_CONST: u32 = 50;
+pub const EXISTENTIAL_DEPOSIT_AS_CONST: Balance = EXISTENTIAL_DEPOSIT;
 
 parameter_types! {
-    pub const ExistentialDeposit: Balance = ExistentialDepositAsConst;
-    pub const MaxLocks: u32 = MaxLocksAsConst;
+    pub const ExistentialDeposit: Balance = EXISTENTIAL_DEPOSIT_AS_CONST;
+    pub const MaxLocks: u32 = MAX_LOCKS_AS_CONST;
     pub const MaxReserves: u32 = 50;
 }
 
@@ -371,21 +371,21 @@ impl pallet_balances::Config for Runtime {
     type Balance = Balance;
     type DustRemoval = ();
     type Event = Event;
-    type ExistentialDeposit = ConstU128<ExistentialDepositAsConst>;
-    type MaxLocks = ConstU32<MaxLocksAsConst>;
+    type ExistentialDeposit = ConstU128<EXISTENTIAL_DEPOSIT_AS_CONST>;
+    type MaxLocks = ConstU32<MAX_LOCKS_AS_CONST>;
     type MaxReserves = MaxReserves;
     type WeightInfo = pallet_balances::weights::SubstrateWeight<Runtime>;
     type ReserveIdentifier = [u8; 8];
 }
 
-pub const OperationalFeeMultiplierAsConst: u8 = 5;
+pub const OPERATIONAL_FEE_MULTIPLIER_AS_CONST: u8 = 5;
 
 parameter_types! {
     /// Relay Chain `TransactionByteFee` / 10
     // Note: Kusama relay chain's `TransactionByteFee` is 10 * MILLICENTS,
     // so 1/10 of that is 1 * MILLICENTS
     pub const TransactionByteFee: Balance = 1 * MILLICENTS;
-    pub const OperationalFeeMultiplier: u8 = OperationalFeeMultiplierAsConst;
+    pub const OperationalFeeMultiplier: u8 = OPERATIONAL_FEE_MULTIPLIER_AS_CONST;
     // TODO - do we need the below in a parachain or only standalone?
     pub const TargetBlockFullness: Perquintill = Perquintill::from_percent(25);
     pub AdjustmentVariable: Multiplier = Multiplier::saturating_from_rational(1, 100_000);
@@ -399,7 +399,7 @@ impl pallet_transaction_payment::Config for Runtime {
     // TODO - is this change required in parachain codebase or only standalone chain?
     type FeeMultiplierUpdate =
         TargetedFeeAdjustment<Self, TargetBlockFullness, AdjustmentVariable, MinimumMultiplier>;
-    type OperationalFeeMultiplier = ConstU8<OperationalFeeMultiplierAsConst>;
+    type OperationalFeeMultiplier = ConstU8<OPERATIONAL_FEE_MULTIPLIER_AS_CONST>;
 }
 
 // parameter_types! {
@@ -527,7 +527,7 @@ parameter_types! {
     // matches Kusama
     pub const Period: BlockNumber = 10 * MINUTES;
     pub const Offset: BlockNumber = 0;
-    pub const MaxAuthorities: u32 = MaxAuthoritiesAsConst;
+    pub const MaxAuthorities: u32 = MAX_AUTHORITIES_AS_CONST;
 }
 
 impl pallet_session::Config for Runtime {
@@ -558,7 +558,7 @@ impl pallet_tips::Config for Runtime {
 impl pallet_aura::Config for Runtime {
     type AuthorityId = AuraId;
     type DisabledValidators = ();
-    type MaxAuthorities = ConstU32<MaxAuthoritiesAsConst>;
+    type MaxAuthorities = ConstU32<MAX_AUTHORITIES_AS_CONST>;
 }
 
 impl pallet_randomness_collective_flip::Config for Runtime {}
@@ -570,12 +570,12 @@ impl pallet_utility::Config for Runtime {
     type WeightInfo = pallet_utility::weights::SubstrateWeight<Runtime>;
 }
 
-pub const MaxScheduledPerBlockAsConst: u32 = 50;
+pub const MAX_SCHEDULED_PER_BLOCK_AS_CONST: u32 = 50;
 
 parameter_types! {
     pub MaximumSchedulerWeight: Weight = Perbill::from_percent(80) *
         RuntimeBlockWeights::get().max_block;
-    pub const MaxScheduledPerBlock: u32 = MaxScheduledPerBlockAsConst;
+    pub const MaxScheduledPerBlock: u32 = MAX_SCHEDULED_PER_BLOCK_AS_CONST;
     // Retry a scheduled item every 10 blocks (1 minute) until the preimage exists.
     pub const NoPreimagePostponement: Option<u32> = Some(10);
 }
@@ -587,7 +587,7 @@ impl pallet_scheduler::Config for Runtime {
     type Call = Call;
     type MaximumWeight = MaximumSchedulerWeight;
     type ScheduleOrigin = EnsureRoot<AccountId>;
-    type MaxScheduledPerBlock = ConstU32<MaxScheduledPerBlockAsConst>;
+    type MaxScheduledPerBlock = ConstU32<MAX_SCHEDULED_PER_BLOCK_AS_CONST>;
     type WeightInfo = pallet_scheduler::weights::SubstrateWeight<Runtime>;
     type OriginPrivilegeCmp = EqualPrivilegeOnly;
     type PreimageProvider = Preimage;
@@ -809,7 +809,7 @@ impl pallet_treasury::Config for Runtime {
 }
 
 
-pub const MaxVotesAsConst: u32 = 100;
+pub const MAX_VOTES_AS_CONST: u32 = 100;
 
 parameter_types! {
     pub const LaunchPeriod: BlockNumber = 28 * 24 * 60 * MINUTES;
@@ -819,7 +819,7 @@ parameter_types! {
     pub const MinimumDeposit: Balance = 100 * DOLLARS;
     pub const EnactmentPeriod: BlockNumber = 30 * 24 * 60 * MINUTES;
     pub const CooloffPeriod: BlockNumber = 28 * 24 * 60 * MINUTES;
-    pub const MaxVotes: u32 = MaxVotesAsConst;
+    pub const MaxVotes: u32 = MAX_VOTES_AS_CONST;
     pub const MaxProposals: u32 = 100;
 }
 
@@ -863,7 +863,7 @@ impl pallet_democracy::Config for Runtime {
     type Slash = Treasury;
     type Scheduler = Scheduler;
     type PalletsOrigin = OriginCaller;
-    type MaxVotes = frame_support::traits::ConstU32<MaxVotesAsConst>;
+    type MaxVotes = frame_support::traits::ConstU32<MAX_VOTES_AS_CONST>;
     type WeightInfo = pallet_democracy::weights::SubstrateWeight<Runtime>;
     type MaxProposals = MaxProposals;
 }

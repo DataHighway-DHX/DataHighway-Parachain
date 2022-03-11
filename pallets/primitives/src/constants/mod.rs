@@ -5,10 +5,10 @@ pub mod currency {
     use crate::types::Balance;
 
     // this should match tokenDecimals defined in the chain_spec.rs
-	pub const UNITS: Balance = 1_000_000_000_000_000_000;
-	pub const DOLLARS: Balance = UNITS;
-	pub const CENTS: Balance = DOLLARS / 100;
-	pub const MILLICENTS: Balance = CENTS / 1_000;
+    pub const UNITS: Balance = 1_000_000_000_000_000_000;
+    pub const DOLLARS: Balance = UNITS;
+    pub const CENTS: Balance = DOLLARS / 100;
+    pub const MILLICENTS: Balance = CENTS / 1_000;
 
     pub const MILLIUNIT: Balance = UNITS / 1_000;
     pub const MICROUNIT: Balance = MILLIUNIT / 1_000;

@@ -271,12 +271,12 @@ impl OnUnbalanced<NegativeImbalance> for DealWithFees {
     }
 }
 
-pub const BLOCK_HASH_COUNT_AS_CONST: BlockNumber = BlockHashCountCommon;
+pub const BLOCK_HASH_COUNT_AS_CONST: BlockNumber = BlockHashCountCommon::get();
 pub const SS58_PREFIX_AS_CONST: u16 = 33;
 pub const MAX_CONSUMERS_AS_CONST: u32 = 16;
 
 parameter_types! {
-    pub const BlockHashCount: BlockNumber = BLOCK_HASH_COUNT_AS_CONST;
+    pub const BlockHashCount: BlockNumber = BlockHashCountCommon;
     pub const Version: RuntimeVersion = VERSION;
     pub RuntimeBlockLength: BlockLength =
         BlockLength::max_with_normal_ratio(5 * 1024 * 1024, NORMAL_DISPATCH_RATIO);

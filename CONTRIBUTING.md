@@ -14,7 +14,8 @@ Note: Generate a new chapter with `openssl rand -hex 3`
 
 ## Pull Requests <a id="chapter-4a9b69"></a>
 
-All Pull Requests should first be made into the 'develop' branch, since the Github Actions CI badge build status that is shown in the README depends on the outcome of building Pull Requests from the 'develop' branch.
+All Pull Requests should first be made into the 'main' branch.
+In future the Github Actions CI badge build status that is shown in the README may depend on the outcome of building Pull Requests from a branch.
 
 ### Skipping CI
 
@@ -22,7 +23,12 @@ To skip running the CI unnecessarily for simple changes such as updating the doc
 
 ### Linting
 
-Please apply Rust Format on your changes prior to creating a PR. See [Linting](#chapter-c345d7).
+Check with Rust Format. Note: If you need a specific version of it replace `+nightly` with say `+nightly-2021-12-15`
+```
+cargo +nightly fmt --all -- --check
+```
+
+If you wish to apply Rust Format on your changes prior to creating a PR. See [Linting](#chapter-c345d7).
 
 ```bash
 cargo +nightly fmt --all
@@ -60,8 +66,9 @@ use log::{error, info, debug, trace};
 ...
 log::debug!("hello {:?}", world); // Only shows in terminal in debug mode
 log::info!("hello {:?}", world); // Shows in terminal in release mode
-debug::native::info!("hello {:?}", world);
 ```
+
+Note: The use of `debug::native::info!("hello {:?}", world);` does not appear to work anymore since Substrate updates in Feb 2021.
 
 ### Detailed Debugging
 
@@ -70,6 +77,8 @@ RUST_LOG=debug RUST_BACKTRACE=1 ./target/release/datahighway ... \
   ... \
   -lruntime=debug
 ```
+
+Refer to Susbtrate Debugging documentation [here](https://docs.substrate.io/v3/runtime/debugging/)
 
 ## Testing <a id="chapter-e146ec"></a>
 
@@ -92,16 +101,16 @@ cargo test -p roaming-sessions &&
 cargo test -p roaming-billing-policies &&
 cargo test -p roaming-charging-policies &&
 cargo test -p roaming-packet-bundles &&
-cargo test -p mining-speed-boosts-configuration-token-mining &&
-cargo test -p mining-speed-boosts-configuration-hardware-mining &&
-cargo test -p mining-speed-boosts-rates-token-mining &&
-cargo test -p mining-speed-boosts-rates-hardware-mining &&
-cargo test -p mining-speed-boosts-sampling-token-mining &&
-cargo test -p mining-speed-boosts-sampling-hardware-mining &&
-cargo test -p mining-speed-boosts-eligibility-token-mining &&
-cargo test -p mining-speed-boosts-eligibility-hardware-mining &&
-cargo test -p mining-speed-boosts-lodgements-token-mining &&
-cargo test -p mining-speed-boosts-lodgements-hardware-mining
+cargo test -p mining-setting-token &&
+cargo test -p mining-setting-hardware &&
+cargo test -p mining-rates-token &&
+cargo test -p mining-rates-hardware &&
+cargo test -p mining-sampling-token &&
+cargo test -p mining-sampling-hardware &&
+cargo test -p mining-eligibility-token &&
+cargo test -p mining-eligibility-hardware &&
+cargo test -p mining-claims-token &&
+cargo test -p mining-claims-hardware
 ```
 
 ### Run Integration Tests Only
@@ -205,68 +214,8 @@ substrate-module-new <module-name> <author>
 
 ## FAQ <a id="chapter-f078a2"></a>
 
-* Question: Why do we need to install Rust Stable and Rust Nightly?
-	* Answer: In .github/workflows/rust.yml, we need to run the following,
-	because Substrate builds two binaries: 1) Wasm binary of your Runtime;
-	and 2) Native executable containing all your other Substrate components
-	including your runtimes too. The Wasm build requires rust nightly and
-	wasm32-unknown-unknown to be installed. Note that we do not use
-	`rustup update nightly` since the latest Rust Nightly may break our build,
-	so we must manually change this to the latest Rust Nightly version only
-	when it is known to work.
-		```bash
-		rustup toolchain install nightly-2020-12-12
-		rustup update stable
-		rustup target add wasm32-unknown-unknown --toolchain nightly
-		```
-
-* Question: Why do we install a specific version of Rust Nightly in the CI?
-	* Answer: Since the latest version of Rust Nightly may break our build,
-	and because developers may forget to update to the latest version of Rust
-	Nightly locally. So the solution is to install a specific version of
-	Rust Nightly in .github/workflows/rust.yml (i.e.
-	`rustup toolchain install nightly-2020-12-12`), since for example
-	the latest Rust Nightly version nightly-2020-02-20 may cause our CI tests
-	to fail (i.e. https://github.com/DataHighway-DHX/node/issues/32)
-
-* Question: Why does the `SessionKeys` struct of our chain only have [babe and grandpa](https://github.com/DataHighway-DHX/node/blob/master/runtime/src/lib.rs#L94), and not [im_online and authority_discovery](https://github.com/paritytech/substrate/blob/master/bin/node/runtime/src/lib.rs#L242).
-	* Answer: Since we'll be a parachain im_online and authority_discovery are not required here.
-
-* Question: How do I install specific dependencies
-	* Answer:
-		```bash
-		cargo install cargo-edit
-		cargo add ...
-		```
-* Question: How do I upgrade the runtime without stopping the blockchain
-	* Answer: https://www.youtube.com/watch?v=0aTnxHrV_j4&list=PLOyWqupZ-WGt3mA_d9wu74vVe0bM37-39&index=9&t=0s
-
-* Question: How may I debug and contribute to fixing UI errors or any errors in the browser console that I encounter when using Polkadot.js Apps https://polkadot.js.org/apps?
-	* Answer: If you run Polkadot.js Apps locally from your machine then the errors are easier to debug. Follow the instructions at https://github.com/polkadot-js/apps, including cloning it, and running it. Try to identify and fix the error, and raise an issue in that repository if necessary.
-
-* Question: How do I stop and remove all the Docker containers and images?
-	* Answer: Run `./scripts/docker-clean.sh`
-	* **WARNING**: This stops and removes **all** your Docker containers and images, not just DataHighway relates ones.
-
-* Question: How to access the Docker container of a running node and run shell commands?
-	* Answer: `docker exec -it node_alice_1 /bin/bash`, where `node_alice_1` is the Container Name that is shown when you run `docker ps -a`.
-
-* Question: How do I restart the testnet Docker containers (including each chain databases)?
-	* Answer: Run the following, where `node_alice_1` is a Container Name that is shown when you run `docker ps -a`.
-		```bash
-		docker stop node_alice_1 node_bob_1 node_charlie_1
-		docker rm node_alice_1 node_bob_1 node_charlie_1
-		docker-compose --verbose up -d
-		docker-compose logs -f
-		```
-
-* Question: Why can't I syncronize my node?
-	* Answer: Run `./scripts/docker-clean.sh` before starting them again with either `docker-compose up` or `docker-compose --verbose up -d; docker-compose logs -f`, incase a cached image is still being used locally
-	* **WARNING**: This stops and removes **all** your Docker containers and images, not just DataHighway relates ones.
-
-* Question: How do I run two nodes on the same host machine?
-	* Answer:
-		* Refer to "Testnet (Alpha) "testnet_latest" PoS testnet (with multiple nodes)" in [EXAMPLES](./EXAMPLES.md).
+The latest FAQ is still recorded on the DataHighway standalone codebase [here](https://github.com/DataHighway-DHX/node/blob/master/CONTRIBUTING.md#faq-), or modified in subsequent PRs.
+It will be migrated into the DataHighway/documentation codebase.
 
 ## Technical Support <a id="chapter-c00ab7"></a>
 

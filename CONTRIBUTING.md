@@ -14,7 +14,8 @@ Note: Generate a new chapter with `openssl rand -hex 3`
 
 ## Pull Requests <a id="chapter-4a9b69"></a>
 
-All Pull Requests should first be made into the 'develop' branch, since the Github Actions CI badge build status that is shown in the README depends on the outcome of building Pull Requests from the 'develop' branch.
+All Pull Requests should first be made into the 'main' branch.
+In future the Github Actions CI badge build status that is shown in the README may depend on the outcome of building Pull Requests from a branch.
 
 ### Skipping CI
 

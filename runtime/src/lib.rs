@@ -552,9 +552,10 @@ where
 // }
 
 parameter_types! {
-    pub const Period: u32 = 6 * HOURS;
-    pub const Offset: u32 = 0;
-    pub const MaxAuthorities: u32 = 100_000;
+    // matches Kusama
+    pub const Period: BlockNumber = 10 * MINUTES;
+    pub const Offset: BlockNumber = 0;
+    pub const MaxAuthorities: u32 = MAX_AUTHORITIES_AS_CONST;
 }
 
 impl pallet_session::Config for Runtime {
@@ -568,7 +569,7 @@ impl pallet_session::Config for Runtime {
     // Essentially just Aura, but lets be pedantic.
     type SessionHandler = <SessionKeys as sp_runtime::traits::OpaqueKeys>::KeyTypeIdProviders;
     type Keys = SessionKeys;
-    type WeightInfo = ();
+    type WeightInfo = pallet_session::weights::SubstrateWeight<Runtime>;
 }
 
 impl pallet_aura::Config for Runtime {

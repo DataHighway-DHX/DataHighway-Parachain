@@ -10,7 +10,7 @@ pub mod xcm_config;
 
 use smallvec::smallvec;
 use sp_api::impl_runtime_apis;
-use sp_core::{crypto::KeyTypeId, u32_trait::{_2, _3, _4}, OpaqueMetadata};
+use sp_core::{crypto::KeyTypeId, u32_trait::{_1, _2, _3, _4, _5}, OpaqueMetadata};
 use sp_runtime::{
     create_runtime_str, generic, impl_opaque_keys,
     traits::{AccountIdLookup, BlakeTwo256, Block as BlockT, IdentifyAccount, Verify},
@@ -25,7 +25,10 @@ use sp_version::RuntimeVersion;
 
 pub use frame_support::{
 	construct_runtime, parameter_types,
-	traits::{ConstU8, ConstU16, ConstU32, ConstU64, ConstU128, Contains, ContainsLengthBound, Currency, Everything, Imbalance, KeyOwnerProofSystem, OnUnbalanced},
+	traits::{
+        ConstU8, ConstU16, ConstU32, ConstU64, ConstU128, Contains, ContainsLengthBound, Currency,
+        EnsureOneOf, Everything, Imbalance, KeyOwnerProofSystem, OnUnbalanced,
+    },
 	weights::{
 		constants::{BlockExecutionWeight, ExtrinsicBaseWeight, WEIGHT_PER_SECOND},
 		DispatchClass, IdentityFee, Weight, WeightToFeeCoefficient, WeightToFeeCoefficients,
@@ -415,51 +418,69 @@ impl ContainsLengthBound for GeneralCouncilProvider {
 
 parameter_types! {
     pub const ProposalBond: Permill = Permill::from_percent(5);
-    pub const ProposalBondMinimum: Balance = 1_000_000_000_000_000_000;
+    pub const ProposalBondMinimum: Balance = 1 * DOLLARS;
     pub const SpendPeriod: BlockNumber = 1 * DAYS;
     pub const Burn: Permill = Permill::from_percent(0);
     pub const TipCountdown: BlockNumber = 1 * DAYS;
     pub const TipFindersFee: Percent = Percent::from_percent(20);
-    pub const TipReportDepositBase: Balance = 1_000_000_000_000_000_000;
-    pub const MaximumReasonLength: u32 = 16384;
-    pub const BountyValueMinimum: u64 = 1;
+    pub const TipReportDepositBase: Balance = 1 * DOLLARS;
+    pub const MaximumReasonLength: u32 = 300;
+    pub const BountyValueMinimum: Balance = 5 * DOLLARS;
     pub const BountyCuratorDeposit: Permill = Permill::from_percent(50);
-    pub const BountyDepositBase: u64 = 80;
-    pub const BountyDepositPayoutDelay: u32 = 3;
-    pub const BountyUpdatePeriod: u32 = 20;
-    pub const DataDepositPerByte: u64 = 1;
+    pub const BountyDepositBase: Balance = 1 * DOLLARS;
+    pub const BountyDepositPayoutDelay: BlockNumber = 1 * DAYS;
+    pub const BountyUpdatePeriod: BlockNumber = 14 * DAYS;
+    pub const DataDepositPerByte: Balance = 1 * CENTS;
     pub const TreasuryPalletId: PalletId = PalletId(*b"py/trsry");
     pub const MaxApprovals: u32 = 100;
+    pub const MaxActiveChildBountyCount: u32 = 5;
+    pub const ChildBountyValueMinimum: Balance = 1 * DOLLARS;
+    pub const ChildBountyCuratorDepositBase: Permill = Permill::from_percent(10);
 }
 
 impl pallet_treasury::Config for Runtime {
-    type ApproveOrigin = pallet_collective::EnsureMembers<_4, AccountId, GeneralCouncilInstance>;
-    // type BountyCuratorDeposit = BountyCuratorDeposit;
-    // type BountyDepositBase = BountyDepositBase;
-    // type BountyDepositPayoutDelay = BountyDepositPayoutDelay;
-    // type BountyUpdatePeriod = BountyUpdatePeriod;
-    // type BountyValueMinimum = BountyValueMinimum;
-    type Burn = Burn;
-    type BurnDestination = ();
-    type Currency = Balances;
-    // type DataDepositPerByte = DataDepositPerByte;
-    type Event = Event;
-    // type MaximumReasonLength = MaximumReasonLength;
     type PalletId = TreasuryPalletId;
+    type Currency = Balances;
+    type ApproveOrigin = EnsureOneOf<
+        EnsureRoot<AccountId>,
+        pallet_collective::EnsureProportionAtLeast<_3, _5, AccountId, GeneralCouncilInstance>,
+    >;
+    type RejectOrigin = EnsureOneOf<
+        EnsureRoot<AccountId>,
+        pallet_collective::EnsureProportionMoreThan<_1, _2, AccountId, GeneralCouncilInstance>,
+    >;
+    type Event = Event;
     type OnSlash = ();
     type ProposalBond = ProposalBond;
     type ProposalBondMinimum = ProposalBondMinimum;
     type ProposalBondMaximum = ();
-    type RejectOrigin = pallet_collective::EnsureMembers<_2, AccountId, GeneralCouncilInstance>;
-    type SpendFunds = ();
     type SpendPeriod = SpendPeriod;
-    // type TipCountdown = TipCountdown;
-    // type TipFindersFee = TipFindersFee;
-    // type TipReportDepositBase = TipReportDepositBase;
-    // type Tippers = GeneralCouncilProvider;
-    // Just gets burned.
+    type Burn = Burn;
+    type BurnDestination = ();
+    type SpendFunds = Bounties;
     type WeightInfo = pallet_treasury::weights::SubstrateWeight<Runtime>;
     type MaxApprovals = MaxApprovals;
+}
+
+impl pallet_bounties::Config for Runtime {
+	type Event = Event;
+	type BountyDepositBase = BountyDepositBase;
+	type BountyDepositPayoutDelay = BountyDepositPayoutDelay;
+	type BountyUpdatePeriod = BountyUpdatePeriod;
+	type BountyCuratorDeposit = BountyCuratorDeposit;
+	type BountyValueMinimum = BountyValueMinimum;
+	type DataDepositPerByte = DataDepositPerByte;
+	type MaximumReasonLength = MaximumReasonLength;
+	type WeightInfo = pallet_bounties::weights::SubstrateWeight<Runtime>;
+	type ChildBountyManager = ChildBounties;
+}
+
+impl pallet_child_bounties::Config for Runtime {
+	type Event = Event;
+	type MaxActiveChildBountyCount = MaxActiveChildBountyCount;
+	type ChildBountyValueMinimum = ChildBountyValueMinimum;
+	type ChildBountyCuratorDepositBase = ChildBountyCuratorDepositBase;
+	type WeightInfo = pallet_child_bounties::weights::SubstrateWeight<Runtime>;
 }
 
 // pallet_staking_reward_curve::build! {
@@ -878,6 +899,8 @@ construct_runtime!(
         GeneralCouncil: pallet_collective::<Instance1>::{Pallet, Call, Storage, Origin<T>, Event<T>, Config<T>},
         GeneralCouncilMembership: pallet_membership::<Instance1>::{Pallet, Call, Storage, Event<T>, Config<T>},
         Treasury: pallet_treasury::{Pallet, Call, Storage, Config, Event<T>},
+        Bounties: pallet_bounties,
+        ChildBounties: pallet_child_bounties,
         //Staking: pallet_staking::{Pallet, Call, Config<T>, Storage, Event<T>},
         MembershipSupernodes: membership_supernodes::{Pallet, Call, Storage, Event<T>},
         RoamingOperators: roaming_operators::{Pallet, Call, Storage, Event<T>},

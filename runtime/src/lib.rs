@@ -494,27 +494,28 @@ impl pallet_child_bounties::Config for Runtime {
 //     );
 // }
 
-parameter_types! {
-    //pub const SessionsPerEra: sp_staking::SessionIndex = 6;
-    //pub const BondingDuration: pallet_staking::EraIndex = 24 * 28;
-    //pub const SlashDeferDuration: pallet_staking::EraIndex = 24 * 7; // 1/4 the bonding duration.
-    //pub const RewardCurve: &'static PiecewiseLinear<'static> = &REWARD_CURVE;
-    //pub const StakingUnsignedPriority: TransactionPriority = TransactionPriority::max_value() / 2;
-    pub const MaxNominatorRewardedPerValidator: u32 = 64;
-    pub MinSolutionScoreBump: Perbill = Perbill::from_rational_approximation(5u32, 10_000);
-    pub const MaxIterations: u32 = 10;
-    pub const ElectionLookahead: BlockNumber = EPOCH_DURATION_IN_BLOCKS / 4;
-    /// A limit for off-chain phragmen unsigned solution submission.
-    ///
-    /// We want to keep it as high as possible, but can't risk having it reject,
-    /// so we always subtract the base block execution weight.
-    pub OffchainSolutionWeightLimit: Weight = RuntimeBlockWeights::get()
-        .get(DispatchClass::Normal)
-        .max_extrinsic
-        .expect("Normal extrinsics have weight limit configured by default; qed")
-        .saturating_sub(BlockExecutionWeight::get());
-}
+// parameter_types! {
+//     //pub const SessionsPerEra: sp_staking::SessionIndex = 6;
+//     //pub const BondingDuration: pallet_staking::EraIndex = 24 * 28;
+//     //pub const SlashDeferDuration: pallet_staking::EraIndex = 24 * 7; // 1/4 the bonding duration.
+//     //pub const RewardCurve: &'static PiecewiseLinear<'static> = &REWARD_CURVE;
+//     //pub const StakingUnsignedPriority: TransactionPriority = TransactionPriority::max_value() / 2;
+//     // pub const MaxNominatorRewardedPerValidator: u32 = 64;
+//     // pub MinSolutionScoreBump: Perbill = Perbill::from_rational_approximation(5u32, 10_000);
+//     // pub const MaxIterations: u32 = 10;
+//     // pub const ElectionLookahead: BlockNumber = EPOCH_DURATION_IN_BLOCKS / 4;
+//     /// A limit for off-chain phragmen unsigned solution submission.
+//     ///
+//     /// We want to keep it as high as possible, but can't risk having it reject,
+//     /// so we always subtract the base block execution weight.
+//     pub OffchainSolutionWeightLimit: Weight = RuntimeBlockWeights::get()
+//         .get(DispatchClass::Normal)
+//         .max_extrinsic
+//         .expect("Normal extrinsics have weight limit configured by default; qed")
+//         .saturating_sub(BlockExecutionWeight::get());
+// }
 
+// TODO - is this change required in parachain codebase or only standalone chain?
 impl<C> frame_system::offchain::SendTransactionTypes<C> for Runtime
 where
     Call: From<C>,
@@ -575,7 +576,7 @@ impl pallet_session::Config for Runtime {
 impl pallet_aura::Config for Runtime {
     type AuthorityId = AuraId;
     type DisabledValidators = ();
-    type MaxAuthorities = MaxAuthorities;
+    type MaxAuthorities = ConstU32<MAX_AUTHORITIES_AS_CONST>;
 }
 
 impl pallet_randomness_collective_flip::Config for Runtime {}

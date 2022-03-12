@@ -6,9 +6,7 @@ use datahighway_parachain_runtime::{
     AuraConfig,
     BalancesConfig,
     CollatorSelectionConfig,
-    GeneralCouncilConfig,
-    GeneralCouncilMembershipConfig,
-    // CouncilConfig,
+    CouncilConfig,
     // DemocracyConfig,
     // ElectionsConfig,
     GenesisConfig,
@@ -17,8 +15,8 @@ use datahighway_parachain_runtime::{
     // SessionKeys,
     SudoConfig,
     // SystemConfig,
-    // TechnicalCommitteeConfig,
-    // TechnicalMembershipConfig,
+    TechnicalCommitteeConfig,
+    TechnicalMembershipConfig,
     TransactionPaymentConfig,
     TreasuryConfig,
 };
@@ -1145,11 +1143,6 @@ fn spreehafen_testnet_genesis(
         // indices: IndicesConfig {
         //     indices: endowed_accounts.iter().enumerate().map(|(index, x)| (index as u32, (*x).clone())).collect(),
         // },
-        general_council: GeneralCouncilConfig::default(),
-        general_council_membership: GeneralCouncilMembershipConfig {
-            members: vec![root_key.clone()],
-            phantom: Default::default(),
-        },
         treasury: TreasuryConfig::default(),
         sudo: SudoConfig {
             key: Some(root_key.clone()),
@@ -1185,17 +1178,17 @@ fn spreehafen_testnet_genesis(
         // },
         // https://github.com/paritytech/substrate/commit/d6ac9f551b71d9c7b69afcebfc68ace310ef74ee
         // collective_Instance1
-        // council: CouncilConfig::default(),
+        council: CouncilConfig::default(),
         // collective_Instance2
-        // technical_committee: TechnicalCommitteeConfig::default(),
+        technical_committee: TechnicalCommitteeConfig::default(),
         // no need to pass anything to aura, in fact it will panic if we do. Session will take care
         // of this.
         aura: Default::default(),
         // pallet_membership_Instance1
-        // technical_membership: TechnicalMembershipConfig {
-        //     members: vec![root_key.clone()],
-        //     phantom: Default::default(),
-        // },
+        technical_membership: TechnicalMembershipConfig {
+            members: vec![root_key.clone()],
+            phantom: Default::default(),
+        },
 		transaction_payment: TransactionPaymentConfig::default(),
         aura_ext: Default::default(),
         parachain_system: Default::default(),
@@ -1229,11 +1222,6 @@ fn testnet_genesis(
         // indices: IndicesConfig {
         //     indices: endowed_accounts.iter().enumerate().map(|(index, x)| (index as u32, (*x).clone())).collect(),
         // },
-        general_council: GeneralCouncilConfig::default(),
-        general_council_membership: GeneralCouncilMembershipConfig {
-            members: vec![root_key.clone()],
-            phantom: Default::default(),
-        },
         treasury: TreasuryConfig::default(),
         sudo: SudoConfig {
             key: Some(root_key.clone()),
@@ -1269,17 +1257,17 @@ fn testnet_genesis(
         // },
         // https://github.com/paritytech/substrate/commit/d6ac9f551b71d9c7b69afcebfc68ace310ef74ee
         // collective_Instance1
-        // council: CouncilConfig::default(),
+        council: CouncilConfig::default(),
         // collective_Instance2
-        // technical_committee: TechnicalCommitteeConfig::default(),
+        technical_committee: TechnicalCommitteeConfig::default(),
         // no need to pass anything to aura, in fact it will panic if we do. Session will take care
         // of this.
         aura: Default::default(),
         // pallet_membership_Instance1
-        // technical_membership: TechnicalMembershipConfig {
-        //     members: vec![root_key.clone()],
-        //     phantom: Default::default(),
-        // },
+        technical_membership: TechnicalMembershipConfig {
+            members: vec![root_key.clone()],
+            phantom: Default::default(),
+        },
 		transaction_payment: TransactionPaymentConfig::default(),
         aura_ext: Default::default(),
         parachain_system: Default::default(),
@@ -1313,11 +1301,6 @@ fn dev_genesis(
         // indices: IndicesConfig {
         //     indices: endowed_accounts.iter().enumerate().map(|(index, x)| (index as u32, (*x).clone())).collect(),
         // },
-        general_council: GeneralCouncilConfig::default(),
-        general_council_membership: GeneralCouncilMembershipConfig {
-            members: vec![root_key.clone()],
-            phantom: Default::default(),
-        },
         treasury: TreasuryConfig::default(),
         sudo: SudoConfig {
             key: Some(root_key.clone()),
@@ -1353,17 +1336,17 @@ fn dev_genesis(
         // },
         // https://github.com/paritytech/substrate/commit/d6ac9f551b71d9c7b69afcebfc68ace310ef74ee
         // collective_Instance1
-        // council: CouncilConfig::default(),
+        council: CouncilConfig::default(),
         // collective_Instance2
-        // technical_committee: TechnicalCommitteeConfig::default(),
+        technical_committee: TechnicalCommitteeConfig::default(),
         // no need to pass anything to aura, in fact it will panic if we do. Session will take care
         // of this.
         aura: Default::default(),
         // pallet_membership_Instance1
-        // technical_membership: TechnicalMembershipConfig {
-        //     members: vec![root_key.clone()],
-        //     phantom: Default::default(),
-        // },
+        technical_membership: TechnicalMembershipConfig {
+            members: vec![root_key.clone()],
+            phantom: Default::default(),
+        },
 		transaction_payment: TransactionPaymentConfig::default(),
         aura_ext: Default::default(),
         parachain_system: Default::default(),
@@ -1406,11 +1389,6 @@ fn baikal_testnet_genesis(
         // indices: IndicesConfig {
         //     indices: endowed_accounts.iter().enumerate().map(|(index, x)| (index as u32, (*x).clone())).collect(),
         // },
-        general_council: GeneralCouncilConfig::default(),
-        general_council_membership: GeneralCouncilMembershipConfig {
-            members: vec![root_key.clone()],
-            phantom: Default::default(),
-        },
         treasury: TreasuryConfig::default(),
         sudo: SudoConfig {
             key: Some(root_key.clone()),
@@ -1446,17 +1424,17 @@ fn baikal_testnet_genesis(
         // },
         // https://github.com/paritytech/substrate/commit/d6ac9f551b71d9c7b69afcebfc68ace310ef74ee
         // collective_Instance1
-        // council: CouncilConfig::default(),
+        council: CouncilConfig::default(),
         // collective_Instance2
-        // technical_committee: TechnicalCommitteeConfig::default(),
+        technical_committee: TechnicalCommitteeConfig::default(),
         // no need to pass anything to aura, in fact it will panic if we do. Session will take care
         // of this.
         aura: Default::default(),
         // pallet_membership_Instance1
-        // technical_membership: TechnicalMembershipConfig {
-        //     members: vec![root_key.clone()],
-        //     phantom: Default::default(),
-        // },
+        technical_membership: TechnicalMembershipConfig {
+            members: vec![root_key.clone()],
+            phantom: Default::default(),
+        },
 		transaction_payment: TransactionPaymentConfig::default(),
         aura_ext: Default::default(),
         parachain_system: Default::default(),
@@ -1489,11 +1467,6 @@ fn tanganika_testnet_genesis(
         // indices: IndicesConfig {
         //     indices: endowed_accounts.iter().enumerate().map(|(index, x)| (index as u32, (*x).clone())).collect(),
         // },
-        general_council: GeneralCouncilConfig::default(),
-        general_council_membership: GeneralCouncilMembershipConfig {
-            members: vec![root_key.clone()],
-            phantom: Default::default(),
-        },
         treasury: TreasuryConfig::default(),
         sudo: SudoConfig {
             key: Some(root_key.clone()),
@@ -1529,17 +1502,17 @@ fn tanganika_testnet_genesis(
         // },
         // https://github.com/paritytech/substrate/commit/d6ac9f551b71d9c7b69afcebfc68ace310ef74ee
         // collective_Instance1
-        // council: CouncilConfig::default(),
+        council: CouncilConfig::default(),
         // collective_Instance2
-        // technical_committee: TechnicalCommitteeConfig::default(),
+        technical_committee: TechnicalCommitteeConfig::default(),
         // no need to pass anything to aura, in fact it will panic if we do. Session will take care
         // of this.
         aura: Default::default(),
         // pallet_membership_Instance1
-        // technical_membership: TechnicalMembershipConfig {
-        //     members: vec![root_key.clone()],
-        //     phantom: Default::default(),
-        // },
+        technical_membership: TechnicalMembershipConfig {
+            members: vec![root_key.clone()],
+            phantom: Default::default(),
+        },
 		transaction_payment: TransactionPaymentConfig::default(),
         aura_ext: Default::default(),
         parachain_system: Default::default(),

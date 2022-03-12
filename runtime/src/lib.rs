@@ -374,46 +374,51 @@ parameter_types! {
     pub const CouncilMaxMembers: u32 = 100;
 }
 
-type GeneralCouncilInstance = pallet_collective::Instance1;
-impl pallet_collective::Config<GeneralCouncilInstance> for Runtime {
-    type DefaultVote = pallet_collective::PrimeDefaultVote;
-    type Event = Event;
-    type MaxMembers = CouncilMaxMembers;
-    type MaxProposals = CouncilMaxProposals;
-    type MotionDuration = CouncilMotionDuration;
+type CouncilCollective = pallet_collective::Instance1;
+impl pallet_collective::Config<CouncilCollective> for Runtime {
     type Origin = Origin;
     type Proposal = Call;
-    type WeightInfo = ();
-}
-
-type GeneralCouncilMembershipInstance = pallet_membership::Instance1;
-impl pallet_membership::Config<GeneralCouncilMembershipInstance> for Runtime {
-    type AddOrigin = pallet_collective::EnsureProportionMoreThan<_3, _4, AccountId, GeneralCouncilInstance>;
     type Event = Event;
-    type MembershipChanged = GeneralCouncil;
-    type MembershipInitialized = GeneralCouncil;
-    type PrimeOrigin = pallet_collective::EnsureProportionMoreThan<_3, _4, AccountId, GeneralCouncilInstance>;
-    type RemoveOrigin = pallet_collective::EnsureProportionMoreThan<_3, _4, AccountId, GeneralCouncilInstance>;
-    type ResetOrigin = pallet_collective::EnsureProportionMoreThan<_3, _4, AccountId, GeneralCouncilInstance>;
-    type SwapOrigin = pallet_collective::EnsureProportionMoreThan<_3, _4, AccountId, GeneralCouncilInstance>;
-    type WeightInfo = ();
+    type MotionDuration = CouncilMotionDuration;
+    type MaxProposals = CouncilMaxProposals;
     type MaxMembers = CouncilMaxMembers;
+    type DefaultVote = pallet_collective::PrimeDefaultVote;
+    type WeightInfo = pallet_collective::weights::SubstrateWeight<Runtime>;
 }
 
-pub struct GeneralCouncilProvider;
-impl Contains<AccountId> for GeneralCouncilProvider {
-    fn contains(who: &AccountId) -> bool {
-        GeneralCouncil::is_member(who)
-    }
+parameter_types! {
+    pub const TechnicalMotionDuration: BlockNumber = 5 * DAYS;
+    pub const TechnicalMaxProposals: u32 = 100;
+    pub const TechnicalMaxMembers: u32 = 100;
 }
-impl ContainsLengthBound for GeneralCouncilProvider {
-    fn min_len() -> usize {
-        0
-    }
 
-    fn max_len() -> usize {
-        100000
-    }
+type TechnicalCollective = pallet_collective::Instance2;
+impl pallet_collective::Config<TechnicalCollective> for Runtime {
+    type Origin = Origin;
+    type Proposal = Call;
+    type Event = Event;
+    type MotionDuration = TechnicalMotionDuration;
+    type MaxProposals = TechnicalMaxProposals;
+    type MaxMembers = TechnicalMaxMembers;
+    type DefaultVote = pallet_collective::PrimeDefaultVote;
+    type WeightInfo = pallet_collective::weights::SubstrateWeight<Runtime>;
+}
+
+type EnsureRootOrHalfCouncil = EnsureOneOf<
+    EnsureRoot<AccountId>,
+    pallet_collective::EnsureProportionMoreThan<_1, _2, AccountId, CouncilCollective>,
+>;
+impl pallet_membership::Config<pallet_membership::Instance1> for Runtime {
+    type Event = Event;
+    type AddOrigin = EnsureRootOrHalfCouncil;
+    type RemoveOrigin = EnsureRootOrHalfCouncil;
+    type SwapOrigin = EnsureRootOrHalfCouncil;
+    type ResetOrigin = EnsureRootOrHalfCouncil;
+    type PrimeOrigin = EnsureRootOrHalfCouncil;
+    type MembershipInitialized = TechnicalCommittee;
+    type MembershipChanged = TechnicalCommittee;
+	type MaxMembers = TechnicalMaxMembers;
+	type WeightInfo = pallet_membership::weights::SubstrateWeight<Runtime>;
 }
 
 parameter_types! {
@@ -443,11 +448,11 @@ impl pallet_treasury::Config for Runtime {
     type Currency = Balances;
     type ApproveOrigin = EnsureOneOf<
         EnsureRoot<AccountId>,
-        pallet_collective::EnsureProportionAtLeast<_3, _5, AccountId, GeneralCouncilInstance>,
+        pallet_collective::EnsureProportionAtLeast<_3, _5, AccountId, CouncilCollective>,
     >;
     type RejectOrigin = EnsureOneOf<
         EnsureRoot<AccountId>,
-        pallet_collective::EnsureProportionMoreThan<_1, _2, AccountId, GeneralCouncilInstance>,
+        pallet_collective::EnsureProportionMoreThan<_1, _2, AccountId, CouncilCollective>,
     >;
     type Event = Event;
     type OnSlash = ();
@@ -545,7 +550,7 @@ where
 //     type SessionsPerEra = SessionsPerEra;
 //     type Slash = Treasury;
 //     /// A super-majority of the council can cancel the slash.
-//     type SlashCancelOrigin = pallet_collective::EnsureProportionAtLeast<_3, _4, AccountId, GeneralCouncilInstance>;
+//     type SlashCancelOrigin = pallet_collective::EnsureProportionAtLeast<_3, _4, AccountId, CouncilCollective>;
 //     type SlashDeferDuration = SlashDeferDuration;
 //     type UnixTime = Timestamp;
 //     type UnsignedPriority = StakingUnsignedPriority;
@@ -898,8 +903,10 @@ construct_runtime!(
         CumulusXcm: cumulus_pallet_xcm::{Pallet, Event<T>, Origin} = 32,
         DmpQueue: cumulus_pallet_dmp_queue::{Pallet, Call, Storage, Event<T>} = 33,
 
-        GeneralCouncil: pallet_collective::<Instance1>::{Pallet, Call, Storage, Origin<T>, Event<T>, Config<T>},
-        GeneralCouncilMembership: pallet_membership::<Instance1>::{Pallet, Call, Storage, Event<T>, Config<T>},
+        Council: pallet_collective::<Instance1>,
+        TechnicalCommittee: pallet_collective::<Instance2>,
+        // Elections: pallet_elections_phragmen,
+        TechnicalMembership: pallet_membership::<Instance1>,
         Treasury: pallet_treasury::{Pallet, Call, Storage, Config, Event<T>},
         Bounties: pallet_bounties,
         ChildBounties: pallet_child_bounties,

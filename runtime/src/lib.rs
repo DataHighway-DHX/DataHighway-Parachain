@@ -17,6 +17,7 @@ use sp_runtime::{
 	transaction_validity::{TransactionSource, TransactionValidity},
 	ApplyExtrinsicResult, MultiSignature,
 };
+pub use sp_runtime::{MultiAddress, Perbill, Percent, Permill};
 use sp_std::prelude::*;
 #[cfg(feature = "std")]
 use sp_version::NativeVersion;
@@ -24,7 +25,7 @@ use sp_version::RuntimeVersion;
 
 pub use frame_support::{
 	construct_runtime, parameter_types,
-	traits::{Contains, ContainsLengthBound, Currency, Everything, Imbalance, KeyOwnerProofSystem, OnUnbalanced},
+	traits::{ConstU8, ConstU16, ConstU32, ConstU64, ConstU128, Contains, ContainsLengthBound, Currency, Everything, Imbalance, KeyOwnerProofSystem, OnUnbalanced},
 	weights::{
 		constants::{BlockExecutionWeight, ExtrinsicBaseWeight, WEIGHT_PER_SECOND},
 		DispatchClass, Weight, WeightToFeeCoefficient, WeightToFeeCoefficients,
@@ -37,14 +38,17 @@ use frame_system::{
     EnsureRoot,
 };
 pub use sp_consensus_aura::sr25519::AuthorityId as AuraId;
-pub use sp_runtime::{MultiAddress, Perbill, Percent, Permill};
 use xcm_config::{XcmConfig, XcmOriginToTransactDispatchOrigin};
 
 #[cfg(any(feature = "std", test))]
 pub use sp_runtime::BuildStorage;
+#[cfg(any(feature = "std", test))]
+pub use pallet_balances::Call as BalancesCall;
+#[cfg(any(feature = "std", test))]
+pub use frame_system::Call as SystemCall;
 
 // Polkadot Imports
-use polkadot_runtime_common::{BlockHashCount, RocksDbWeight, SlowAdjustingFeeUpdate};
+use polkadot_runtime_common::{BlockHashCount as BlockHashCountCommon, RocksDbWeight, SlowAdjustingFeeUpdate};
 
 // XCM Imports
 use xcm::latest::prelude::BodyId;
@@ -97,6 +101,7 @@ pub const NORMAL_DISPATCH_RATIO: Perbill = Perbill::from_percent(75);
 pub const MAXIMUM_BLOCK_WEIGHT: Weight = WEIGHT_PER_SECOND / 2;
 
 /// The address format for describing accounts.
+// TODO - add AccountIndex
 pub type Address = MultiAddress<AccountId, ()>;
 /// Block header type as expected by this runtime.
 pub type Header = generic::Header<BlockNumber, BlakeTwo256>;
@@ -119,6 +124,8 @@ pub type SignedExtra = (
 );
 /// Unchecked extrinsic type as expected by this runtime.
 pub type UncheckedExtrinsic = generic::UncheckedExtrinsic<Address, Call, Signature, SignedExtra>;
+/// The payload being signed in transactions.
+pub type SignedPayload = generic::SignedPayload<Call, SignedExtra>;
 /// Extrinsic type that has already been checked.
 pub type CheckedExtrinsic = generic::CheckedExtrinsic<AccountId, Call, SignedExtra>;
 /// Executive: handles dispatch to the various modules.
@@ -180,14 +187,14 @@ pub mod impls;
 pub use impls::Author;
 
 /// Generated voter bag information.
-mod voter_bags;
+// mod voter_bags;
 
 #[sp_version::runtime_version]
 pub const VERSION: RuntimeVersion = RuntimeVersion {
     spec_name: create_runtime_str!("datahighway-parachain"),
     impl_name: create_runtime_str!("datahighway-parachain"),
-    authoring_version: 2,
-    spec_version: 2,
+    authoring_version: 3,
+    spec_version: 3,
     impl_version: 0,
     apis: RUNTIME_API_VERSIONS,
 	transaction_version: 1,
@@ -218,14 +225,13 @@ impl OnUnbalanced<NegativeImbalance> for DealWithFees {
     }
 }
 
+pub const BLOCK_HASH_COUNT_AS_CONST: BlockNumber = BlockHashCountCommon::get();
+pub const SS58_PREFIX_AS_CONST: u16 = 33;
+pub const MAX_CONSUMERS_AS_CONST: u32 = 16;
+
 parameter_types! {
+    pub const BlockHashCount: BlockNumber = BLOCK_HASH_COUNT_AS_CONST;
     pub const Version: RuntimeVersion = VERSION;
-
-    // This part is copied from Substrate's `bin/node/runtime/src/lib.rs`.
-    //  The `RuntimeBlockLength` and `RuntimeBlockWeights` exist here because the
-    // `DeletionWeightLimit` and `DeletionQueueDepth` depend on those to parameterize
-    // the lazy contract deletion.
-
     pub RuntimeBlockLength: BlockLength =
         BlockLength::max_with_normal_ratio(5 * 1024 * 1024, NORMAL_DISPATCH_RATIO);
     pub RuntimeBlockWeights: BlockWeights = BlockWeights::builder()
@@ -246,72 +252,37 @@ parameter_types! {
         })
         .avg_block_initialization(AVERAGE_ON_INITIALIZE_RATIO)
         .build_or_panic();
-    pub const SS58Prefix: u16 = 33;
+    pub const SS58Prefix: u16 = SS58_PREFIX_AS_CONST;
+    pub const MaxConsumers: u32 = MAX_CONSUMERS_AS_CONST;
 }
 
 // Configure FRAME pallets to include in runtime.
 
 impl frame_system::Config for Runtime {
-    /// The data to be stored in an account.
-    type AccountData = pallet_balances::AccountData<Balance>;
-    /// The identifier used to distinguish between accounts.
-    type AccountId = AccountId;
-    /// Portion of the block weight that is available to all normal transactions.
-    // type AvailableBlockRatio = AvailableBlockRatio;
-    /// The basic call filter to use in dispatchable.
     type BaseCallFilter = Everything;
-    /// The weight of the overhead invoked on the block import process, independent of the
-    /// extrinsics included in that block.
-    // type BlockExecutionWeight = BlockExecutionWeight;
-    /// Maximum number of block number to block hash mappings to keep (oldest pruned first).
-    type BlockHashCount = BlockHashCount;
-    /// The maximum length of a block (in bytes).
-    type BlockLength = RuntimeBlockLength;
-    /// The index type for blocks.
-    type BlockNumber = BlockNumber;
-    /// Block & extrinsics weights: base values and limits.
     type BlockWeights = RuntimeBlockWeights;
-    /// The aggregated dispatch type that is available for extrinsics.
-    type Call = Call;
-    /// The weight of database operations that the runtime can invoke.
+    type BlockLength = RuntimeBlockLength;
     type DbWeight = RocksDbWeight;
-    /// The ubiquitous event type.
-    type Event = Event;
-    /// The base weight of any extrinsic processed by the runtime, independent of the
-    /// logic of that extrinsic. (Signature verification, nonce increment, fee, etc...)
-    // type ExtrinsicBaseWeight = ExtrinsicBaseWeight;
-    /// The type for hashing blocks and tries.
-    type Hash = Hash;
-    /// The hashing algorithm used.
-    type Hashing = BlakeTwo256;
-    /// The header type.
-    type Header = generic::Header<BlockNumber, BlakeTwo256>;
-    /// The index type for storing how many extrinsics an account has signed.
-    type Index = Index;
-    /// The lookup mechanism to get account ID from whatever is passed in dispatchers.
-    type Lookup = AccountIdLookup<AccountId, ()>;
-    type MaxConsumers = frame_support::traits::ConstU32<16>;
-    /// The maximum weight that a single extrinsic of `Normal` dispatch class can have,
-    /// idependent of the logic of that extrinsics. (Roughly max block weight - average on
-    /// initialize cost).
-    // type MaximumExtrinsicWeight = MaximumExtrinsicWeight;
-    /// What to do if an account is fully reaped from the system.
-    type OnKilledAccount = ();
-    /// What to do if a new account is created.
-    type OnNewAccount = ();
-    /// The ubiquitous origin type.
     type Origin = Origin;
-    /// Converts a module to the index of the module in `construct_runtime!`.
-    ///
-    /// This type is being generated by `construct_runtime!`.
-    type PalletInfo = PalletInfo;
-    /// This is used as an identifier of the chain. 42 is the generic substrate prefix.
-    type SS58Prefix = SS58Prefix;
-    /// Weight information for the extrinsics of this pallet.
-    type SystemWeightInfo = ();
-    /// Version of the runtime.
+    type Call = Call;
+    type Index = Index;
+    type BlockNumber = BlockNumber;
+    type Hash = Hash;
+    type Hashing = BlakeTwo256;
+    type AccountId = AccountId;
+    type Lookup = AccountIdLookup<AccountId, ()>;
+    type Header = generic::Header<BlockNumber, BlakeTwo256>;
+    type Event = Event;
+    type BlockHashCount = ConstU32<BLOCK_HASH_COUNT_AS_CONST>;
     type Version = Version;
+    type PalletInfo = PalletInfo;
+    type AccountData = pallet_balances::AccountData<Balance>;
+    type OnNewAccount = ();
+    type OnKilledAccount = ();
+    type SystemWeightInfo = frame_system::weights::SubstrateWeight<Runtime>;
     type OnSetCode = cumulus_pallet_parachain_system::ParachainSetCode<Self>;
+    type SS58Prefix = ConstU16<SS58_PREFIX_AS_CONST>;
+    type MaxConsumers = ConstU32<MAX_CONSUMERS_AS_CONST>;
 }
 
 parameter_types! {

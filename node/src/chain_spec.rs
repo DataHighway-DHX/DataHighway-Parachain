@@ -20,7 +20,7 @@ use datahighway_parachain_runtime::{
     // TechnicalCommitteeConfig,
     // TechnicalMembershipConfig,
     TransactionPaymentConfig,
-    PalletTreasuryConfig,
+    TreasuryConfig,
 };
 use module_primitives::{
     constants::currency::{
@@ -154,7 +154,7 @@ pub fn datahighway_session_keys(keys: AuraId) -> datahighway_parachain_runtime::
 // But since DataHighway is using an SS58 address prefix of 33 instead of
 // Substrate's default of 42, the address corresponds to
 // 4LTFqiD6H6g8a7ur9WH4RxhWx2givWfK7o5EDed3ai1nYTvk.
-// This is pallet_treasury's account_id.
+// This is treasury's account_id.
 //
 // In the older version of Substrate 2 it did not have instantiable support for treasury
 // but was later supported in Substrate 3 and was fixed here
@@ -1150,7 +1150,7 @@ fn spreehafen_testnet_genesis(
             members: vec![root_key.clone()],
             phantom: Default::default(),
         },
-        pallet_treasury: PalletTreasuryConfig::default(),
+        treasury: TreasuryConfig::default(),
         sudo: SudoConfig {
             key: Some(root_key.clone()),
         },
@@ -1196,7 +1196,6 @@ fn spreehafen_testnet_genesis(
         //     members: vec![root_key.clone()],
         //     phantom: Default::default(),
         // },
-        // treasury: PalletTreasuryConfig::default(),
 		transaction_payment: TransactionPaymentConfig::default(),
         aura_ext: Default::default(),
         parachain_system: Default::default(),
@@ -1235,7 +1234,7 @@ fn testnet_genesis(
             members: vec![root_key.clone()],
             phantom: Default::default(),
         },
-        pallet_treasury: PalletTreasuryConfig::default(),
+        treasury: TreasuryConfig::default(),
         sudo: SudoConfig {
             key: Some(root_key.clone()),
         },
@@ -1281,7 +1280,6 @@ fn testnet_genesis(
         //     members: vec![root_key.clone()],
         //     phantom: Default::default(),
         // },
-        // treasury: PalletTreasuryConfig::default(),
 		transaction_payment: TransactionPaymentConfig::default(),
         aura_ext: Default::default(),
         parachain_system: Default::default(),
@@ -1320,7 +1318,7 @@ fn dev_genesis(
             members: vec![root_key.clone()],
             phantom: Default::default(),
         },
-        pallet_treasury: PalletTreasuryConfig::default(),
+        treasury: TreasuryConfig::default(),
         sudo: SudoConfig {
             key: Some(root_key.clone()),
         },
@@ -1366,7 +1364,6 @@ fn dev_genesis(
         //     members: vec![root_key.clone()],
         //     phantom: Default::default(),
         // },
-        // treasury: PalletTreasuryConfig::default(),
 		transaction_payment: TransactionPaymentConfig::default(),
         aura_ext: Default::default(),
         parachain_system: Default::default(),
@@ -1414,7 +1411,7 @@ fn baikal_testnet_genesis(
             members: vec![root_key.clone()],
             phantom: Default::default(),
         },
-        pallet_treasury: PalletTreasuryConfig::default(),
+        treasury: TreasuryConfig::default(),
         sudo: SudoConfig {
             key: Some(root_key.clone()),
         },
@@ -1460,7 +1457,6 @@ fn baikal_testnet_genesis(
         //     members: vec![root_key.clone()],
         //     phantom: Default::default(),
         // },
-        // treasury: PalletTreasuryConfig::default(),
 		transaction_payment: TransactionPaymentConfig::default(),
         aura_ext: Default::default(),
         parachain_system: Default::default(),
@@ -1498,7 +1494,7 @@ fn tanganika_testnet_genesis(
             members: vec![root_key.clone()],
             phantom: Default::default(),
         },
-        pallet_treasury: PalletTreasuryConfig::default(),
+        treasury: TreasuryConfig::default(),
         sudo: SudoConfig {
             key: Some(root_key.clone()),
         },
@@ -1544,7 +1540,6 @@ fn tanganika_testnet_genesis(
         //     members: vec![root_key.clone()],
         //     phantom: Default::default(),
         // },
-        // treasury: PalletTreasuryConfig::default(),
 		transaction_payment: TransactionPaymentConfig::default(),
         aura_ext: Default::default(),
         parachain_system: Default::default(),

@@ -499,12 +499,12 @@ where
 //     // send the slashed funds to the pallet treasury.
 //     type Reward = ();
 //     type RewardCurve = RewardCurve;
-//     type RewardRemainder = PalletTreasury;
+//     type RewardRemainder = Treasury;
 //     type SessionInterface = Self;
 //     type OffchainSolutionWeightLimit = OffchainSolutionWeightLimit;
 //     // rewards are minted from the void
 //     type SessionsPerEra = SessionsPerEra;
-//     type Slash = PalletTreasury;
+//     type Slash = Treasury;
 //     /// A super-majority of the council can cancel the slash.
 //     type SlashCancelOrigin = pallet_collective::EnsureProportionAtLeast<_3, _4, AccountId, GeneralCouncilInstance>;
 //     type SlashDeferDuration = SlashDeferDuration;
@@ -860,7 +860,7 @@ construct_runtime!(
 
         GeneralCouncil: pallet_collective::<Instance1>::{Pallet, Call, Storage, Origin<T>, Event<T>, Config<T>},
         GeneralCouncilMembership: pallet_membership::<Instance1>::{Pallet, Call, Storage, Event<T>, Config<T>},
-        PalletTreasury: pallet_treasury::{Pallet, Call, Storage, Config, Event<T>},
+        Treasury: pallet_treasury::{Pallet, Call, Storage, Config, Event<T>},
         //Staking: pallet_staking::{Pallet, Call, Config<T>, Storage, Event<T>},
         MembershipSupernodes: membership_supernodes::{Pallet, Call, Storage, Event<T>},
         RoamingOperators: roaming_operators::{Pallet, Call, Storage, Event<T>},

@@ -15,9 +15,9 @@ use sp_runtime::{
     create_runtime_str, generic, impl_opaque_keys,
     traits::{AccountIdLookup, BlakeTwo256, Block as BlockT, IdentifyAccount, Verify},
 	transaction_validity::{TransactionSource, TransactionValidity},
-	ApplyExtrinsicResult, MultiSignature,
+	ApplyExtrinsicResult, MultiSignature, FixedPointNumber,
 };
-pub use sp_runtime::{MultiAddress, Perbill, Percent, Permill};
+pub use sp_runtime::{MultiAddress, Perbill, Percent, Permill, Perquintill};
 use sp_std::prelude::*;
 #[cfg(feature = "std")]
 use sp_version::NativeVersion;
@@ -28,7 +28,7 @@ pub use frame_support::{
 	traits::{ConstU8, ConstU16, ConstU32, ConstU64, ConstU128, Contains, ContainsLengthBound, Currency, Everything, Imbalance, KeyOwnerProofSystem, OnUnbalanced},
 	weights::{
 		constants::{BlockExecutionWeight, ExtrinsicBaseWeight, WEIGHT_PER_SECOND},
-		DispatchClass, Weight, WeightToFeeCoefficient, WeightToFeeCoefficients,
+		DispatchClass, IdentityFee, Weight, WeightToFeeCoefficient, WeightToFeeCoefficients,
 		WeightToFeePolynomial,
 	},
 	PalletId,
@@ -36,6 +36,15 @@ pub use frame_support::{
 use frame_system::{
     limits::{BlockLength, BlockWeights},
     EnsureRoot,
+};
+pub use pallet_transaction_payment::{
+    CurrencyAdapter,
+    Multiplier,
+    TargetedFeeAdjustment,
+};
+use pallet_transaction_payment::{
+    FeeDetails,
+    RuntimeDispatchInfo,
 };
 pub use sp_consensus_aura::sr25519::AuthorityId as AuraId;
 use xcm_config::{XcmConfig, XcmOriginToTransactDispatchOrigin};
@@ -285,16 +294,17 @@ impl frame_system::Config for Runtime {
     type MaxConsumers = ConstU32<MAX_CONSUMERS_AS_CONST>;
 }
 
+pub const MAX_AUTHORITIES_AS_CONST: u32 = 100;
+
 parameter_types! {
     pub const MinimumPeriod: u64 = SLOT_DURATION / 2;
 }
 
 impl pallet_timestamp::Config for Runtime {
     type MinimumPeriod = MinimumPeriod;
-    /// A timestamp: milliseconds since the unix epoch.
     type Moment = Moment;
-    type OnTimestampSet = ();
-    type WeightInfo = ();
+    type OnTimestampSet = Aura;
+    type WeightInfo = pallet_timestamp::weights::SubstrateWeight<Runtime>;
 }
 
 parameter_types! {
@@ -305,43 +315,54 @@ impl pallet_authorship::Config for Runtime {
     type FindAuthor = pallet_session::FindAccountFromAuthorIndex<Self, Aura>;
     type UncleGenerations = UncleGenerations;
     type FilterUncle = ();
+    // TODO - should this list also include Staking and ImOnline?
     type EventHandler = (CollatorSelection,);
 }
 
+pub const MAX_LOCKS_AS_CONST: u32 = 50;
+pub const EXISTENTIAL_DEPOSIT_AS_CONST: Balance = EXISTENTIAL_DEPOSIT;
+
 parameter_types! {
-    pub const ExistentialDeposit: Balance = EXISTENTIAL_DEPOSIT;
-    pub const MaxLocks: u32 = 50;
+    pub const ExistentialDeposit: Balance = EXISTENTIAL_DEPOSIT_AS_CONST;
+    pub const MaxLocks: u32 = MAX_LOCKS_AS_CONST;
     pub const MaxReserves: u32 = 50;
 }
 
 impl pallet_balances::Config for Runtime {
+    // TODO - is `System` the same as `frame_system::Pallet<Runtime>`?
     type AccountStore = System;
-    /// The type for recording an account's balance.
     type Balance = Balance;
     type DustRemoval = ();
-    /// The ubiquitous event type.
     type Event = Event;
-    type ExistentialDeposit = ExistentialDeposit;
-    type MaxLocks = MaxLocks;
+    type ExistentialDeposit = ConstU128<EXISTENTIAL_DEPOSIT_AS_CONST>;
+    type MaxLocks = ConstU32<MAX_LOCKS_AS_CONST>;
     type MaxReserves = MaxReserves;
     type WeightInfo = pallet_balances::weights::SubstrateWeight<Runtime>;
     type ReserveIdentifier = [u8; 8];
 }
+
+pub const OPERATIONAL_FEE_MULTIPLIER_AS_CONST: u8 = 5;
 
 parameter_types! {
     /// Relay Chain `TransactionByteFee` / 10
     // Note: Kusama relay chain's `TransactionByteFee` is 10 * MILLICENTS,
     // so 1/10 of that is 1 * MILLICENTS
     pub const TransactionByteFee: Balance = 1 * MILLICENTS;
-    pub const OperationalFeeMultiplier: u8 = 5;
+    pub const OperationalFeeMultiplier: u8 = OPERATIONAL_FEE_MULTIPLIER_AS_CONST;
+    // TODO - do we need the below in a parachain or only standalone?
+    pub const TargetBlockFullness: Perquintill = Perquintill::from_percent(25);
+    pub AdjustmentVariable: Multiplier = Multiplier::saturating_from_rational(1, 100_000);
+    pub MinimumMultiplier: Multiplier = Multiplier::saturating_from_rational(1, 1_000_000_000u128);
 }
 
 impl pallet_transaction_payment::Config for Runtime {
-    type OnChargeTransaction = pallet_transaction_payment::CurrencyAdapter<Balances, ()>;
+    type OnChargeTransaction = pallet_transaction_payment::CurrencyAdapter<Balances, DealWithFees>;
     type TransactionByteFee = TransactionByteFee;
-    type WeightToFee = WeightToFee;
-    type FeeMultiplierUpdate = SlowAdjustingFeeUpdate<Self>;
-    type OperationalFeeMultiplier = OperationalFeeMultiplier;
+    type WeightToFee = IdentityFee<Balance>;
+    // TODO - is this change required in parachain codebase or only standalone chain?
+    type FeeMultiplierUpdate =
+        TargetedFeeAdjustment<Self, TargetBlockFullness, AdjustmentVariable, MinimumMultiplier>;
+    type OperationalFeeMultiplier = ConstU8<OPERATIONAL_FEE_MULTIPLIER_AS_CONST>;
 }
 
 parameter_types! {

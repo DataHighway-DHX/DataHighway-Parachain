@@ -10,7 +10,7 @@ use datahighway_parachain_runtime::{
     // DemocracyConfig,
     ElectionsConfig,
     GenesisConfig,
-    // IndicesConfig,
+    IndicesConfig,
     SessionConfig,
     // SessionKeys,
     SudoConfig,
@@ -1140,9 +1140,9 @@ fn spreehafen_testnet_genesis(
                 .map(|x| (x.0.clone(), x.1.clone()))
                 .collect(),
         },
-        // indices: IndicesConfig {
-        //     indices: endowed_accounts.iter().enumerate().map(|(index, x)| (index as u32, (*x).clone())).collect(),
-        // },
+        indices: IndicesConfig {
+            indices: endowed_accounts.iter().enumerate().map(|(index, x)| (index as u32, (*x).clone())).collect(),
+        },
         treasury: TreasuryConfig::default(),
         sudo: SudoConfig {
             key: Some(root_key.clone()),
@@ -1219,9 +1219,9 @@ fn testnet_genesis(
                 .map(|x| (x.0.clone(), x.1.clone()))
                 .collect(),
         },
-        // indices: IndicesConfig {
-        //     indices: endowed_accounts.iter().enumerate().map(|(index, x)| (index as u32, (*x).clone())).collect(),
-        // },
+        indices: IndicesConfig {
+            indices: endowed_accounts.iter().enumerate().map(|(index, x)| (index as u32, (*x).clone())).collect(),
+        },
         treasury: TreasuryConfig::default(),
         sudo: SudoConfig {
             key: Some(root_key.clone()),
@@ -1298,9 +1298,9 @@ fn dev_genesis(
                 .map(|x| (x.0.clone(), x.1.clone()))
                 .collect(),
         },
-        // indices: IndicesConfig {
-        //     indices: endowed_accounts.iter().enumerate().map(|(index, x)| (index as u32, (*x).clone())).collect(),
-        // },
+        indices: IndicesConfig {
+            indices: endowed_accounts.iter().enumerate().map(|(index, x)| (index as u32, (*x).clone())).collect(),
+        },
         treasury: TreasuryConfig::default(),
         sudo: SudoConfig {
             key: Some(root_key.clone()),
@@ -1388,9 +1388,9 @@ fn baikal_testnet_genesis(
                 })
                 .collect(),
         },
-        // indices: IndicesConfig {
-        //     indices: endowed_accounts.iter().enumerate().map(|(index, x)| (index as u32, (*x).clone())).collect(),
-        // },
+        indices: IndicesConfig {
+            indices: endowed_accounts.iter().enumerate().map(|(index, x)| (index as u32, (*x).clone())).collect(),
+        },
         treasury: TreasuryConfig::default(),
         sudo: SudoConfig {
             key: Some(root_key.clone()),
@@ -1467,9 +1467,9 @@ fn tanganika_testnet_genesis(
                 .map(|x| (x.0.clone(), x.1.clone()))
                 .collect(),
         },
-        // indices: IndicesConfig {
-        //     indices: endowed_accounts.iter().enumerate().map(|(index, x)| (index as u32, (*x).clone())).collect(),
-        // },
+        indices: IndicesConfig {
+            indices: endowed_accounts.iter().enumerate().map(|(index, x)| (index as u32, (*x).clone())).collect(),
+        },
         treasury: TreasuryConfig::default(),
         sudo: SudoConfig {
             key: Some(root_key.clone()),

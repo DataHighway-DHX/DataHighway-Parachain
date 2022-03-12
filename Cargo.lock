@@ -1807,6 +1807,7 @@ dependencies = [
  "pallet-collator-selection",
  "pallet-collective",
  "pallet-elections-phragmen",
+ "pallet-indices",
  "pallet-membership",
  "pallet-randomness-collective-flip",
  "pallet-session",

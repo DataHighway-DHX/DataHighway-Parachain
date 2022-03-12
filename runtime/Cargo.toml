@@ -120,7 +120,7 @@ pallet-elections-phragmen = { git = 'https://github.com/paritytech/substrate', b
 # pallet-im-online = { git = 'https://github.com/paritytech/substrate', branch = 'polkadot-v0.9.17', default-features = false }
 
 # TODO - do we need this for parachain?
-# pallet-indices = { git = 'https://github.com/paritytech/substrate', branch = 'polkadot-v0.9.17', default-features = false }
+pallet-indices = { git = 'https://github.com/paritytech/substrate', branch = 'polkadot-v0.9.17', default-features = false }
 pallet-membership = { git = 'https://github.com/paritytech/substrate', branch = 'polkadot-v0.9.17', default-features = false }
 
 # TODO - do we need this for parachain?
@@ -197,7 +197,6 @@ std = [
     # 'sp-transaction-storage-proof/std',
 	'sp-version/std',
     # 'sp-npos-elections/std',
-    # 'module-primitives/std',
 	'frame-executive/std',
 	'frame-support/std',
 	'frame-system/std',
@@ -218,7 +217,7 @@ std = [
     # 'pallet-election-provider-multi-phase/std',
     # # 'pallet-grandpa/std',
     # 'pallet-identity/std',
-    # 'pallet-indices/std',
+    'pallet-indices/std',
     # 'pallet-im-online/std',
     'pallet-membership/std',
     # 'pallet-multisig/std',

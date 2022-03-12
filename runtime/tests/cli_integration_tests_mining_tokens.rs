@@ -211,8 +211,8 @@ mod tests {
     pub type MiningClaimsTokenTestModule = MiningClaimsTokenModule<Test>;
     pub type MiningExecutionTokenTestModule = MiningExecutionTokenModule<Test>;
     pub type MembershipSupernodesTestModule = MembershipSupernodesModule<Test>;
-    type Randomness = pallet_randomness_collective_flip::Module<Test>;
-    type MembershipSupernodes = membership_supernodes::Module<Test>;
+    type Randomness = pallet_randomness_collective_flip::Pallet<Test>;
+    type MembershipSupernodes = membership_supernodes::Pallet<Test>;
 
     // This function basically just builds a genesis storage key/value store according to
     // our desired mockup.

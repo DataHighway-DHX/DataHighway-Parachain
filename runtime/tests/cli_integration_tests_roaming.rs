@@ -19,78 +19,88 @@ mod tests {
     use frame_support::{
         assert_ok,
         parameter_types,
+        traits::{
+            ConstU8,
+            ConstU16,
+            ConstU32,
+            ConstU64,
+            ConstU128,
+        },
         weights::{
             IdentityFee,
             Weight,
         },
     };
-    use frame_support::traits::Everything;
-    pub use pallet_transaction_payment::CurrencyAdapter;
+
     use sp_core::H256;
     use sp_runtime::{
         testing::Header,
         traits::{
             BlakeTwo256,
             IdentityLookup,
+
         },
+    };
+    pub use pallet_transaction_payment::{
+        CurrencyAdapter,
     };
     // Import Config for each runtime module being tested
     use roaming_accounting_policies::{
-        Config as RoamingAccountingPolicyConfig,
         Module as RoamingAccountingPolicyModule,
         RoamingAccountingPolicySetting,
+        Config as RoamingAccountingPolicyConfig,
     };
     use roaming_agreement_policies::{
-        Config as RoamingAgreementPolicyConfig,
         Module as RoamingAgreementPolicyModule,
         RoamingAgreementPolicySetting,
+        Config as RoamingAgreementPolicyConfig,
     };
     use roaming_billing_policies::{
-        Config as RoamingBillingPolicyConfig,
         Module as RoamingBillingPolicyModule,
         RoamingBillingPolicySetting,
+        Config as RoamingBillingPolicyConfig,
     };
     use roaming_charging_policies::{
-        Config as RoamingChargingPolicyConfig,
         Module as RoamingChargingPolicyModule,
         RoamingChargingPolicySetting,
+        Config as RoamingChargingPolicyConfig,
     };
     use roaming_device_profiles::{
-        Config as RoamingDeviceProfileConfig,
         Module as RoamingDeviceProfileModule,
         RoamingDeviceProfileSetting,
+        Config as RoamingDeviceProfileConfig,
     };
     use roaming_devices::{
-        Config as RoamingDeviceConfig,
         Module as RoamingDeviceModule,
+        Config as RoamingDeviceConfig,
     };
     use roaming_network_profiles::{
-        Config as RoamingNetworkProfileConfig,
         Module as RoamingNetworkProfileModule,
+        Config as RoamingNetworkProfileConfig,
     };
     use roaming_network_servers::{
-        Config as RoamingNetworkServerConfig,
         Module as RoamingNetworkServerModule,
+        Config as RoamingNetworkServerConfig,
     };
     use roaming_networks::{
-        Config as RoamingNetworkConfig,
         Module as RoamingNetworkModule,
+        Config as RoamingNetworkConfig,
     };
     use roaming_operators::{
-        Config as RoamingOperatorConfig,
         Module as RoamingOperatorModule,
+        Config as RoamingOperatorConfig,
     };
     use roaming_organizations::{
-        Config as RoamingOrganizationConfig,
         Module as RoamingOrganizationModule,
+        Config as RoamingOrganizationConfig,
     };
     use roaming_routing_profiles::{
-        Config as RoamingRoutingProfileConfig,
         Module as RoamingRoutingProfileModule,
+        Config as RoamingRoutingProfileConfig,
     };
     use roaming_service_profiles::{
-        Config as RoamingServiceProfileConfig,
         Module as RoamingServiceProfileModule,
+        Config as RoamingServiceProfileConfig,
     };
 
     // pub fn origin_of(who: &AccountId) -> <Runtime as frame_system::Config>::Origin {
@@ -114,62 +124,56 @@ mod tests {
     );
 
     parameter_types! {
-        pub const BlockHashCount: u64 = 250;
-        pub const SS58Prefix: u8 = 33;
+        pub const BlockHashCount: u32 = 250;
+        pub const SS58Prefix: u16 = 33;
     }
     impl frame_system::Config for Test {
-        type AccountData = pallet_balances::AccountData<u64>;
-        type AccountId = u64;
-        type BaseCallFilter = Everything;
-        type BlockHashCount = BlockHashCount;
-        type BlockLength = ();
-        type BlockNumber = u64;
+        type BaseCallFilter = frame_support::traits::Everything;
         type BlockWeights = ();
-        type Call = Call;
+        type BlockLength = ();
         type DbWeight = ();
-        // type WeightMultiplierUpdate = ();
-        type Event = ();
+        type Origin = Origin;
+        type Call = Call;
+        type Index = u64;
+        type BlockNumber = u64;
         type Hash = H256;
         type Hashing = BlakeTwo256;
-        type Header = Header;
-        type Index = u64;
+        type AccountId = u128; // u64 is not enough to hold bytes used to generate bounty account
         type Lookup = IdentityLookup<Self::AccountId>;
-    type MaxConsumers = frame_support::traits::ConstU32<16>;
-        type OnKilledAccount = ();
-        type OnNewAccount = ();
-        type OnSetCode = ();
-        type Origin = Origin;
-        type PalletInfo = PalletInfo;
-        type SS58Prefix = SS58Prefix;
-        type SystemWeightInfo = ();
+        type Header = Header;
+        type Event = ();
+        type BlockHashCount = ();
         type Version = ();
+        type PalletInfo = PalletInfo;
+        type AccountData = pallet_balances::AccountData<u64>;
+        type OnNewAccount = ();
+        type OnKilledAccount = ();
+        type SystemWeightInfo = ();
+        type SS58Prefix = ();
+    	type OnSetCode = ();
+	    type MaxConsumers = frame_support::traits::ConstU32<16>;
     }
+    impl pallet_randomness_collective_flip::Config for Test {}
+    pub const EXISTENTIAL_DEPOSIT_AS_CONST: u64 = 1;
     parameter_types! {
-        pub const ExistentialDeposit: u64 = 1;
+        pub const ExistentialDeposit: u64 = EXISTENTIAL_DEPOSIT_AS_CONST;
     }
     impl pallet_balances::Config for Test {
-        type AccountStore = System;
-        type Balance = u64;
-        type DustRemoval = ();
-        type Event = ();
-        type ExistentialDeposit = ExistentialDeposit;
         type MaxLocks = ();
         type MaxReserves = ();
         type ReserveIdentifier = [u8; 8];
+        type Balance = u64;
+        type DustRemoval = ();
+        type Event = ();
+        type ExistentialDeposit = ConstU64<EXISTENTIAL_DEPOSIT_AS_CONST>;
+        type AccountStore = System;
         type WeightInfo = ();
     }
-    impl pallet_randomness_collective_flip::Config for Test {}
-
-    parameter_types! {
-        pub const OperationalFeeMultiplier: u8 = 5;
-        pub const TransactionByteFee: u64 = 1;
-    }
-
     impl pallet_transaction_payment::Config for Test {
-        type OperationalFeeMultiplier = OperationalFeeMultiplier;
         type FeeMultiplierUpdate = ();
         type OnChargeTransaction = CurrencyAdapter<Balances, ()>;
         type TransactionByteFee = ();
+        type OperationalFeeMultiplier = ();
         type WeightToFee = IdentityFee<u64>;
     }
     impl RoamingOperatorConfig for Test {

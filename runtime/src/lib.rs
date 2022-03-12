@@ -200,10 +200,6 @@ pub fn native_version() -> NativeVersion {
 	NativeVersion { runtime_version: VERSION, can_author_with: Default::default() }
 }
 
-// TODO - if this is uncommented then it generates error
-// error: duplicate lang item in crate `std`: `panic_impl`.
-// error: duplicate lang item in crate `std`: `oom`.
-
 type NegativeImbalance = <Balances as Currency<AccountId>>::NegativeImbalance;
 
 pub struct DealWithFees;

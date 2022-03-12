@@ -24,7 +24,7 @@ use sp_version::RuntimeVersion;
 
 pub use frame_support::{
 	construct_runtime, parameter_types,
-	traits::{Contains, ContainsLengthBound, Everything, KeyOwnerProofSystem},
+	traits::{Contains, ContainsLengthBound, Currency, Everything, Imbalance, KeyOwnerProofSystem, OnUnbalanced},
 	weights::{
 		constants::{BlockExecutionWeight, ExtrinsicBaseWeight, WEIGHT_PER_SECOND},
 		DispatchClass, Weight, WeightToFeeCoefficient, WeightToFeeCoefficients,
@@ -175,6 +175,13 @@ impl_opaque_keys! {
     }
 }
 
+/// Implementations of some helper traits passed into runtime modules as associated types.
+pub mod impls;
+pub use impls::Author;
+
+/// Generated voter bag information.
+mod voter_bags;
+
 #[sp_version::runtime_version]
 pub const VERSION: RuntimeVersion = RuntimeVersion {
     spec_name: create_runtime_str!("datahighway-parachain"),
@@ -191,6 +198,28 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
 #[cfg(feature = "std")]
 pub fn native_version() -> NativeVersion {
 	NativeVersion { runtime_version: VERSION, can_author_with: Default::default() }
+}
+
+// TODO - if this is uncommented then it generates error
+// error: duplicate lang item in crate `std`: `panic_impl`.
+// error: duplicate lang item in crate `std`: `oom`.
+
+type NegativeImbalance = <Balances as Currency<AccountId>>::NegativeImbalance;
+
+pub struct DealWithFees;
+impl OnUnbalanced<NegativeImbalance> for DealWithFees {
+    fn on_unbalanceds<B>(mut fees_then_tips: impl Iterator<Item=NegativeImbalance>) {
+        if let Some(fees) = fees_then_tips.next() {
+            // for fees, 80% to treasury, 20% to author
+            let mut split = fees.ration(80, 20);
+            if let Some(tips) = fees_then_tips.next() {
+                // for tips, if any, 80% to treasury, 20% to author (though this can be anything)
+                tips.ration_merge_into(80, 20, &mut split);
+            }
+            Treasury::on_unbalanced(split.0);
+            Author::on_unbalanced(split.1);
+        }
+    }
 }
 
 parameter_types! {

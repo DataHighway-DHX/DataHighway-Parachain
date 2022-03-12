@@ -8,7 +8,7 @@ use datahighway_parachain_runtime::{
     CollatorSelectionConfig,
     CouncilConfig,
     // DemocracyConfig,
-    // ElectionsConfig,
+    ElectionsConfig,
     GenesisConfig,
     // IndicesConfig,
     SessionConfig,
@@ -1168,14 +1168,14 @@ fn spreehafen_testnet_genesis(
                 .collect(),
         },
         // democracy: DemocracyConfig::default(),
-        // elections: ElectionsConfig {
-        //     members: endowed_accounts
-        //         .iter()
-        //         .take((num_endowed_accounts + 1) / 2)
-        //         .cloned()
-        //         .map(|member| (member, INITIAL_ENDOWMENT))
-        //         .collect(),
-        // },
+        elections: ElectionsConfig {
+            members: endowed_accounts
+                .iter()
+                .take((num_endowed_accounts + 1) / 2)
+                .cloned()
+                .map(|member| (member, INITIAL_ENDOWMENT))
+                .collect(),
+        },
         // https://github.com/paritytech/substrate/commit/d6ac9f551b71d9c7b69afcebfc68ace310ef74ee
         // collective_Instance1
         council: CouncilConfig::default(),
@@ -1247,14 +1247,14 @@ fn testnet_genesis(
                 .collect(),
         },
         // democracy: DemocracyConfig::default(),
-        // elections: ElectionsConfig {
-        //     members: endowed_accounts
-        //         .iter()
-        //         .take((num_endowed_accounts + 1) / 2)
-        //         .cloned()
-        //         .map(|member| (member, INITIAL_ENDOWMENT))
-        //         .collect(),
-        // },
+        elections: ElectionsConfig {
+            members: endowed_accounts
+                .iter()
+                .take((num_endowed_accounts + 1) / 2)
+                .cloned()
+                .map(|member| (member, INITIAL_ENDOWMENT))
+                .collect(),
+        },
         // https://github.com/paritytech/substrate/commit/d6ac9f551b71d9c7b69afcebfc68ace310ef74ee
         // collective_Instance1
         council: CouncilConfig::default(),
@@ -1326,14 +1326,14 @@ fn dev_genesis(
                 .collect(),
         },
         // democracy: DemocracyConfig::default(),
-        // elections: ElectionsConfig {
-        //     members: endowed_accounts
-        //         .iter()
-        //         .take((num_endowed_accounts + 1) / 2)
-        //         .cloned()
-        //         .map(|member| (member, INITIAL_ENDOWMENT))
-        //         .collect(),
-        // },
+        elections: ElectionsConfig {
+            members: endowed_accounts
+                .iter()
+                .take((num_endowed_accounts + 1) / 2)
+                .cloned()
+                .map(|member| (member, INITIAL_ENDOWMENT))
+                .collect(),
+        },
         // https://github.com/paritytech/substrate/commit/d6ac9f551b71d9c7b69afcebfc68ace310ef74ee
         // collective_Instance1
         council: CouncilConfig::default(),
@@ -1363,6 +1363,8 @@ fn baikal_testnet_genesis(
     id: ParaId,
     _enable_println: bool,
 ) -> GenesisConfig {
+    let num_endowed_accounts = endowed_accounts.len();
+
     GenesisConfig {
         system: datahighway_parachain_runtime::SystemConfig {
             code: datahighway_parachain_runtime::WASM_BINARY.expect("WASM binary was not build, please build it!").to_vec(),
@@ -1414,14 +1416,14 @@ fn baikal_testnet_genesis(
                 .collect(),
         },
         // democracy: DemocracyConfig::default(),
-        // elections: ElectionsConfig {
-        //     members: endowed_accounts
-        //         .iter()
-        //         .take((num_endowed_accounts + 1) / 2)
-        //         .cloned()
-        //         .map(|member| (member, INITIAL_ENDOWMENT))
-        //         .collect(),
-        // },
+        elections: ElectionsConfig {
+            members: endowed_accounts
+                .iter()
+                .take((num_endowed_accounts + 1) / 2)
+                .cloned()
+                .map(|member| (member, INITIAL_ENDOWMENT))
+                .collect(),
+        },
         // https://github.com/paritytech/substrate/commit/d6ac9f551b71d9c7b69afcebfc68ace310ef74ee
         // collective_Instance1
         council: CouncilConfig::default(),
@@ -1451,6 +1453,7 @@ fn tanganika_testnet_genesis(
     id: ParaId,
     _enable_println: bool,
 ) -> GenesisConfig {
+    let num_endowed_accounts = endowed_accounts.len();
     let hardspoon_balances = get_balances(endowed_accounts.clone());
 
     GenesisConfig {
@@ -1492,14 +1495,14 @@ fn tanganika_testnet_genesis(
                 .collect(),
         },
         // democracy: DemocracyConfig::default(),
-        // elections: ElectionsConfig {
-        //     members: endowed_accounts
-        //         .iter()
-        //         .take((num_endowed_accounts + 1) / 2)
-        //         .cloned()
-        //         .map(|member| (member, INITIAL_ENDOWMENT))
-        //         .collect(),
-        // },
+        elections: ElectionsConfig {
+            members: endowed_accounts
+                .iter()
+                .take((num_endowed_accounts + 1) / 2)
+                .cloned()
+                .map(|member| (member, INITIAL_ENDOWMENT))
+                .collect(),
+        },
         // https://github.com/paritytech/substrate/commit/d6ac9f551b71d9c7b69afcebfc68ace310ef74ee
         // collective_Instance1
         council: CouncilConfig::default(),

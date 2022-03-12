@@ -11,10 +11,15 @@ pub mod xcm_config;
 use smallvec::smallvec;
 use sp_api::impl_runtime_apis;
 use sp_core::{crypto::KeyTypeId, u32_trait::{_1, _2, _3, _4, _5}, OpaqueMetadata};
+use sp_inherents::{
+    CheckInherentsResult,
+    InherentData,
+};
 use sp_runtime::{
-    create_runtime_str, generic, impl_opaque_keys,
-    traits::{AccountIdLookup, BlakeTwo256, Block as BlockT, IdentifyAccount, Verify},
-	transaction_validity::{TransactionSource, TransactionValidity},
+    create_runtime_str, curve::PiecewiseLinear, generic, impl_opaque_keys, traits,
+    traits::{AccountIdLookup, BlakeTwo256, Block as BlockT, Convert, IdentifyAccount,
+    IdentityLookup, NumberFor, OpaqueKeys, Saturating, StaticLookup, SaturatedConversion, Verify},
+	transaction_validity::{TransactionPriority, TransactionSource, TransactionValidity},
 	ApplyExtrinsicResult, MultiSignature, FixedPointNumber,
 };
 pub use sp_runtime::{MultiAddress, Perbill, Percent, Permill, Perquintill};
@@ -22,24 +27,28 @@ use sp_std::prelude::*;
 #[cfg(feature = "std")]
 use sp_version::NativeVersion;
 use sp_version::RuntimeVersion;
+use static_assertions::const_assert;
 
 pub use frame_support::{
 	construct_runtime, parameter_types,
 	traits::{
-        ConstU8, ConstU16, ConstU32, ConstU64, ConstU128, Contains, ContainsLengthBound, Currency,
-        EnsureOneOf, Everything, Imbalance, KeyOwnerProofSystem, OnUnbalanced,
+        ConstU8, ConstU16, ConstU32, ConstU64, ConstU128, Currency, EnsureOneOf, EqualPrivilegeOnly,
+        Everything, Imbalance, Contains, ContainsLengthBound, OnUnbalanced, KeyOwnerProofSystem,
+        LockIdentifier, Randomness, StorageInfo, U128CurrencyToVote,
     },
 	weights::{
-		constants::{BlockExecutionWeight, ExtrinsicBaseWeight, WEIGHT_PER_SECOND},
+		constants::{BlockExecutionWeight, ExtrinsicBaseWeight,RocksDbWeight, WEIGHT_PER_SECOND},
 		DispatchClass, IdentityFee, Weight, WeightToFeeCoefficient, WeightToFeeCoefficients,
 		WeightToFeePolynomial,
 	},
 	PalletId,
+    StorageValue,
 };
 use frame_system::{
     limits::{BlockLength, BlockWeights},
     EnsureRoot,
 };
+use pallet_session::historical as pallet_session_historical;
 pub use pallet_transaction_payment::{
     CurrencyAdapter,
     Multiplier,
@@ -60,7 +69,7 @@ pub use pallet_balances::Call as BalancesCall;
 pub use frame_system::Call as SystemCall;
 
 // Polkadot Imports
-use polkadot_runtime_common::{BlockHashCount as BlockHashCountCommon, RocksDbWeight, SlowAdjustingFeeUpdate};
+use polkadot_runtime_common::{BlockHashCount as BlockHashCountCommon, SlowAdjustingFeeUpdate};
 
 // XCM Imports
 use xcm::latest::prelude::BodyId;
@@ -386,6 +395,44 @@ impl pallet_collective::Config<CouncilCollective> for Runtime {
     type WeightInfo = pallet_collective::weights::SubstrateWeight<Runtime>;
 }
 
+
+parameter_types! {
+    pub const CandidacyBond: Balance = 10 * DOLLARS;
+    // 1 storage item created, key size is 32 bytes, value size is 16+16.
+    pub const VotingBondBase: Balance = deposit(1, 64);
+    // additional data per vote is 32 bytes (account id).
+    pub const VotingBondFactor: Balance = deposit(0, 32);
+    pub const TermDuration: BlockNumber = 7 * DAYS;
+    // Check chain_spec. This value should be greater than or equal to the amount of
+    // endowed accounts that are added to election_phragmen
+    pub const DesiredMembers: u32 = 62; // validators 1-10 + sudo + treasury
+    pub const DesiredRunnersUp: u32 = 7;
+    pub const ElectionsPhragmenPalletId: LockIdentifier = *b"phrelect";
+}
+
+// Make sure that there are no more than `MaxMembers` members elected via elections-phragmen.
+const_assert!(DesiredMembers::get() <= CouncilMaxMembers::get());
+
+impl pallet_elections_phragmen::Config for Runtime {
+    type Event = Event;
+    type PalletId = ElectionsPhragmenPalletId;
+    type Currency = Balances;
+    type ChangeMembers = Council;
+    // NOTE: this implies that council's genesis members cannot be set directly and must come from
+    // this module.
+    type InitializeMembers = Council;
+    type CurrencyToVote = U128CurrencyToVote;
+    type CandidacyBond = CandidacyBond;
+    type VotingBondBase = VotingBondBase;
+    type VotingBondFactor = VotingBondFactor;
+    type LoserCandidate = ();
+    type KickedMember = ();
+    type DesiredMembers = DesiredMembers;
+    type DesiredRunnersUp = DesiredRunnersUp;
+    type TermDuration = TermDuration;
+    type WeightInfo = pallet_elections_phragmen::weights::SubstrateWeight<Runtime>;
+}
+
 parameter_types! {
     pub const TechnicalMotionDuration: BlockNumber = 5 * DAYS;
     pub const TechnicalMaxProposals: u32 = 100;
@@ -576,6 +623,17 @@ impl pallet_session::Config for Runtime {
     type SessionHandler = <SessionKeys as sp_runtime::traits::OpaqueKeys>::KeyTypeIdProviders;
     type Keys = SessionKeys;
     type WeightInfo = pallet_session::weights::SubstrateWeight<Runtime>;
+}
+
+impl pallet_tips::Config for Runtime {
+    type Event = Event;
+    type DataDepositPerByte = DataDepositPerByte;
+    type MaximumReasonLength = MaximumReasonLength;
+    type Tippers = Elections;
+    type TipCountdown = TipCountdown;
+    type TipFindersFee = TipFindersFee;
+    type TipReportDepositBase = TipReportDepositBase;
+    type WeightInfo = pallet_tips::weights::SubstrateWeight<Runtime>;
 }
 
 impl pallet_aura::Config for Runtime {
@@ -905,11 +963,12 @@ construct_runtime!(
 
         Council: pallet_collective::<Instance1>,
         TechnicalCommittee: pallet_collective::<Instance2>,
-        // Elections: pallet_elections_phragmen,
+        Elections: pallet_elections_phragmen,
         TechnicalMembership: pallet_membership::<Instance1>,
         Treasury: pallet_treasury::{Pallet, Call, Storage, Config, Event<T>},
         Bounties: pallet_bounties,
         ChildBounties: pallet_child_bounties,
+        Tips: pallet_tips,
         //Staking: pallet_staking::{Pallet, Call, Config<T>, Storage, Event<T>},
         MembershipSupernodes: membership_supernodes::{Pallet, Call, Storage, Event<T>},
         RoamingOperators: roaming_operators::{Pallet, Call, Storage, Event<T>},

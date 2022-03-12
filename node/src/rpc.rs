@@ -7,8 +7,14 @@
 
 use std::sync::Arc;
 
-use datahighway_parachain_runtime::{opaque::Block, AccountId, Balance, Index as Nonce};
-
+use datahighway_parachain_runtime::{opaque::Block};
+use module_primitives::{
+	types::{
+        AccountId,
+        Balance,
+        Index as Nonce,
+    },
+};
 use sc_client_api::AuxStore;
 pub use sc_rpc::{DenyUnsafe, SubscriptionTaskExecutor};
 use sc_transaction_pool_api::TransactionPool;

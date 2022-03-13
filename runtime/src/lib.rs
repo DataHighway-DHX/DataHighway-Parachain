@@ -209,9 +209,6 @@ impl_opaque_keys! {
 pub mod impls;
 pub use impls::Author;
 
-/// Generated voter bag information.
-// mod voter_bags;
-
 #[sp_version::runtime_version]
 pub const VERSION: RuntimeVersion = RuntimeVersion {
     spec_name: create_runtime_str!("datahighway-parachain"),
@@ -329,7 +326,6 @@ impl pallet_authorship::Config for Runtime {
     type FindAuthor = pallet_session::FindAccountFromAuthorIndex<Self, Aura>;
     type UncleGenerations = UncleGenerations;
     type FilterUncle = ();
-    // TODO - should this list also include Staking and ImOnline?
     type EventHandler = (CollatorSelection,);
 }
 
@@ -343,7 +339,6 @@ parameter_types! {
 }
 
 impl pallet_balances::Config for Runtime {
-    // TODO - is `System` the same as `frame_system::Pallet<Runtime>`?
     type AccountStore = System;
     type Balance = Balance;
     type DustRemoval = ();
@@ -363,7 +358,6 @@ parameter_types! {
     // so 1/10 of that is 1 * MILLICENTS
     pub const TransactionByteFee: Balance = 1 * MILLICENTS;
     pub const OperationalFeeMultiplier: u8 = OPERATIONAL_FEE_MULTIPLIER_AS_CONST;
-    // TODO - do we need the below in a parachain or only standalone?
     pub const TargetBlockFullness: Perquintill = Perquintill::from_percent(25);
     pub AdjustmentVariable: Multiplier = Multiplier::saturating_from_rational(1, 100_000);
     pub MinimumMultiplier: Multiplier = Multiplier::saturating_from_rational(1, 1_000_000_000u128);
@@ -373,7 +367,6 @@ impl pallet_transaction_payment::Config for Runtime {
     type OnChargeTransaction = pallet_transaction_payment::CurrencyAdapter<Balances, DealWithFees>;
     type TransactionByteFee = TransactionByteFee;
     type WeightToFee = IdentityFee<Balance>;
-    // TODO - is this change required in parachain codebase or only standalone chain?
     type FeeMultiplierUpdate =
         TargetedFeeAdjustment<Self, TargetBlockFullness, AdjustmentVariable, MinimumMultiplier>;
     type OperationalFeeMultiplier = ConstU8<OPERATIONAL_FEE_MULTIPLIER_AS_CONST>;
@@ -537,38 +530,6 @@ impl pallet_child_bounties::Config for Runtime {
     type WeightInfo = pallet_child_bounties::weights::SubstrateWeight<Runtime>;
 }
 
-// pallet_staking_reward_curve::build! {
-//     const REWARD_CURVE: PiecewiseLinear<'static> = curve!(
-//         min_inflation: 0_025_000,
-//         max_inflation: 0_100_000,
-//         ideal_stake: 0_500_000,
-//         falloff: 0_050_000,
-//         max_piece_count: 40,
-//         test_precision: 0_005_000,
-//     );
-// }
-
-// parameter_types! {
-//     //pub const SessionsPerEra: sp_staking::SessionIndex = 6;
-//     //pub const BondingDuration: pallet_staking::EraIndex = 24 * 28;
-//     //pub const SlashDeferDuration: pallet_staking::EraIndex = 24 * 7; // 1/4 the bonding duration.
-//     //pub const RewardCurve: &'static PiecewiseLinear<'static> = &REWARD_CURVE;
-//     //pub const StakingUnsignedPriority: TransactionPriority = TransactionPriority::max_value() / 2;
-//     // pub const MaxNominatorRewardedPerValidator: u32 = 64;
-//     // pub MinSolutionScoreBump: Perbill = Perbill::from_rational_approximation(5u32, 10_000);
-//     // pub const MaxIterations: u32 = 10;
-//     // pub const ElectionLookahead: BlockNumber = EPOCH_DURATION_IN_BLOCKS / 4;
-//     /// A limit for off-chain phragmen unsigned solution submission.
-//     ///
-//     /// We want to keep it as high as possible, but can't risk having it reject,
-//     /// so we always subtract the base block execution weight.
-//     pub OffchainSolutionWeightLimit: Weight = RuntimeBlockWeights::get()
-//         .get(DispatchClass::Normal)
-//         .max_extrinsic
-//         .expect("Normal extrinsics have weight limit configured by default; qed")
-//         .saturating_sub(BlockExecutionWeight::get());
-// }
-
 // TODO - is this change required in parachain codebase or only standalone chain?
 impl<C> frame_system::offchain::SendTransactionTypes<C> for Runtime
 where
@@ -577,34 +538,6 @@ where
     type Extrinsic = UncheckedExtrinsic;
     type OverarchingCall = Call;
 }
-
-// impl pallet_staking::Config for Runtime {
-//     type BondingDuration = BondingDuration;
-//     type Call = Call;
-//     type Currency = Balances;
-//     type CurrencyToVote = frame_support::traits::U128CurrencyToVote;
-//     type ElectionLookahead = ElectionLookahead;
-//     type Event = Event;
-//     type MaxIterations = MaxIterations;
-//     type MaxNominatorRewardedPerValidator = MaxNominatorRewardedPerValidator;
-//     type MinSolutionScoreBump = MinSolutionScoreBump;
-//     type NextNewSession = Session;
-//     // send the slashed funds to the pallet treasury.
-//     type Reward = ();
-//     type RewardCurve = RewardCurve;
-//     type RewardRemainder = Treasury;
-//     type SessionInterface = Self;
-//     type OffchainSolutionWeightLimit = OffchainSolutionWeightLimit;
-//     // rewards are minted from the void
-//     type SessionsPerEra = SessionsPerEra;
-//     type Slash = Treasury;
-//     /// A super-majority of the council can cancel the slash.
-//     type SlashCancelOrigin = pallet_collective::EnsureProportionAtLeast<_3, _4, AccountId, CouncilCollective>;
-//     type SlashDeferDuration = SlashDeferDuration;
-//     type UnixTime = Timestamp;
-//     type UnsignedPriority = StakingUnsignedPriority;
-//     type WeightInfo = ();
-// }
 
 parameter_types! {
     // matches Kusama
@@ -1323,7 +1256,6 @@ construct_runtime!(
         Multisig: pallet_multisig,
         Referenda: pallet_referenda,
         ConvictionVoting: pallet_conviction_voting,
-        //Staking: pallet_staking::{Pallet, Call, Config<T>, Storage, Event<T>},
         MembershipSupernodes: membership_supernodes::{Pallet, Call, Storage, Event<T>},
         RoamingOperators: roaming_operators::{Pallet, Call, Storage, Event<T>},
         RoamingNetworks: roaming_networks::{Pallet, Call, Storage, Event<T>},

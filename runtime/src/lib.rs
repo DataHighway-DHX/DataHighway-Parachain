@@ -49,6 +49,7 @@ pub use frame_support::{
 use frame_system::{
     limits::{BlockLength, BlockWeights},
     EnsureRoot,
+    EnsureSigned,
 };
 use pallet_session::historical as pallet_session_historical;
 pub use pallet_transaction_payment::{
@@ -1139,6 +1140,35 @@ impl membership_supernodes::Config for Runtime {
 }
 
 parameter_types! {
+	// TODO to be revisited
+	pub const MinimumReward: Balance = 0;
+	pub const Initialized: bool = false;
+	pub const InitializationPayment: Perbill = Perbill::from_percent(30);
+	pub const MaxInitContributorsBatchSizes: u32 = 500;
+	pub const RelaySignaturesThreshold: Perbill = Perbill::from_percent(100);
+	pub const SignatureNetworkIdentifier:  &'static [u8] = b"datahighway-";
+}
+
+impl pallet_crowdloan_rewards::Config for Runtime {
+	type Event = Event;
+	type Initialized = Initialized;
+	type InitializationPayment = InitializationPayment;
+	type MaxInitContributors = MaxInitContributorsBatchSizes;
+	type MinimumReward = MinimumReward;
+	type RewardCurrency = Balances;
+	type RelayChainAccountId = [u8; 32];
+	type RewardAddressAssociateOrigin = EnsureSigned<Self::AccountId>;
+	type RewardAddressChangeOrigin = EnsureSigned<Self::AccountId>;
+	type RewardAddressRelayVoteThreshold = RelaySignaturesThreshold;
+	type SignatureNetworkIdentifier = SignatureNetworkIdentifier;
+	type VestingBlockNumber = cumulus_primitives_core::relay_chain::BlockNumber;
+	type VestingBlockProvider =
+		cumulus_pallet_parachain_system::RelaychainBlockNumberProvider<Self>;
+	type WeightInfo = pallet_crowdloan_rewards::weights::SubstrateWeight<Runtime>;
+}
+
+
+parameter_types! {
 	pub const ReservedXcmpWeight: Weight = MAXIMUM_BLOCK_WEIGHT / 4;
 	pub const ReservedDmpWeight: Weight = MAXIMUM_BLOCK_WEIGHT / 4;
 }
@@ -1247,6 +1277,7 @@ construct_runtime!(
         TechnicalCommittee: pallet_collective::<Instance2>,
         Elections: pallet_elections_phragmen,
         TechnicalMembership: pallet_membership::<Instance1>,
+        CrowdloanRewards: pallet_crowdloan_rewards::{Pallet, Call, Config<T>, Storage, Event<T>},
         Treasury: pallet_treasury::{Pallet, Call, Storage, Config, Event<T>},
         Bounties: pallet_bounties,
         ChildBounties: pallet_child_bounties,

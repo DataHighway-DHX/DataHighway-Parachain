@@ -7,6 +7,7 @@ use datahighway_parachain_runtime::{
     BalancesConfig,
     CollatorSelectionConfig,
     CouncilConfig,
+    CrowdloanRewardsConfig,
     DemocracyConfig,
     ElectionsConfig,
     GenesisConfig,
@@ -83,6 +84,8 @@ const WESTEND_BAIKAL_PROTOCOL_ID: &str = "dhx-westend-baikal";
 const KUSAMA_DEV_PROTOCOL_ID: &str = "dhx-kusama-dev";
 const KUSAMA_LOCAL_PROTOCOL_ID: &str = "dhx-kusama-local";
 const KUSAMA_TANGANIKA_PROTOCOL_ID: &str = "dhx-kusama-tanganika";
+
+const CROWDLOAN_FUND_POT: u128 = 300_000_000_000_000_000_000_000_u128;
 
 /// Specialized `ChainSpec` for the normal parachain runtime.
 pub type ChainSpec = sc_service::GenericChainSpec<datahighway_parachain_runtime::GenesisConfig, Extensions>;
@@ -232,6 +235,8 @@ pub fn datahighway_rococo_development_config() -> ChainSpec {
                     get_account_id_from_seed::<sr25519::Public>("Eve//stash"),
                     get_account_id_from_seed::<sr25519::Public>("Ferdie//stash"),
                 ],
+                // Crowdloan Fund Pot
+                CROWDLOAN_FUND_POT; // 300k DHX,
                 2000.into(),
                 true,
             )
@@ -296,6 +301,8 @@ pub fn datahighway_rococo_local_testnet_config() -> ChainSpec {
                     get_account_id_from_seed::<sr25519::Public>("Eve//stash"),
                     get_account_id_from_seed::<sr25519::Public>("Ferdie//stash"),
                 ],
+                // Crowdloan Fund Pot
+                CROWDLOAN_FUND_POT; // 300k DHX,
                 2000.into(),
                 true,
             )
@@ -360,6 +367,8 @@ pub fn datahighway_chachacha_development_config() -> ChainSpec {
                     get_account_id_from_seed::<sr25519::Public>("Eve//stash"),
                     get_account_id_from_seed::<sr25519::Public>("Ferdie//stash"),
                 ],
+                // Crowdloan Fund Pot
+                CROWDLOAN_FUND_POT; // 300k DHX,
                 2000.into(),
                 true,
             )
@@ -424,6 +433,8 @@ pub fn datahighway_chachacha_local_testnet_config() -> ChainSpec {
                     get_account_id_from_seed::<sr25519::Public>("Eve//stash"),
                     get_account_id_from_seed::<sr25519::Public>("Ferdie//stash"),
                 ],
+                // Crowdloan Fund Pot
+                CROWDLOAN_FUND_POT; // 300k DHX,
                 2000.into(),
                 true,
             )
@@ -524,6 +535,8 @@ pub fn datahighway_rococo_parachain_config() -> ChainSpec {
                     // authority #4 aura
                     hex!["ea239700d67f53d30e39bee0c056f1165a6fb59ad4d5dd495c06d001af366c02"].into(),
                 ],
+                // Crowdloan Fund Pot
+                300_000_000_000_000_000_000_000_u128; // 300k DHX,
                 2026.into(),
                 true,
             )
@@ -624,6 +637,8 @@ pub fn datahighway_chachacha_parachain_config() -> ChainSpec {
                     // authority #4 aura
                     hex!["ea239700d67f53d30e39bee0c056f1165a6fb59ad4d5dd495c06d001af366c02"].into(),
                 ],
+                // Crowdloan Fund Pot
+                300_000_000_000_000_000_000_000_u128; // 300k DHX,
                 2002.into(),
                 true,
             )
@@ -688,6 +703,8 @@ pub fn datahighway_westend_development_config() -> ChainSpec {
                     get_account_id_from_seed::<sr25519::Public>("Eve//stash"),
                     get_account_id_from_seed::<sr25519::Public>("Ferdie//stash"),
                 ],
+                // Crowdloan Fund Pot
+                300_000_000_000_000_000_000_000_u128; // 300k DHX,
                 2000.into(),
                 true,
             )
@@ -752,6 +769,8 @@ pub fn datahighway_westend_local_testnet_config() -> ChainSpec {
                     get_account_id_from_seed::<sr25519::Public>("Eve//stash"),
                     get_account_id_from_seed::<sr25519::Public>("Ferdie//stash"),
                 ],
+                // Crowdloan Fund Pot
+                300_000_000_000_000_000_000_000_u128; // 300k DHX,
                 2000.into(),
                 true,
             )
@@ -816,6 +835,8 @@ pub fn datahighway_kusama_development_config() -> ChainSpec {
                     get_account_id_from_seed::<sr25519::Public>("Eve//stash"),
                     get_account_id_from_seed::<sr25519::Public>("Ferdie//stash"),
                 ],
+                // Crowdloan Fund Pot
+                300_000_000_000_000_000_000_000_u128; // 300k DHX,
                 2000.into(),
                 true,
             )
@@ -880,6 +901,8 @@ pub fn datahighway_kusama_local_testnet_config() -> ChainSpec {
                     get_account_id_from_seed::<sr25519::Public>("Eve//stash"),
                     get_account_id_from_seed::<sr25519::Public>("Ferdie//stash"),
                 ],
+                // Crowdloan Fund Pot
+                300_000_000_000_000_000_000_000_u128; // 300k DHX,
                 2000.into(),
                 true,
             )
@@ -979,6 +1002,8 @@ pub fn datahighway_westend_parachain_config() -> ChainSpec {
                     // authority #4 aura
                     hex!["c27631914b41a8f58e24277158817d064a4144df430dd2cf7baeaa17414deb3e"].into(),
                 ],
+                // Crowdloan Fund Pot
+                300_000_000_000_000_000_000_000_u128; // 300k DHX,
                 2000.into(),
                 true,
             )
@@ -1078,6 +1103,8 @@ pub fn datahighway_kusama_parachain_config() -> ChainSpec {
                     // authority #4 aura
                     hex!["10a3d6854dc35e4b3fd77af4beda98f79dbe9edf5c29c14c8d57bec4bd733c0f"].into(),
                 ],
+                // Crowdloan Fund Pot
+                300_000_000_000_000_000_000_000_u128; // 300k DHX,
                 2000.into(),
                 true,
             )
@@ -1123,6 +1150,7 @@ fn spreehafen_testnet_genesis(
     invulnerables: Vec<(AccountId, AuraId)>,
     root_key: AccountId,
     endowed_accounts: Vec<AccountId>,
+    crowdloan_fund_pot: Balance,
     id: ParaId,
     _enable_println: bool,
 ) -> GenesisConfig {
@@ -1139,6 +1167,9 @@ fn spreehafen_testnet_genesis(
                 .cloned()
                 .map(|x| (x.0.clone(), x.1.clone()))
                 .collect(),
+        },
+        crowdloan_rewards: CrowdloanRewardsConfig {
+            funded_amount: crowdloan_fund_pot,
         },
         indices: IndicesConfig {
             indices: endowed_accounts.iter().enumerate().map(|(index, x)| (index as u32, (*x).clone())).collect(),
@@ -1202,6 +1233,7 @@ fn testnet_genesis(
     invulnerables: Vec<(AccountId, AuraId)>,
     root_key: AccountId,
     endowed_accounts: Vec<AccountId>,
+    crowdloan_fund_pot: Balance,
     id: ParaId,
     _enable_println: bool,
 ) -> GenesisConfig {
@@ -1218,6 +1250,9 @@ fn testnet_genesis(
                 .cloned()
                 .map(|x| (x.0.clone(), x.1.clone()))
                 .collect(),
+        },
+        crowdloan_rewards: CrowdloanRewardsConfig {
+            funded_amount: crowdloan_fund_pot,
         },
         indices: IndicesConfig {
             indices: endowed_accounts.iter().enumerate().map(|(index, x)| (index as u32, (*x).clone())).collect(),
@@ -1281,6 +1316,7 @@ fn dev_genesis(
     invulnerables: Vec<(AccountId, AuraId)>,
     root_key: AccountId,
     endowed_accounts: Vec<AccountId>,
+    crowdloan_fund_pot: Balance,
     id: ParaId,
     _enable_println: bool,
 ) -> datahighway_parachain_runtime::GenesisConfig {
@@ -1297,6 +1333,9 @@ fn dev_genesis(
                 .cloned()
                 .map(|x| (x.0.clone(), x.1.clone()))
                 .collect(),
+        },
+        crowdloan_rewards: CrowdloanRewardsConfig {
+            funded_amount: crowdloan_fund_pot,
         },
         indices: IndicesConfig {
             indices: endowed_accounts.iter().enumerate().map(|(index, x)| (index as u32, (*x).clone())).collect(),
@@ -1360,6 +1399,7 @@ fn baikal_testnet_genesis(
     invulnerables: Vec<(AccountId, AuraId)>,
     root_key: AccountId,
     endowed_accounts: Vec<AccountId>,
+    crowdloan_fund_pot: Balance,
     id: ParaId,
     _enable_println: bool,
 ) -> GenesisConfig {
@@ -1387,6 +1427,9 @@ fn baikal_testnet_genesis(
                     }
                 })
                 .collect(),
+        },
+        crowdloan_rewards: CrowdloanRewardsConfig {
+            funded_amount: crowdloan_fund_pot,
         },
         indices: IndicesConfig {
             indices: endowed_accounts.iter().enumerate().map(|(index, x)| (index as u32, (*x).clone())).collect(),
@@ -1450,6 +1493,7 @@ fn tanganika_testnet_genesis(
     invulnerables: Vec<(AccountId, AuraId)>,
     root_key: AccountId,
     endowed_accounts: Vec<AccountId>,
+    crowdloan_fund_pot: Balance,
     id: ParaId,
     _enable_println: bool,
 ) -> GenesisConfig {
@@ -1466,6 +1510,9 @@ fn tanganika_testnet_genesis(
                 .cloned()
                 .map(|x| (x.0.clone(), x.1.clone()))
                 .collect(),
+        },
+        crowdloan_rewards: CrowdloanRewardsConfig {
+            funded_amount: crowdloan_fund_pot,
         },
         indices: IndicesConfig {
             indices: endowed_accounts.iter().enumerate().map(|(index, x)| (index as u32, (*x).clone())).collect(),

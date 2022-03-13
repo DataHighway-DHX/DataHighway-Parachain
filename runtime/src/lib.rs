@@ -644,6 +644,113 @@ impl pallet_aura::Config for Runtime {
 
 impl pallet_randomness_collective_flip::Config for Runtime {}
 
+impl pallet_utility::Config for Runtime {
+    type Event = Event;
+    type Call = Call;
+    type PalletsOrigin = OriginCaller;
+    type WeightInfo = pallet_utility::weights::SubstrateWeight<Runtime>;
+}
+
+pub const MAX_SCHEDULED_PER_BLOCK_AS_CONST: u32 = 50;
+
+parameter_types! {
+    pub MaximumSchedulerWeight: Weight = Perbill::from_percent(80) *
+        RuntimeBlockWeights::get().max_block;
+    pub const MaxScheduledPerBlock: u32 = MAX_SCHEDULED_PER_BLOCK_AS_CONST;
+    // Retry a scheduled item every 10 blocks (1 minute) until the preimage exists.
+    pub const NoPreimagePostponement: Option<u32> = Some(10);
+}
+
+impl pallet_scheduler::Config for Runtime {
+    type Event = Event;
+    type Origin = Origin;
+    type PalletsOrigin = OriginCaller;
+    type Call = Call;
+    type MaximumWeight = MaximumSchedulerWeight;
+    type ScheduleOrigin = EnsureRoot<AccountId>;
+    type MaxScheduledPerBlock = ConstU32<MAX_SCHEDULED_PER_BLOCK_AS_CONST>;
+    type WeightInfo = pallet_scheduler::weights::SubstrateWeight<Runtime>;
+    type OriginPrivilegeCmp = EqualPrivilegeOnly;
+    type PreimageProvider = Preimage;
+    type NoPreimagePostponement = NoPreimagePostponement;
+}
+
+parameter_types! {
+	pub const PreimageMaxSize: u32 = 4096 * 1024;
+	pub const PreimageBaseDeposit: Balance = 1 * DOLLARS;
+	// One cent: $10,000 / MB
+	pub const PreimageByteDeposit: Balance = 1 * CENTS;
+}
+
+impl pallet_preimage::Config for Runtime {
+	type WeightInfo = pallet_preimage::weights::SubstrateWeight<Runtime>;
+	type Event = Event;
+	type Currency = Balances;
+	type ManagerOrigin = EnsureRoot<AccountId>;
+	type MaxSize = PreimageMaxSize;
+	type BaseDeposit = PreimageBaseDeposit;
+	type ByteDeposit = PreimageByteDeposit;
+}
+
+pub const MAX_VOTES_AS_CONST: u32 = 100;
+
+parameter_types! {
+    pub const LaunchPeriod: BlockNumber = 28 * 24 * 60 * MINUTES;
+    pub const VotingPeriod: BlockNumber = 28 * 24 * 60 * MINUTES;
+    pub const FastTrackVotingPeriod: BlockNumber = 3 * 24 * 60 * MINUTES;
+    pub const InstantAllowed: bool = true;
+    pub const MinimumDeposit: Balance = 100 * DOLLARS;
+    pub const EnactmentPeriod: BlockNumber = 30 * 24 * 60 * MINUTES;
+    pub const CooloffPeriod: BlockNumber = 28 * 24 * 60 * MINUTES;
+    pub const MaxVotes: u32 = MAX_VOTES_AS_CONST;
+    pub const MaxProposals: u32 = 100;
+}
+
+impl pallet_democracy::Config for Runtime {
+    type Proposal = Call;
+    type Event = Event;
+    type Currency = Balances;
+    type EnactmentPeriod = EnactmentPeriod;
+    type LaunchPeriod = LaunchPeriod;
+    type VotingPeriod = VotingPeriod;
+    type VoteLockingPeriod = EnactmentPeriod; // Same as EnactmentPeriod
+    type MinimumDeposit = MinimumDeposit;
+    /// A straight majority of the council can decide what their next motion is.
+    type ExternalOrigin = pallet_collective::EnsureProportionAtLeast<_1, _2, AccountId, CouncilCollective>;
+    /// A super-majority can have the next scheduled referendum be a straight majority-carries vote.
+    type ExternalMajorityOrigin = pallet_collective::EnsureProportionAtLeast<_3, _4, AccountId, CouncilCollective>;
+    /// A unanimous council can have the next scheduled referendum be a straight default-carries
+    /// (NTB) vote.
+    type ExternalDefaultOrigin = pallet_collective::EnsureProportionAtLeast<_1, _1, AccountId, CouncilCollective>;
+    /// Two thirds of the technical committee can have an ExternalMajority/ExternalDefault vote
+    /// be tabled immediately and with a shorter voting/enactment period.
+    type FastTrackOrigin = pallet_collective::EnsureProportionAtLeast<_2, _3, AccountId, TechnicalCollective>;
+    type InstantOrigin = pallet_collective::EnsureProportionAtLeast<_1, _1, AccountId, TechnicalCollective>;
+    type InstantAllowed = frame_support::traits::ConstBool<true>;
+    type FastTrackVotingPeriod = FastTrackVotingPeriod;
+    // To cancel a proposal which has been passed, 2/3 of the council must agree to it.
+    type CancellationOrigin = pallet_collective::EnsureProportionAtLeast<_2, _3, AccountId, CouncilCollective>;
+    // To cancel a proposal before it has been passed, the technical committee must be unanimous or
+    // Root must agree.
+    type CancelProposalOrigin = EnsureOneOf<
+        EnsureRoot<AccountId>,
+        pallet_collective::EnsureProportionAtLeast<_1, _1, AccountId, TechnicalCollective>,
+    >;
+    type BlacklistOrigin = EnsureRoot<AccountId>;
+    // Any single technical committee member may veto a coming council proposal, however they can
+    // only do it once and it lasts only for the cooloff period.
+    type VetoOrigin = pallet_collective::EnsureMember<AccountId, TechnicalCollective>;
+    type CooloffPeriod = CooloffPeriod;
+    type PreimageByteDeposit = PreimageByteDeposit;
+    type OperationalPreimageOrigin = pallet_collective::EnsureMember<AccountId, CouncilCollective>;
+    type Slash = Treasury;
+    type Scheduler = Scheduler;
+    type PalletsOrigin = OriginCaller;
+    type MaxVotes = frame_support::traits::ConstU32<MAX_VOTES_AS_CONST>;
+    type WeightInfo = pallet_democracy::weights::SubstrateWeight<Runtime>;
+    type MaxProposals = MaxProposals;
+}
+
 impl pallet_sudo::Config for Runtime {
     type Call = Call;
     type Event = Event;
@@ -951,11 +1058,13 @@ construct_runtime!(
         ParachainSystem: cumulus_pallet_parachain_system::{
             Pallet, Call, Config, Storage, Inherent, Event<T>, ValidateUnsigned,
         } = 1,
-        RandomnessCollectiveFlip: pallet_randomness_collective_flip::{Pallet, Storage} = 2,
-        Timestamp: pallet_timestamp::{Pallet, Call, Storage, Inherent} = 3,
-        Sudo: pallet_sudo::{Pallet, Call, Config<T>, Storage, Event<T>} = 4,
-        ParachainInfo: parachain_info::{Pallet, Storage, Config} = 5,
-        Indices: pallet_indices = 6,
+        Utility: pallet_utility = 2,
+        RandomnessCollectiveFlip: pallet_randomness_collective_flip::{Pallet, Storage} = 3,
+        Timestamp: pallet_timestamp::{Pallet, Call, Storage, Inherent} = 4,
+        Scheduler: pallet_scheduler = 5,
+        Sudo: pallet_sudo::{Pallet, Call, Config<T>, Storage, Event<T>} = 6,
+        ParachainInfo: parachain_info::{Pallet, Storage, Config} = 7,
+        Indices: pallet_indices = 8,
 
         // Monetary stuff.
         Balances: pallet_balances::{Pallet, Call, Storage, Config<T>, Event<T>} = 10,
@@ -967,8 +1076,9 @@ construct_runtime!(
         Authorship: pallet_authorship::{Pallet, Call, Storage} = 20,
         CollatorSelection: pallet_collator_selection::{Pallet, Call, Storage, Event<T>, Config<T>} = 21,
         Session: pallet_session::{Pallet, Call, Storage, Event, Config<T>} = 22,
-        Aura: pallet_aura::{Pallet, Storage, Config<T>} = 23,
-        AuraExt: cumulus_pallet_aura_ext::{Pallet, Storage, Config} = 24,
+        Democracy: pallet_democracy = 23,
+        Aura: pallet_aura::{Pallet, Storage, Config<T>} = 24,
+        AuraExt: cumulus_pallet_aura_ext::{Pallet, Storage, Config} = 25,
 
         // XCM helpers.
         XcmpQueue: cumulus_pallet_xcmp_queue::{Pallet, Call, Storage, Event<T>} = 30,
@@ -984,6 +1094,7 @@ construct_runtime!(
         Bounties: pallet_bounties,
         ChildBounties: pallet_child_bounties,
         Tips: pallet_tips,
+        Preimage: pallet_preimage,
         //Staking: pallet_staking::{Pallet, Call, Config<T>, Storage, Event<T>},
         MembershipSupernodes: membership_supernodes::{Pallet, Call, Storage, Event<T>},
         RoamingOperators: roaming_operators::{Pallet, Call, Storage, Event<T>},

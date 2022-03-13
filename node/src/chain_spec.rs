@@ -7,7 +7,7 @@ use datahighway_parachain_runtime::{
     BalancesConfig,
     CollatorSelectionConfig,
     CouncilConfig,
-    // DemocracyConfig,
+    DemocracyConfig,
     ElectionsConfig,
     GenesisConfig,
     IndicesConfig,
@@ -1167,7 +1167,7 @@ fn spreehafen_testnet_genesis(
                 })
                 .collect(),
         },
-        // democracy: DemocracyConfig::default(),
+        democracy: DemocracyConfig::default(),
         elections: ElectionsConfig {
             members: endowed_accounts
                 .iter()
@@ -1246,7 +1246,7 @@ fn testnet_genesis(
                 })
                 .collect(),
         },
-        // democracy: DemocracyConfig::default(),
+        democracy: DemocracyConfig::default(),
         elections: ElectionsConfig {
             members: endowed_accounts
                 .iter()
@@ -1325,7 +1325,7 @@ fn dev_genesis(
                 })
                 .collect(),
         },
-        // democracy: DemocracyConfig::default(),
+        democracy: DemocracyConfig::default(),
         elections: ElectionsConfig {
             members: endowed_accounts
                 .iter()
@@ -1415,7 +1415,7 @@ fn baikal_testnet_genesis(
                 })
                 .collect(),
         },
-        // democracy: DemocracyConfig::default(),
+        democracy: DemocracyConfig::default(),
         elections: ElectionsConfig {
             members: endowed_accounts
                 .iter()
@@ -1494,7 +1494,7 @@ fn tanganika_testnet_genesis(
                 })
                 .collect(),
         },
-        // democracy: DemocracyConfig::default(),
+        democracy: DemocracyConfig::default(),
         elections: ElectionsConfig {
             members: endowed_accounts
                 .iter()

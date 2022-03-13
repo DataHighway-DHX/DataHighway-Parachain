@@ -76,7 +76,7 @@ sp-session = { git = 'https://github.com/paritytech/substrate', default-features
 sp-std = { git = 'https://github.com/paritytech/substrate', default-features = false, branch = 'polkadot-v0.9.17' }
 sp-transaction-pool = { git = 'https://github.com/paritytech/substrate', default-features = false, branch = 'polkadot-v0.9.17' }
 # TODO - do we need this for parachain?
-sp-transaction-storage-proof = { git = 'https://github.com/paritytech/substrate', branch = 'polkadot-v0.9.17', default-features = false }
+# sp-transaction-storage-proof = { git = 'https://github.com/paritytech/substrate', branch = 'polkadot-v0.9.17', default-features = false }
 sp-version = { git = 'https://github.com/paritytech/substrate', default-features = false, branch = 'polkadot-v0.9.17' }
 # TODO - do we need this for parachain?
 # sp-npos-elections = { git = 'https://github.com/paritytech/substrate', branch = 'polkadot-v0.9.17', default-features = false }
@@ -90,7 +90,7 @@ frame-system = { git = 'https://github.com/paritytech/substrate', default-featur
 frame-system-benchmarking = { git = 'https://github.com/paritytech/substrate', default-features = false, optional = true, branch = 'polkadot-v0.9.17' }
 frame-system-rpc-runtime-api = { git = 'https://github.com/paritytech/substrate', default-features = false, branch = 'polkadot-v0.9.17' }
 # TODO - do we need this for parachain?
-frame-election-provider-support = { git = 'https://github.com/paritytech/substrate', branch = 'polkadot-v0.9.17', default-features = false }
+# frame-election-provider-support = { git = 'https://github.com/paritytech/substrate', branch = 'polkadot-v0.9.17', default-features = false }
 
 ## Substrate Pallet Dependencies
 pallet-aura = { git = 'https://github.com/paritytech/substrate', default-features = false, branch = 'polkadot-v0.9.17' }
@@ -108,7 +108,7 @@ pallet-child-bounties = { git = 'https://github.com/paritytech/substrate', branc
 pallet-collective = { git = 'https://github.com/paritytech/substrate', branch = 'polkadot-v0.9.17', default-features = false }
 
 # TODO - do we need this for parachain?
-# pallet-conviction-voting = { git = 'https://github.com/paritytech/substrate', branch = 'polkadot-v0.9.17', default-features = false }
+pallet-conviction-voting = { git = 'https://github.com/paritytech/substrate', branch = 'polkadot-v0.9.17', default-features = false }
 pallet-democracy = { git = 'https://github.com/paritytech/substrate', branch = 'polkadot-v0.9.17', default-features = false }
 pallet-elections-phragmen = { git = 'https://github.com/paritytech/substrate', branch = 'polkadot-v0.9.17', default-features = false }
 # pallet-election-provider-multi-phase = { git = 'https://github.com/paritytech/substrate', branch = 'polkadot-v0.9.17', default-features = false }
@@ -116,7 +116,7 @@ pallet-elections-phragmen = { git = 'https://github.com/paritytech/substrate', b
 # TODO - do we need this for parachain? NO
 # pallet-grandpa = { git = 'https://github.com/paritytech/substrate', branch = 'polkadot-v0.9.17', default-features = false }
 
-# pallet-identity = { git = 'https://github.com/paritytech/substrate', branch = 'polkadot-v0.9.17', default-features = false }
+pallet-identity = { git = 'https://github.com/paritytech/substrate', branch = 'polkadot-v0.9.17', default-features = false }
 # pallet-im-online = { git = 'https://github.com/paritytech/substrate', branch = 'polkadot-v0.9.17', default-features = false }
 
 # TODO - do we need this for parachain?
@@ -124,7 +124,7 @@ pallet-indices = { git = 'https://github.com/paritytech/substrate', branch = 'po
 pallet-membership = { git = 'https://github.com/paritytech/substrate', branch = 'polkadot-v0.9.17', default-features = false }
 
 # TODO - do we need this for parachain?
-# pallet-multisig = { git = 'https://github.com/paritytech/substrate', branch = 'polkadot-v0.9.17', default-features = false }
+pallet-multisig = { git = 'https://github.com/paritytech/substrate', branch = 'polkadot-v0.9.17', default-features = false }
 
 # TODO - do we need this for parachain?
 # pallet-offences = { git = 'https://github.com/paritytech/substrate', branch = 'polkadot-v0.9.17', default-features = false }
@@ -135,7 +135,7 @@ pallet-preimage = { git = 'https://github.com/paritytech/substrate', branch = 'p
 pallet-randomness-collective-flip = { git = 'https://github.com/paritytech/substrate', branch = 'polkadot-v0.9.17', default-features = false }
 
 # TODO - do we need this for parachain?
-# pallet-referenda = { git = 'https://github.com/paritytech/substrate', branch = 'polkadot-v0.9.17', default-features = false }
+pallet-referenda = { git = 'https://github.com/paritytech/substrate', branch = 'polkadot-v0.9.17', default-features = false }
 pallet-scheduler = { git = 'https://github.com/paritytech/substrate', branch = 'polkadot-v0.9.17', default-features = false }
 
 pallet-session = { git = 'https://github.com/paritytech/substrate', default-features = false, branch = 'polkadot-v0.9.17' }
@@ -211,20 +211,20 @@ std = [
     'pallet-child-bounties/std',
 	'pallet-collator-selection/std',
     'pallet-collective/std',
-    # 'pallet-conviction-voting/std',
+    'pallet-conviction-voting/std',
     'pallet-democracy/std',
     'pallet-elections-phragmen/std',
     # 'pallet-election-provider-multi-phase/std',
     # # 'pallet-grandpa/std',
-    # 'pallet-identity/std',
+    'pallet-identity/std',
     'pallet-indices/std',
     # 'pallet-im-online/std',
     'pallet-membership/std',
-    # 'pallet-multisig/std',
+    'pallet-multisig/std',
     # 'pallet-offences/std',
     'pallet-preimage/std',
     'pallet-randomness-collective-flip/std',
-    # 'pallet-referenda/std',
+    'pallet-referenda/std',
 	'pallet-session/std',
     'pallet-scheduler/std',
     'pallet-sudo/std',

@@ -131,6 +131,7 @@ pallet-multisig = { git = 'https://github.com/paritytech/substrate', branch = 'p
 
 # TODO - do we need this for parachain?
 pallet-preimage = { git = 'https://github.com/paritytech/substrate', branch = 'polkadot-v0.9.17', default-features = false }
+pallet-proxy = { git = 'https://github.com/paritytech/substrate', branch = 'polkadot-v0.9.17', default-features = false }
 
 pallet-randomness-collective-flip = { git = 'https://github.com/paritytech/substrate', branch = 'polkadot-v0.9.17', default-features = false }
 
@@ -223,6 +224,7 @@ std = [
     'pallet-multisig/std',
     # 'pallet-offences/std',
     'pallet-preimage/std',
+    'pallet-proxy/std',
     'pallet-randomness-collective-flip/std',
     'pallet-referenda/std',
 	'pallet-session/std',

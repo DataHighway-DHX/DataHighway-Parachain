@@ -29,11 +29,12 @@ use sp_version::NativeVersion;
 use sp_version::RuntimeVersion;
 use static_assertions::const_assert;
 
+use codec::{Decode, Encode, MaxEncodedLen};
 pub use frame_support::{
 	construct_runtime, parameter_types,
 	traits::{
         ConstU8, ConstU16, ConstU32, ConstU64, ConstU128, Currency, EnsureOneOf, EqualPrivilegeOnly,
-        Everything, Imbalance, Contains, ContainsLengthBound, OnUnbalanced, KeyOwnerProofSystem,
+        Everything, Imbalance, InstanceFilter, Contains, ContainsLengthBound, OnUnbalanced, KeyOwnerProofSystem,
         LockIdentifier, Randomness, StorageInfo, U128CurrencyToVote,
     },
 	weights::{
@@ -42,6 +43,7 @@ pub use frame_support::{
 		WeightToFeePolynomial,
 	},
 	PalletId,
+    RuntimeDebug,
     StorageValue,
 };
 use frame_system::{
@@ -695,6 +697,88 @@ impl pallet_multisig::Config for Runtime {
     type WeightInfo = pallet_multisig::weights::SubstrateWeight<Runtime>;
 }
 
+
+parameter_types! {
+    // One storage item; key size 32, value size 8; .
+    pub const ProxyDepositBase: Balance = deposit(1, 8);
+    // Additional storage item size of 33 bytes.
+    pub const ProxyDepositFactor: Balance = deposit(0, 33);
+    pub const AnnouncementDepositBase: Balance = deposit(1, 8);
+    pub const AnnouncementDepositFactor: Balance = deposit(0, 66);
+}
+
+/// The type used to represent the kinds of proxying allowed.
+#[derive(
+    Copy,
+    Clone,
+    Eq,
+    PartialEq,
+    Ord,
+    PartialOrd,
+    Encode,
+    Decode,
+    RuntimeDebug,
+    MaxEncodedLen,
+    scale_info::TypeInfo,
+)]
+pub enum ProxyType {
+    Any,
+    NonTransfer,
+    Governance,
+    // Staking,
+}
+impl Default for ProxyType {
+    fn default() -> Self {
+        Self::Any
+    }
+}
+impl InstanceFilter<Call> for ProxyType {
+    fn filter(&self, c: &Call) -> bool {
+        match self {
+            ProxyType::Any => true,
+            ProxyType::NonTransfer => !matches!(
+                c,
+                Call::Balances(..) |
+                    // Call::Assets(..) | Call::Uniques(..) |
+                    // Call::Vesting(pallet_vesting::Call::vested_transfer { .. }) |
+                    Call::Indices(pallet_indices::Call::transfer { .. })
+            ),
+            ProxyType::Governance => matches!(
+                c,
+                Call::Democracy(..) |
+                    Call::Council(..) | // Call::Society(..) |
+                    Call::TechnicalCommittee(..) |
+                    Call::Elections(..) | Call::Treasury(..)
+            ),
+            // ProxyType::Staking => matches!(c, Call::Staking(..)),
+        }
+    }
+    fn is_superset(&self, o: &Self) -> bool {
+        match (self, o) {
+            (x, y) if x == y => true,
+            (ProxyType::Any, _) => true,
+            (_, ProxyType::Any) => false,
+            (ProxyType::NonTransfer, _) => true,
+            _ => false,
+        }
+    }
+}
+
+impl pallet_proxy::Config for Runtime {
+    type Event = Event;
+    type Call = Call;
+    type Currency = Balances;
+    type ProxyType = ProxyType;
+    type ProxyDepositBase = ProxyDepositBase;
+    type ProxyDepositFactor = ProxyDepositFactor;
+    type MaxProxies = ConstU32<32>;
+    type WeightInfo = pallet_proxy::weights::SubstrateWeight<Runtime>;
+    type MaxPending = ConstU32<32>;
+    type CallHasher = BlakeTwo256;
+    type AnnouncementDepositBase = AnnouncementDepositBase;
+    type AnnouncementDepositFactor = AnnouncementDepositFactor;
+}
+
 pub const MAX_SCHEDULED_PER_BLOCK_AS_CONST: u32 = 50;
 
 parameter_types! {
@@ -1218,6 +1302,7 @@ construct_runtime!(
         ChildBounties: pallet_child_bounties,
         Tips: pallet_tips,
         Preimage: pallet_preimage,
+        Proxy: pallet_proxy,
         Multisig: pallet_multisig,
         Referenda: pallet_referenda,
         ConvictionVoting: pallet_conviction_voting,

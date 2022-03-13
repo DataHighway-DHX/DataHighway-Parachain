@@ -7,17 +7,8 @@ use crate::{
 
 use frame_support::{
     parameter_types,
-    traits::{
-        ConstU8,
-        ConstU16,
-        ConstU32,
-        ConstU64,
-        ConstU128,
-    },
-    weights::{
-        IdentityFee,
-        Weight,
-    },
+    traits::{ConstU8, ConstU16, ConstU32, ConstU64, ConstU128},
+    weights::{IdentityFee, Weight},
 };
 
 use sp_core::H256;

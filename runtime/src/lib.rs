@@ -657,24 +657,13 @@ parameter_types! {
 }
 
 /// The type used to represent the kinds of proxying allowed.
-#[derive(
-    Copy,
-    Clone,
-    Eq,
-    PartialEq,
-    Ord,
-    PartialOrd,
-    Encode,
-    Decode,
-    RuntimeDebug,
-    MaxEncodedLen,
-    scale_info::TypeInfo,
+#[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Encode, Decode,
+    RuntimeDebug, MaxEncodedLen, scale_info::TypeInfo,
 )]
 pub enum ProxyType {
     Any,
     NonTransfer,
     Governance,
-    // Staking,
 }
 impl Default for ProxyType {
     fn default() -> Self {
@@ -688,18 +677,15 @@ impl InstanceFilter<Call> for ProxyType {
             ProxyType::NonTransfer => !matches!(
                 c,
                 Call::Balances(..) |
-                    // Call::Assets(..) | Call::Uniques(..) |
-                    // Call::Vesting(pallet_vesting::Call::vested_transfer { .. }) |
-                    Call::Indices(pallet_indices::Call::transfer { .. })
+                Call::Indices(pallet_indices::Call::transfer { .. })
             ),
             ProxyType::Governance => matches!(
                 c,
                 Call::Democracy(..) |
-                    Call::Council(..) | // Call::Society(..) |
-                    Call::TechnicalCommittee(..) |
-                    Call::Elections(..) | Call::Treasury(..)
+                Call::Council(..) |
+                Call::TechnicalCommittee(..) |
+                Call::Elections(..) | Call::Treasury(..)
             ),
-            // ProxyType::Staking => matches!(c, Call::Staking(..)),
         }
     }
     fn is_superset(&self, o: &Self) -> bool {

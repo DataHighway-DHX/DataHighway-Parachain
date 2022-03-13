@@ -668,6 +668,23 @@ impl pallet_identity::Config for Runtime {
     type WeightInfo = pallet_identity::weights::SubstrateWeight<Runtime>;
 }
 
+parameter_types! {
+	pub const ConfigDepositBase: Balance = 5 * DOLLARS;
+	pub const FriendDepositFactor: Balance = 50 * CENTS;
+	pub const MaxFriends: u16 = 9;
+	pub const RecoveryDeposit: Balance = 5 * DOLLARS;
+}
+
+impl pallet_recovery::Config for Runtime {
+	type Event = Event;
+	type Call = Call;
+	type Currency = Balances;
+	type ConfigDepositBase = ConfigDepositBase;
+	type FriendDepositFactor = FriendDepositFactor;
+	type MaxFriends = MaxFriends;
+	type RecoveryDeposit = RecoveryDeposit;
+}
+
 impl pallet_randomness_collective_flip::Config for Runtime {}
 
 impl pallet_utility::Config for Runtime {
@@ -1268,14 +1285,15 @@ construct_runtime!(
         RandomnessCollectiveFlip: pallet_randomness_collective_flip::{Pallet, Storage} = 3,
         Timestamp: pallet_timestamp::{Pallet, Call, Storage, Inherent} = 4,
         Identity: pallet_identity = 5,
-        Scheduler: pallet_scheduler = 6,
-        Sudo: pallet_sudo::{Pallet, Call, Config<T>, Storage, Event<T>} = 7,
-        ParachainInfo: parachain_info::{Pallet, Storage, Config} = 8,
-        Indices: pallet_indices = 9,
+        Recovery: pallet_recovery = 6,
+        Scheduler: pallet_scheduler = 7,
+        Sudo: pallet_sudo::{Pallet, Call, Config<T>, Storage, Event<T>} = 8,
+        ParachainInfo: parachain_info::{Pallet, Storage, Config} = 9,
+        Indices: pallet_indices = 10,
 
         // Monetary stuff.
-        Balances: pallet_balances::{Pallet, Call, Storage, Config<T>, Event<T>} = 10,
-        TransactionPayment: pallet_transaction_payment::{Pallet, Storage, Config} = 11,
+        Balances: pallet_balances::{Pallet, Call, Storage, Config<T>, Event<T>} = 15,
+        TransactionPayment: pallet_transaction_payment::{Pallet, Storage, Config} = 16,
 
         // Collator support. The order of these 4 are important and shall not change.
         // Authorship must be before session in order to note author in the correct session and era

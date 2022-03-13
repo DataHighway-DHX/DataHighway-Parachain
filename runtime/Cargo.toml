@@ -137,6 +137,7 @@ pallet-randomness-collective-flip = { git = 'https://github.com/paritytech/subst
 
 # TODO - do we need this for parachain?
 pallet-referenda = { git = 'https://github.com/paritytech/substrate', branch = 'polkadot-v0.9.17', default-features = false }
+pallet-recovery = { git = 'https://github.com/paritytech/substrate', branch = 'polkadot-v0.9.17', default-features = false }
 pallet-scheduler = { git = 'https://github.com/paritytech/substrate', branch = 'polkadot-v0.9.17', default-features = false }
 
 pallet-session = { git = 'https://github.com/paritytech/substrate', branch = 'polkadot-v0.9.17', default-features = false }
@@ -226,6 +227,7 @@ std = [
     'pallet-preimage/std',
     'pallet-proxy/std',
     'pallet-randomness-collective-flip/std',
+    'pallet-recovery/std',
     'pallet-referenda/std',
 	'pallet-session/std',
     'pallet-scheduler/std',

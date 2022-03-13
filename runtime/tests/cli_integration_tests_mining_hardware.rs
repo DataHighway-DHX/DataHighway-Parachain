@@ -25,7 +25,6 @@ mod tests {
             Weight,
         },
     };
-
     use sp_core::H256;
     use sp_runtime::{
         testing::Header,
@@ -113,7 +112,7 @@ mod tests {
         type SystemWeightInfo = ();
         type SS58Prefix = ();
     	type OnSetCode = ();
-	    type MaxConsumers = frame_support::traits::ConstU32<16>;
+        type MaxConsumers = frame_support::traits::ConstU32<16>;
     }
     impl pallet_randomness_collective_flip::Config for Test {}
     pub const EXISTENTIAL_DEPOSIT_AS_CONST: u64 = 1;

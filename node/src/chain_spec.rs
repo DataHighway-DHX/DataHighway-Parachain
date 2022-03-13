@@ -1189,7 +1189,7 @@ fn spreehafen_testnet_genesis(
             members: vec![root_key.clone()],
             phantom: Default::default(),
         },
-		transaction_payment: TransactionPaymentConfig::default(),
+        transaction_payment: TransactionPaymentConfig::default(),
         aura_ext: Default::default(),
         parachain_system: Default::default(),
 		polkadot_xcm: datahighway_parachain_runtime::PolkadotXcmConfig {
@@ -1268,7 +1268,7 @@ fn testnet_genesis(
             members: vec![root_key.clone()],
             phantom: Default::default(),
         },
-		transaction_payment: TransactionPaymentConfig::default(),
+        transaction_payment: TransactionPaymentConfig::default(),
         aura_ext: Default::default(),
         parachain_system: Default::default(),
 		polkadot_xcm: datahighway_parachain_runtime::PolkadotXcmConfig {
@@ -1347,7 +1347,7 @@ fn dev_genesis(
             members: vec![root_key.clone()],
             phantom: Default::default(),
         },
-		transaction_payment: TransactionPaymentConfig::default(),
+        transaction_payment: TransactionPaymentConfig::default(),
         aura_ext: Default::default(),
         parachain_system: Default::default(),
 		polkadot_xcm: datahighway_parachain_runtime::PolkadotXcmConfig {
@@ -1437,7 +1437,7 @@ fn baikal_testnet_genesis(
             members: vec![root_key.clone()],
             phantom: Default::default(),
         },
-		transaction_payment: TransactionPaymentConfig::default(),
+        transaction_payment: TransactionPaymentConfig::default(),
         aura_ext: Default::default(),
         parachain_system: Default::default(),
 		polkadot_xcm: datahighway_parachain_runtime::PolkadotXcmConfig {
@@ -1516,7 +1516,7 @@ fn tanganika_testnet_genesis(
             members: vec![root_key.clone()],
             phantom: Default::default(),
         },
-		transaction_payment: TransactionPaymentConfig::default(),
+        transaction_payment: TransactionPaymentConfig::default(),
         aura_ext: Default::default(),
         parachain_system: Default::default(),
 		polkadot_xcm: datahighway_parachain_runtime::PolkadotXcmConfig {

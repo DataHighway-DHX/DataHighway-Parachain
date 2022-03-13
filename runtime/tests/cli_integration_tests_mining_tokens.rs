@@ -22,7 +22,6 @@ mod tests {
         },
     };
     use frame_support::traits::Everything;
-
     use sp_core::H256;
     use sp_runtime::{
         testing::Header,
@@ -113,7 +112,7 @@ mod tests {
         type Header = Header;
         type Index = u64;
         type Lookup = IdentityLookup<Self::AccountId>;
-    type MaxConsumers = frame_support::traits::ConstU32<16>;
+        type MaxConsumers = frame_support::traits::ConstU32<16>;
         type OnKilledAccount = ();
         type OnNewAccount = ();
         type OnSetCode = ();

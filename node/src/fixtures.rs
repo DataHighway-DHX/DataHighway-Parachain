@@ -1,5 +1,5 @@
 use module_primitives::{
-	types::{
+    types::{
         AccountId,
         Balance,
     },

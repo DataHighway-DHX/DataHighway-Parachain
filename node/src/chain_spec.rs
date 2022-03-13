@@ -39,8 +39,6 @@ use hex as hex_runtime; // for runtime string parsing use hex_runtime::encode(".
 use hex_literal::{
     hex, // for parsing string literal at compile time use hex!("...");
 };
-// use sp_authority_discovery::AuthorityId as AuthorityDiscoveryId;
-// use pallet_im_online::sr25519::AuthorityId as ImOnlineId;
 use sc_chain_spec::{
     ChainSpecExtension,
     ChainSpecGroup,
@@ -92,7 +90,6 @@ pub type ChainSpec = sc_service::GenericChainSpec<datahighway_parachain_runtime:
 
 // Note this is the URL for the telemetry server
 const POLKADOT_STAGING_TELEMETRY_URL: &str = "wss://telemetry.polkadot.io/submit/";
-
 /// The default XCM version to set in genesis config.
 const SAFE_XCM_VERSION: u32 = xcm::prelude::XCM_VERSION;
 
@@ -209,6 +206,7 @@ pub fn datahighway_rococo_development_config() -> ChainSpec {
         ChainType::Development,
         move || {
             dev_genesis(
+                // Initial collators
                 vec![
                     (
                         get_account_id_from_seed::<sr25519::Public>("Alice"),
@@ -219,7 +217,9 @@ pub fn datahighway_rococo_development_config() -> ChainSpec {
                         get_collator_keys_from_seed("Bob"),
                     ),
                 ],
+                // Sudo root key
                 get_account_id_from_seed::<sr25519::Public>("Alice"),
+                // Endowed keys
                 vec![
                     dhx_unlocked_reserves_account(),
                     get_account_id_from_seed::<sr25519::Public>("Alice"),
@@ -235,9 +235,9 @@ pub fn datahighway_rococo_development_config() -> ChainSpec {
                     get_account_id_from_seed::<sr25519::Public>("Eve//stash"),
                     get_account_id_from_seed::<sr25519::Public>("Ferdie//stash"),
                 ],
-                // Crowdloan Fund Pot
-                CROWDLOAN_FUND_POT; // 300k DHX,
+                // Parachain ID
                 2000.into(),
+                // Enable println
                 true,
             )
         },
@@ -275,6 +275,7 @@ pub fn datahighway_rococo_local_testnet_config() -> ChainSpec {
         ChainType::Local,
         move || {
             testnet_genesis(
+                // Initial collators
                 vec![
                     (
                         get_account_id_from_seed::<sr25519::Public>("Alice"),
@@ -285,7 +286,9 @@ pub fn datahighway_rococo_local_testnet_config() -> ChainSpec {
                         get_collator_keys_from_seed("Bob"),
                     ),
                 ],
+                // Sudo root key
                 get_account_id_from_seed::<sr25519::Public>("Alice"),
+                // Endowed keys
                 vec![
                     dhx_unlocked_reserves_account(),
                     get_account_id_from_seed::<sr25519::Public>("Alice"),
@@ -301,9 +304,9 @@ pub fn datahighway_rococo_local_testnet_config() -> ChainSpec {
                     get_account_id_from_seed::<sr25519::Public>("Eve//stash"),
                     get_account_id_from_seed::<sr25519::Public>("Ferdie//stash"),
                 ],
-                // Crowdloan Fund Pot
-                CROWDLOAN_FUND_POT; // 300k DHX,
+                // Parachain ID
                 2000.into(),
+                // Enable println
                 true,
             )
         },
@@ -341,6 +344,7 @@ pub fn datahighway_chachacha_development_config() -> ChainSpec {
         ChainType::Development,
         move || {
             dev_genesis(
+                // Initial collators
                 vec![
                     (
                         get_account_id_from_seed::<sr25519::Public>("Alice"),
@@ -351,7 +355,9 @@ pub fn datahighway_chachacha_development_config() -> ChainSpec {
                         get_collator_keys_from_seed("Bob"),
                     ),
                 ],
+                // Sudo root keys
                 get_account_id_from_seed::<sr25519::Public>("Alice"),
+                // Endowed keys
                 vec![
                     dhx_unlocked_reserves_account(),
                     get_account_id_from_seed::<sr25519::Public>("Alice"),
@@ -367,9 +373,9 @@ pub fn datahighway_chachacha_development_config() -> ChainSpec {
                     get_account_id_from_seed::<sr25519::Public>("Eve//stash"),
                     get_account_id_from_seed::<sr25519::Public>("Ferdie//stash"),
                 ],
-                // Crowdloan Fund Pot
-                CROWDLOAN_FUND_POT; // 300k DHX,
+                // Parachain ID
                 2000.into(),
+                // Enable println
                 true,
             )
         },
@@ -407,6 +413,7 @@ pub fn datahighway_chachacha_local_testnet_config() -> ChainSpec {
         ChainType::Local,
         move || {
             testnet_genesis(
+                // Initial collators
                 vec![
                     (
                         get_account_id_from_seed::<sr25519::Public>("Alice"),
@@ -417,7 +424,9 @@ pub fn datahighway_chachacha_local_testnet_config() -> ChainSpec {
                         get_collator_keys_from_seed("Bob"),
                     ),
                 ],
+                // Sudo root key
                 get_account_id_from_seed::<sr25519::Public>("Alice"),
+                // Endowed keys
                 vec![
                     dhx_unlocked_reserves_account(),
                     get_account_id_from_seed::<sr25519::Public>("Alice"),
@@ -433,9 +442,9 @@ pub fn datahighway_chachacha_local_testnet_config() -> ChainSpec {
                     get_account_id_from_seed::<sr25519::Public>("Eve//stash"),
                     get_account_id_from_seed::<sr25519::Public>("Ferdie//stash"),
                 ],
-                // Crowdloan Fund Pot
-                CROWDLOAN_FUND_POT; // 300k DHX,
+                // Parachain ID
                 2000.into(),
+                // Enable println
                 true,
             )
         },
@@ -471,6 +480,7 @@ pub fn datahighway_rococo_parachain_config() -> ChainSpec {
         ChainType::Live,
         move || {
             spreehafen_testnet_genesis(
+                // Initial collators
                 vec![
                     // authority #1
                     (
@@ -502,7 +512,9 @@ pub fn datahighway_rococo_parachain_config() -> ChainSpec {
                     )
 
                 ],
+                // Sudo root key
                 sudo_account_rococo_and_chachacha(),
+                // Endowed keys
                 vec![
                     // Endow the Sudo account to cover transaction fees
                     sudo_account_rococo_and_chachacha(),
@@ -535,9 +547,9 @@ pub fn datahighway_rococo_parachain_config() -> ChainSpec {
                     // authority #4 aura
                     hex!["ea239700d67f53d30e39bee0c056f1165a6fb59ad4d5dd495c06d001af366c02"].into(),
                 ],
-                // Crowdloan Fund Pot
-                300_000_000_000_000_000_000_000_u128; // 300k DHX,
+                // Parachain ID
                 2026.into(),
+                // Enable println
                 true,
             )
         },
@@ -573,6 +585,7 @@ pub fn datahighway_chachacha_parachain_config() -> ChainSpec {
         ChainType::Live,
         move || {
             spreehafen_testnet_genesis(
+                // Initial collators
                 vec![
                     // authority #1
                     (
@@ -604,7 +617,9 @@ pub fn datahighway_chachacha_parachain_config() -> ChainSpec {
                     )
 
                 ],
+                // Sudo root key
                 sudo_account_rococo_and_chachacha(),
+                // Endowed keys
                 vec![
                     // Endow the Sudo account to cover transaction fees
                     sudo_account_rococo_and_chachacha(),
@@ -637,9 +652,9 @@ pub fn datahighway_chachacha_parachain_config() -> ChainSpec {
                     // authority #4 aura
                     hex!["ea239700d67f53d30e39bee0c056f1165a6fb59ad4d5dd495c06d001af366c02"].into(),
                 ],
-                // Crowdloan Fund Pot
-                300_000_000_000_000_000_000_000_u128; // 300k DHX,
+                // Parachain ID
                 2002.into(),
+                // Enable println
                 true,
             )
         },
@@ -677,6 +692,7 @@ pub fn datahighway_westend_development_config() -> ChainSpec {
         ChainType::Development,
         move || {
             dev_genesis(
+                // Initial collators
                 vec![
                     (
                         get_account_id_from_seed::<sr25519::Public>("Alice"),
@@ -687,7 +703,9 @@ pub fn datahighway_westend_development_config() -> ChainSpec {
                         get_collator_keys_from_seed("Bob"),
                     ),
                 ],
+                // Sudo root key
                 get_account_id_from_seed::<sr25519::Public>("Alice"),
+                // Endowed keys
                 vec![
                     dhx_unlocked_reserves_account(),
                     get_account_id_from_seed::<sr25519::Public>("Alice"),
@@ -703,9 +721,9 @@ pub fn datahighway_westend_development_config() -> ChainSpec {
                     get_account_id_from_seed::<sr25519::Public>("Eve//stash"),
                     get_account_id_from_seed::<sr25519::Public>("Ferdie//stash"),
                 ],
-                // Crowdloan Fund Pot
-                300_000_000_000_000_000_000_000_u128; // 300k DHX,
+                // Parachain ID
                 2000.into(),
+                // Enable println
                 true,
             )
         },
@@ -743,6 +761,7 @@ pub fn datahighway_westend_local_testnet_config() -> ChainSpec {
         ChainType::Local,
         move || {
             testnet_genesis(
+                // Initial collators
                 vec![
                     (
                         get_account_id_from_seed::<sr25519::Public>("Alice"),
@@ -753,7 +772,9 @@ pub fn datahighway_westend_local_testnet_config() -> ChainSpec {
                         get_collator_keys_from_seed("Bob"),
                     ),
                 ],
+                // Sudo root key
                 get_account_id_from_seed::<sr25519::Public>("Alice"),
+                // Endowed keys
                 vec![
                     dhx_unlocked_reserves_account(),
                     get_account_id_from_seed::<sr25519::Public>("Alice"),
@@ -769,9 +790,9 @@ pub fn datahighway_westend_local_testnet_config() -> ChainSpec {
                     get_account_id_from_seed::<sr25519::Public>("Eve//stash"),
                     get_account_id_from_seed::<sr25519::Public>("Ferdie//stash"),
                 ],
-                // Crowdloan Fund Pot
-                300_000_000_000_000_000_000_000_u128; // 300k DHX,
+                // Parachain ID
                 2000.into(),
+                // Enable println
                 true,
             )
         },
@@ -809,6 +830,7 @@ pub fn datahighway_kusama_development_config() -> ChainSpec {
         ChainType::Development,
         move || {
             dev_genesis(
+                // Initial collators
                 vec![
                     (
                         get_account_id_from_seed::<sr25519::Public>("Alice"),
@@ -819,7 +841,9 @@ pub fn datahighway_kusama_development_config() -> ChainSpec {
                         get_collator_keys_from_seed("Bob"),
                     ),
                 ],
+                // Sudo root key
                 get_account_id_from_seed::<sr25519::Public>("Alice"),
+                // Endowed keys
                 vec![
                     dhx_unlocked_reserves_account(),
                     get_account_id_from_seed::<sr25519::Public>("Alice"),
@@ -835,9 +859,9 @@ pub fn datahighway_kusama_development_config() -> ChainSpec {
                     get_account_id_from_seed::<sr25519::Public>("Eve//stash"),
                     get_account_id_from_seed::<sr25519::Public>("Ferdie//stash"),
                 ],
-                // Crowdloan Fund Pot
-                300_000_000_000_000_000_000_000_u128; // 300k DHX,
+                // Parachain ID
                 2000.into(),
+                // Enable println
                 true,
             )
         },
@@ -875,6 +899,7 @@ pub fn datahighway_kusama_local_testnet_config() -> ChainSpec {
         ChainType::Local,
         move || {
             testnet_genesis(
+                // Initial collators
                 vec![
                     (
                         get_account_id_from_seed::<sr25519::Public>("Alice"),
@@ -885,7 +910,9 @@ pub fn datahighway_kusama_local_testnet_config() -> ChainSpec {
                         get_collator_keys_from_seed("Bob"),
                     ),
                 ],
+                // Sudo root key
                 get_account_id_from_seed::<sr25519::Public>("Alice"),
+                // Endowed keys
                 vec![
                     dhx_unlocked_reserves_account(),
                     get_account_id_from_seed::<sr25519::Public>("Alice"),
@@ -901,9 +928,9 @@ pub fn datahighway_kusama_local_testnet_config() -> ChainSpec {
                     get_account_id_from_seed::<sr25519::Public>("Eve//stash"),
                     get_account_id_from_seed::<sr25519::Public>("Ferdie//stash"),
                 ],
-                // Crowdloan Fund Pot
-                300_000_000_000_000_000_000_000_u128; // 300k DHX,
+                // Parachain ID
                 2000.into(),
+                // Enable println
                 true,
             )
         },
@@ -939,6 +966,7 @@ pub fn datahighway_westend_parachain_config() -> ChainSpec {
         ChainType::Live,
         move || {
             baikal_testnet_genesis(
+                // Initial collators
                 vec![
                     // authority #1
                     (
@@ -969,7 +997,9 @@ pub fn datahighway_westend_parachain_config() -> ChainSpec {
                         hex!["c27631914b41a8f58e24277158817d064a4144df430dd2cf7baeaa17414deb3e"].unchecked_into()
                     )
                 ],
+                // Sudo root key
                 sudo_account_westend_baikal(),
+                // Endowed keys
                 vec![
                     // Endow the Sudo account to cover transaction fees
                     sudo_account_westend_baikal(),
@@ -1002,9 +1032,9 @@ pub fn datahighway_westend_parachain_config() -> ChainSpec {
                     // authority #4 aura
                     hex!["c27631914b41a8f58e24277158817d064a4144df430dd2cf7baeaa17414deb3e"].into(),
                 ],
-                // Crowdloan Fund Pot
-                300_000_000_000_000_000_000_000_u128; // 300k DHX,
+                // Parachain ID
                 2000.into(),
+                // Enable println
                 true,
             )
         },
@@ -1040,6 +1070,7 @@ pub fn datahighway_kusama_parachain_config() -> ChainSpec {
         ChainType::Live,
         move || {
             tanganika_testnet_genesis(
+                // Initial collators
                 vec![
                     // authority #1
                     (
@@ -1070,7 +1101,9 @@ pub fn datahighway_kusama_parachain_config() -> ChainSpec {
                         hex!["10a3d6854dc35e4b3fd77af4beda98f79dbe9edf5c29c14c8d57bec4bd733c0f"].unchecked_into()
                     )
                 ],
+                // Sudo root key
                 sudo_account_kusama_tanganika(),
+                // Endowed keys
                 vec![
                     // Endow the Sudo account to cover transaction fees
                     sudo_account_kusama_tanganika(),
@@ -1103,9 +1136,9 @@ pub fn datahighway_kusama_parachain_config() -> ChainSpec {
                     // authority #4 aura
                     hex!["10a3d6854dc35e4b3fd77af4beda98f79dbe9edf5c29c14c8d57bec4bd733c0f"].into(),
                 ],
-                // Crowdloan Fund Pot
-                300_000_000_000_000_000_000_000_u128; // 300k DHX,
+                // Parachain ID
                 2000.into(),
+                // Enable println
                 true,
             )
         },
@@ -1191,8 +1224,8 @@ fn spreehafen_testnet_genesis(
                 .into_iter()
                 .map(|(acc, aura)| {
                     (
-                        acc.clone(),                 // account id
-                        acc,                         // validator id
+                        acc.clone(),                    // account id
+                        acc,                            // validator id
                         datahighway_session_keys(aura), // session keys
                     )
                 })
@@ -1274,8 +1307,8 @@ fn testnet_genesis(
                 .into_iter()
                 .map(|(acc, aura)| {
                     (
-                        acc.clone(),                 // account id
-                        acc,                         // validator id
+                        acc.clone(),                    // account id
+                        acc,                            // validator id
                         datahighway_session_keys(aura), // session keys
                     )
                 })
@@ -1357,8 +1390,8 @@ fn dev_genesis(
                 .into_iter()
                 .map(|(acc, aura)| {
                     (
-                        acc.clone(),                 // account id
-                        acc,                         // validator id
+                        acc.clone(),                    // account id
+                        acc,                            // validator id
                         datahighway_session_keys(aura), // session keys
                     )
                 })
@@ -1451,8 +1484,8 @@ fn baikal_testnet_genesis(
                 .into_iter()
                 .map(|(acc, aura)| {
                     (
-                        acc.clone(),                 // account id
-                        acc,                         // validator id
+                        acc.clone(),                    // account id
+                        acc,                            // validator id
                         datahighway_session_keys(aura), // session keys
                     )
                 })
@@ -1534,8 +1567,8 @@ fn tanganika_testnet_genesis(
                 .into_iter()
                 .map(|(acc, aura)| {
                     (
-                        acc.clone(),                 // account id
-                        acc,                         // validator id
+                        acc.clone(),                    // account id
+                        acc,                            // validator id
                         datahighway_session_keys(aura), // session keys
                     )
                 })

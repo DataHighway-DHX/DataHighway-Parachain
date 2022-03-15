@@ -69,6 +69,9 @@ pallets=(
 for pallet in ${pallets[*]}; do
   echo benchmarking "$pallet"...
 
+  cargo build --release \
+  --features runtime-benchmarks \
+
   $COLLATOR \
   benchmark \
   --chain=rococo-local \
@@ -80,5 +83,4 @@ for pallet in ${pallets[*]}; do
   --wasm-execution=compiled \
   --heap-pages=4096 \
   --output=./$DATAHIGHWAY_RUNTIME_WEIGHT_DIR/"$pallet".rs \
-
 done

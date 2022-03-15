@@ -308,7 +308,7 @@ decl_module! {
         /// on-chain DHX DAO unlocked reserves of the Treasury account to the Supernode Centre's address,
         /// but only if the claimed amount is deemed reasonable and if there is valid data
         /// provided about the recipient accounts associated with the Supernode.
-        #[weight = 10_000 + T::DbWeight::get().writes(1)]
+        #[weight = 10_000 + T::DbWeight::get().writes(6)]
         pub fn proxy_eligibility_claim(
             origin,
             _proxy_claim_total_reward_amount: BalanceOf<T>,

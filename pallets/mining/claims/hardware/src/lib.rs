@@ -158,7 +158,7 @@ decl_module! {
             Self::deposit_event(RawEvent::Transferred(sender, to, mining_claims_hardware_id));
         }
 
-        #[weight = 10_000 + T::DbWeight::get().writes(1)]
+        #[weight = 10_000 + T::DbWeight::get().writes(0)]
         pub fn claim(
             origin,
             mining_setting_hardware_id: T::MiningSettingHardwareIndex,

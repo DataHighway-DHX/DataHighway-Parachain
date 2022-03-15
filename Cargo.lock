@@ -16,6 +16,9 @@ dependencies = [
 name = "account-set"
 version = "2.0.0"
 dependencies = [
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
  "sp-std",
 ]
 
@@ -1785,6 +1788,7 @@ dependencies = [
  "mining-eligibility-proxy",
  "mining-eligibility-token",
  "mining-execution-token",
+ "mining-lodgements-hardware",
  "mining-rates-hardware",
  "mining-rates-token",
  "mining-sampling-hardware",
@@ -1857,6 +1861,7 @@ dependencies = [
  "sp-version",
  "static_assertions",
  "substrate-wasm-builder",
+ "treasury-dao",
  "xcm",
  "xcm-builder",
  "xcm-executor",
@@ -2126,6 +2131,7 @@ checksum = "77f3309417938f28bf8228fcff79a4a37103981e3e186d2ccd19c74b38f4eb71"
 name = "exchange-rate"
 version = "0.1.0"
 dependencies = [
+ "frame-benchmarking",
  "frame-support",
  "frame-system",
  "log",
@@ -4371,6 +4377,7 @@ name = "membership-supernodes"
 version = "2.0.0"
 dependencies = [
  "account-set",
+ "frame-benchmarking",
  "frame-support",
  "frame-system",
  "pallet-balances",
@@ -4486,6 +4493,7 @@ checksum = "68354c5c6bd36d73ff3feceb05efa59b6acb7626617f4962be322a825e61f79a"
 name = "mining-claims-hardware"
 version = "0.1.0"
 dependencies = [
+ "frame-benchmarking",
  "frame-support",
  "frame-system",
  "log",
@@ -4511,6 +4519,7 @@ dependencies = [
 name = "mining-claims-token"
 version = "0.1.0"
 dependencies = [
+ "frame-benchmarking",
  "frame-support",
  "frame-system",
  "log",
@@ -4536,6 +4545,7 @@ dependencies = [
 name = "mining-eligibility-hardware"
 version = "0.1.0"
 dependencies = [
+ "frame-benchmarking",
  "frame-support",
  "frame-system",
  "log",
@@ -4562,6 +4572,7 @@ version = "3.0.6"
 dependencies = [
  "account-set",
  "chrono",
+ "frame-benchmarking",
  "frame-support",
  "frame-system",
  "log",
@@ -4585,6 +4596,7 @@ dependencies = [
 name = "mining-eligibility-token"
 version = "0.1.0"
 dependencies = [
+ "frame-benchmarking",
  "frame-support",
  "frame-system",
  "log",
@@ -4609,6 +4621,7 @@ dependencies = [
 name = "mining-execution-token"
 version = "0.1.0"
 dependencies = [
+ "frame-benchmarking",
  "frame-support",
  "frame-system",
  "log",
@@ -4631,9 +4644,37 @@ dependencies = [
 ]
 
 [[package]]
+name = "mining-lodgements-hardware"
+version = "0.1.0"
+dependencies = [
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "log",
+ "mining-claims-hardware",
+ "mining-eligibility-hardware",
+ "mining-rates-hardware",
+ "mining-sampling-hardware",
+ "mining-setting-hardware",
+ "pallet-balances",
+ "pallet-randomness-collective-flip",
+ "pallet-transaction-payment",
+ "parity-scale-codec",
+ "roaming-operators",
+ "safe-mix",
+ "scale-info",
+ "serde",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
 name = "mining-rates-hardware"
 version = "0.1.0"
 dependencies = [
+ "frame-benchmarking",
  "frame-support",
  "frame-system",
  "log",
@@ -4655,6 +4696,7 @@ dependencies = [
 name = "mining-rates-token"
 version = "0.1.0"
 dependencies = [
+ "frame-benchmarking",
  "frame-support",
  "frame-system",
  "log",
@@ -4676,6 +4718,7 @@ dependencies = [
 name = "mining-sampling-hardware"
 version = "0.1.0"
 dependencies = [
+ "frame-benchmarking",
  "frame-support",
  "frame-system",
  "log",
@@ -4698,6 +4741,7 @@ dependencies = [
 name = "mining-sampling-token"
 version = "0.1.0"
 dependencies = [
+ "frame-benchmarking",
  "frame-support",
  "frame-system",
  "log",
@@ -4720,6 +4764,7 @@ dependencies = [
 name = "mining-setting-hardware"
 version = "0.1.0"
 dependencies = [
+ "frame-benchmarking",
  "frame-support",
  "frame-system",
  "log",
@@ -4741,6 +4786,7 @@ dependencies = [
 name = "mining-setting-token"
 version = "0.1.0"
 dependencies = [
+ "frame-benchmarking",
  "frame-support",
  "frame-system",
  "log",
@@ -4838,6 +4884,7 @@ name = "module-primitives"
 version = "3.0.6"
 dependencies = [
  "bitmask",
+ "frame-benchmarking",
  "frame-support",
  "parity-scale-codec",
  "serde",
@@ -5331,6 +5378,7 @@ name = "pallet-bounties"
 version = "4.0.0-dev"
 source = "git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.17#22d40c761a985482f93bbbea5ba4199bdba74f8e"
 dependencies = [
+ "frame-benchmarking",
  "frame-support",
  "frame-system",
  "log",
@@ -5348,6 +5396,7 @@ name = "pallet-child-bounties"
 version = "4.0.0-dev"
 source = "git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.17#22d40c761a985482f93bbbea5ba4199bdba74f8e"
 dependencies = [
+ "frame-benchmarking",
  "frame-support",
  "frame-system",
  "log",
@@ -5459,6 +5508,7 @@ name = "pallet-elections-phragmen"
 version = "5.0.0-dev"
 source = "git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.17#22d40c761a985482f93bbbea5ba4199bdba74f8e"
 dependencies = [
+ "frame-benchmarking",
  "frame-support",
  "frame-system",
  "log",
@@ -5549,6 +5599,7 @@ name = "pallet-indices"
 version = "4.0.0-dev"
 source = "git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.17#22d40c761a985482f93bbbea5ba4199bdba74f8e"
 dependencies = [
+ "frame-benchmarking",
  "frame-support",
  "frame-system",
  "parity-scale-codec",
@@ -5633,6 +5684,7 @@ name = "pallet-multisig"
 version = "4.0.0-dev"
 source = "git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.17#22d40c761a985482f93bbbea5ba4199bdba74f8e"
 dependencies = [
+ "frame-benchmarking",
  "frame-support",
  "frame-system",
  "parity-scale-codec",
@@ -5694,6 +5746,7 @@ name = "pallet-proxy"
 version = "4.0.0-dev"
 source = "git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.17#22d40c761a985482f93bbbea5ba4199bdba74f8e"
 dependencies = [
+ "frame-benchmarking",
  "frame-support",
  "frame-system",
  "parity-scale-codec",
@@ -5736,6 +5789,7 @@ name = "pallet-referenda"
 version = "4.0.0-dev"
 source = "git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.17#22d40c761a985482f93bbbea5ba4199bdba74f8e"
 dependencies = [
+ "assert_matches",
  "frame-benchmarking",
  "frame-support",
  "frame-system",
@@ -5876,6 +5930,7 @@ name = "pallet-tips"
 version = "4.0.0-dev"
 source = "git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.17#22d40c761a985482f93bbbea5ba4199bdba74f8e"
 dependencies = [
+ "frame-benchmarking",
  "frame-support",
  "frame-system",
  "log",
@@ -5939,6 +5994,7 @@ name = "pallet-treasury"
 version = "4.0.0-dev"
 source = "git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.17#22d40c761a985482f93bbbea5ba4199bdba74f8e"
 dependencies = [
+ "frame-benchmarking",
  "frame-support",
  "frame-system",
  "impl-trait-for-tuples",
@@ -5955,6 +6011,7 @@ name = "pallet-utility"
 version = "4.0.0-dev"
 source = "git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.17#22d40c761a985482f93bbbea5ba4199bdba74f8e"
 dependencies = [
+ "frame-benchmarking",
  "frame-support",
  "frame-system",
  "parity-scale-codec",
@@ -7977,6 +8034,7 @@ dependencies = [
 name = "roaming-accounting-policies"
 version = "1.0.0"
 dependencies = [
+ "frame-benchmarking",
  "frame-support",
  "frame-system",
  "log",
@@ -7999,6 +8057,7 @@ dependencies = [
 name = "roaming-agreement-policies"
 version = "1.0.0"
 dependencies = [
+ "frame-benchmarking",
  "frame-support",
  "frame-system",
  "log",
@@ -8022,6 +8081,7 @@ dependencies = [
 name = "roaming-billing-policies"
 version = "1.0.0"
 dependencies = [
+ "frame-benchmarking",
  "frame-support",
  "frame-system",
  "log",
@@ -8044,6 +8104,7 @@ dependencies = [
 name = "roaming-charging-policies"
 version = "0.1.0"
 dependencies = [
+ "frame-benchmarking",
  "frame-support",
  "frame-system",
  "log",
@@ -8066,6 +8127,7 @@ dependencies = [
 name = "roaming-device-profiles"
 version = "0.1.0"
 dependencies = [
+ "frame-benchmarking",
  "frame-support",
  "frame-system",
  "log",
@@ -8091,6 +8153,7 @@ dependencies = [
 name = "roaming-devices"
 version = "0.1.0"
 dependencies = [
+ "frame-benchmarking",
  "frame-support",
  "frame-system",
  "log",
@@ -8115,6 +8178,7 @@ dependencies = [
 name = "roaming-network-profiles"
 version = "0.1.0"
 dependencies = [
+ "frame-benchmarking",
  "frame-support",
  "frame-system",
  "log",
@@ -8140,6 +8204,7 @@ dependencies = [
 name = "roaming-network-servers"
 version = "0.1.0"
 dependencies = [
+ "frame-benchmarking",
  "frame-support",
  "frame-system",
  "log",
@@ -8162,6 +8227,7 @@ dependencies = [
 name = "roaming-networks"
 version = "0.1.0"
 dependencies = [
+ "frame-benchmarking",
  "frame-support",
  "frame-system",
  "log",
@@ -8183,6 +8249,7 @@ dependencies = [
 name = "roaming-operators"
 version = "0.1.0"
 dependencies = [
+ "frame-benchmarking",
  "frame-support",
  "frame-system",
  "pallet-balances",
@@ -8202,6 +8269,7 @@ dependencies = [
 name = "roaming-organizations"
 version = "0.1.0"
 dependencies = [
+ "frame-benchmarking",
  "frame-support",
  "frame-system",
  "log",
@@ -8225,6 +8293,7 @@ dependencies = [
 name = "roaming-packet-bundles"
 version = "0.1.0"
 dependencies = [
+ "frame-benchmarking",
  "frame-support",
  "frame-system",
  "log",
@@ -8251,6 +8320,7 @@ dependencies = [
 name = "roaming-routing-profiles"
 version = "0.1.0"
 dependencies = [
+ "frame-benchmarking",
  "frame-support",
  "frame-system",
  "log",
@@ -8276,6 +8346,7 @@ dependencies = [
 name = "roaming-service-profiles"
 version = "0.1.0"
 dependencies = [
+ "frame-benchmarking",
  "frame-support",
  "frame-system",
  "log",
@@ -8299,6 +8370,7 @@ dependencies = [
 name = "roaming-sessions"
 version = "0.1.0"
 dependencies = [
+ "frame-benchmarking",
  "frame-support",
  "frame-system",
  "log",
@@ -11084,6 +11156,29 @@ dependencies = [
  "tracing-core",
  "tracing-log",
  "tracing-serde",
+]
+
+[[package]]
+name = "treasury-dao"
+version = "0.1.0"
+dependencies = [
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "hex-literal",
+ "log",
+ "pallet-balances",
+ "pallet-randomness-collective-flip",
+ "pallet-transaction-payment",
+ "pallet-treasury",
+ "parity-scale-codec",
+ "roaming-operators",
+ "safe-mix",
+ "scale-info",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
 ]
 
 [[package]]

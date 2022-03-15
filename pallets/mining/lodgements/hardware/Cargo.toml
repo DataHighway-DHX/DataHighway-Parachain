@@ -24,6 +24,11 @@ std = [
     'sp-std/std',
 
     'roaming-operators/std',
+    'mining-setting-hardware/std',
+    'mining-eligibility-hardware/std',
+    'mining-rates-hardware/std',
+    'mining-sampling-hardware/std',
+    'mining-claims-hardware/std',
     'serde',
 ]
 try-runtime = ['frame-support/try-runtime']
@@ -45,6 +50,11 @@ sp-runtime = { git = 'https://github.com/paritytech/substrate', branch = 'polkad
 sp-std = { git = 'https://github.com/paritytech/substrate', branch = 'polkadot-v0.9.17', default-features = false }
 
 roaming-operators = { default-features = false, package = 'roaming-operators', path = '../../../roaming/roaming-operators' }
+mining-claims-hardware = { default-features = false, package = 'mining-claims-hardware', path = '../../../mining/claims/hardware' }
+mining-setting-hardware = { default-features = false, package = 'mining-setting-hardware', path = '../../../mining/setting/hardware' }
+mining-eligibility-hardware = { default-features = false, package = 'mining-eligibility-hardware', path = '../../../mining/eligibility/hardware' }
+mining-rates-hardware = { default-features = false, package = 'mining-rates-hardware', path = '../../../mining/rates/hardware' }
+mining-sampling-hardware = { default-features = false, package = 'mining-sampling-hardware', path = '../../../mining/sampling/hardware' }
 
 serde = { version = '1.0.136', optional = true, features = ['derive'] }
 

@@ -1092,6 +1092,11 @@ impl mining_eligibility_proxy::Config for Runtime {
     type RewardsOfDay = u64;
 }
 
+impl mining_lodgements_hardware::Config for Runtime {
+    type Event = Event;
+    type MiningLodgementsHardwareIndex = u64;
+}
+
 impl mining_claims_token::Config for Runtime {
     type Event = Event;
     type MiningClaimsTokenClaimAmount = u64;
@@ -1121,6 +1126,11 @@ impl exchange_rate::Config for Runtime {
 
 impl membership_supernodes::Config for Runtime {
     type Event = Event;
+}
+
+impl treasury_dao::Config for Runtime {
+    type Event = Event;
+    type Currency = Balances;
 }
 
 parameter_types! {
@@ -1266,10 +1276,12 @@ construct_runtime!(
         MiningEligibilityToken: mining_eligibility_token::{Pallet, Call, Storage, Event<T>},
         MiningEligibilityHardware: mining_eligibility_hardware::{Pallet, Call, Storage, Event<T>},
         MiningEligibilityProxy: mining_eligibility_proxy::{Pallet, Call, Storage, Event<T>},
+        MiningLodgementsHardware: mining_lodgements_hardware::{Pallet, Call, Storage, Event<T>},
         MiningClaimsToken: mining_claims_token::{Pallet, Call, Storage, Event<T>},
         MiningClaimsHardware: mining_claims_hardware::{Pallet, Call, Storage, Event<T>},
         MiningExecutionToken: mining_execution_token::{Pallet, Call, Storage, Event<T>},
         ExchangeRate: exchange_rate::{Pallet, Call, Storage, Event<T>},
+        TreasuryDao: treasury_dao::{Pallet, Call, Storage, Event<T>},
     }
 );
 
@@ -1281,11 +1293,69 @@ extern crate frame_benchmarking;
 mod benches {
 	define_benchmarks!(
 		[frame_system, SystemBench::<Runtime>]
-		[pallet_balances, Balances]
-		[pallet_session, SessionBench::<Runtime>]
-		[pallet_timestamp, Timestamp]
+        [pallet_utility, Utility]
+        [pallet_randomness_collective_flip, RandomnessCollectiveFlip]
+        [pallet_timestamp, Timestamp]
+        [pallet_identity, Identity]
+        [pallet_recovery, Recovery]
+        [pallet_scheduler, Scheduler]
+        [pallet_sudo, Sudo]
+        [pallet_indices, Indices]
+        [pallet_balances, Balances]
+        [pallet_transaction_payment, TransactionPayment]
+        [pallet_authorship, Authorship]
 		[pallet_collator_selection, CollatorSelection]
-        // TODO - bench
+		[pallet_session, SessionBench::<Runtime>]
+        [pallet_democracy, Democracy]
+        [pallet_aura, Aura]
+        [cumulus_pallet_aura_ext, AuraExt]
+        [cumulus_pallet_xcmp_queue, XcmpQueue]
+        [pallet_xcm, PolkadotXcm]
+        [cumulus_pallet_xcm, CumulusXcm]
+        [cumulus_pallet_dmp_queue, DmpQueue]
+        [pallet_collective::<Instance1>, Council]
+        [pallet_collective::<Instance2>, TechnicalCommittee]
+        [pallet_elections_phragmen, Elections]
+        [pallet_membership::<Instance1>, TechnicalMembership]
+        [pallet_treasury, Treasury]
+        [pallet_bounties, Bounties]
+        [pallet_child_bounties, ChildBounties]
+        [pallet_tips, Tips]
+        [pallet_preimage, Preimage]
+        [pallet_proxy, Proxy]
+        [pallet_multisig, Multisig]
+        [pallet_referenda, Referenda]
+        [pallet_conviction_voting, ConvictionVoting]
+        [membership_supernodes, MembershipSupernodes]
+        [roaming_operators, RoamingOperators]
+        [roaming_networks, RoamingNetworks]
+        [roaming_organizations, RoamingOrganizations]
+        [roaming_network_servers, RoamingNetworkServers]
+        [roaming_devices, RoamingDevices]
+        [roaming_routing_profiles, RoamingRoutingProfiles]
+        [roaming_service_profiles, RoamingServiceProfiles]
+        [roaming_accounting_policies, RoamingAccountingPolicies]
+        [roaming_agreement_policies, RoamingAgreementPolicies]
+        [roaming_network_profiles, RoamingNetworkProfiles]
+        [roaming_device_profiles, RoamingDeviceProfiles]
+        [roaming_sessions, RoamingSessions]
+        [roaming_billing_policies, RoamingBillingPolicies]
+        [roaming_charging_policies, RoamingChargingPolicies]
+        [roaming_packet_bundles, RoamingPacketBundles]
+        [mining_setting_token, MiningSettingToken]
+        [mining_rates_token, MiningRatesToken]
+        [mining_rates_hardware, MiningRatesHardware]
+        [mining_sampling_token, MiningSamplingToken]
+        [mining_sampling_hardware, MiningSamplingHardware]
+        [mining_eligibility_token, MiningEligibilityToken]
+        [mining_eligibility_hardware, MiningEligibilityHardware]
+        [mining_eligibility_proxy, MiningEligibilityProxy]
+        [mining_lodgements_hardware, MiningLodgementsHardware]
+        [mining_claims_token, MiningClaimsToken]
+        [mining_claims_hardware, MiningClaimsHardware]
+        [mining_execution_token, MiningExecutionToken]
+        [exchange_rate, ExchangeRate]
+        [treasury_dao, TreasuryDao]
 	);
 }
 

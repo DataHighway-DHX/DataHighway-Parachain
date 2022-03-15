@@ -69,10 +69,12 @@ pallets=(
   "mining_eligibility_token" \
   "mining_eligibility_hardware" \
   "mining_eligibility_proxy" \
+  "mining_lodgements_hardware" \
   "mining_claims_token" \
   "mining_claims_hardware" \
   "mining_execution_token" \
   "exchange_rate" \
+  "treasury_dao" \
 )
 
 for pallet in ${pallets[*]}; do

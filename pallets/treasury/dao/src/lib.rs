@@ -29,7 +29,6 @@ pub trait Config:
 {
     type Event: From<Event<Self>> + Into<<Self as frame_system::Config>::Event>;
     type Currency: Currency<Self::AccountId>;
-    type AccountId: UncheckedFrom<<Self as frame_system::Config>::Hash> + AsRef<[u8]>;
 }
 
 type BalanceOf<T> = <<T as Config>::Currency as Currency<<T as frame_system::Config>::AccountId>>::Balance;
@@ -43,6 +42,10 @@ decl_event!(
         TreasuryFundedWithUnlockedReserves(AccountId, AccountId, BalanceOf),
     }
 );
+
+decl_storage! {
+    trait Store for Module<T: Config> as TreasuryDao {}
+}
 
 decl_module! {
     pub struct Module<T: Config> for enum Call where origin: T::Origin {

@@ -124,7 +124,6 @@ pub const NORMAL_DISPATCH_RATIO: Perbill = Perbill::from_percent(75);
 pub const MAXIMUM_BLOCK_WEIGHT: Weight = WEIGHT_PER_SECOND / 2;
 
 /// The address format for describing accounts.
-// TODO - replace () with AccountIndex
 pub type Address = MultiAddress<AccountId, ()>;
 /// Block header type as expected by this runtime.
 pub type Header = generic::Header<BlockNumber, BlakeTwo256>;
@@ -476,7 +475,7 @@ parameter_types! {
     pub const BountyCuratorDeposit: Permill = Permill::from_percent(50);
     pub const BountyDepositBase: Balance = 1 * DOLLARS;
     pub const BountyDepositPayoutDelay: BlockNumber = 1 * DAYS;
-    pub const BountyUpdatePeriod: BlockNumber = 14 * DAYS;
+    pub const BountyUpdatePeriod: BlockNumber = 7 * DAYS;
     pub const DataDepositPerByte: Balance = 1 * CENTS;
     pub const TreasuryPalletId: PalletId = PalletId(*b"py/trsry");
     pub const MaxApprovals: u32 = 100;
@@ -578,9 +577,9 @@ impl pallet_aura::Config for Runtime {
 }
 
 parameter_types! {
-    pub const BasicDeposit: Balance = 10 * DOLLARS;       // 258 bytes on-chain
-    pub const FieldDeposit: Balance = 250 * CENTS;        // 66 bytes on-chain
-    pub const SubAccountDeposit: Balance = 2 * DOLLARS;   // 53 bytes on-chain
+    pub const BasicDeposit: Balance = 1 * DOLLARS;       // 258 bytes on-chain
+    pub const FieldDeposit: Balance = 25 * CENTS;        // 66 bytes on-chain
+    pub const SubAccountDeposit: Balance = 25 * CENTS;   // 53 bytes on-chain
     pub const MaxSubAccounts: u32 = 100;
     pub const MaxAdditionalFields: u32 = 100;
     pub const MaxRegistrars: u32 = 20;
@@ -602,10 +601,10 @@ impl pallet_identity::Config for Runtime {
 }
 
 parameter_types! {
-    pub const ConfigDepositBase: Balance = 5 * DOLLARS;
+    pub const ConfigDepositBase: Balance = 1 * DOLLARS;
     pub const FriendDepositFactor: Balance = 50 * CENTS;
     pub const MaxFriends: u16 = 9;
-    pub const RecoveryDeposit: Balance = 5 * DOLLARS;
+    pub const RecoveryDeposit: Balance = 1 * DOLLARS;
 }
 
 impl pallet_recovery::Config for Runtime {
@@ -757,7 +756,7 @@ impl pallet_preimage::Config for Runtime {
 
 
 parameter_types! {
-    pub const VoteLockingPeriod: BlockNumber = 30 * DAYS;
+    pub const VoteLockingPeriod: BlockNumber = 7 * DAYS;
 }
 
 impl pallet_conviction_voting::Config for Runtime {
@@ -772,8 +771,8 @@ impl pallet_conviction_voting::Config for Runtime {
 
 parameter_types! {
     pub const AlarmInterval: BlockNumber = 1;
-    pub const SubmissionDeposit: Balance = 100 * DOLLARS;
-    pub const UndecidingTimeout: BlockNumber = 28 * DAYS;
+    pub const SubmissionDeposit: Balance = 1 * DOLLARS;
+    pub const UndecidingTimeout: BlockNumber = 7 * DAYS;
 }
 
 pub struct TracksInfo;
@@ -836,13 +835,13 @@ impl pallet_referenda::Config for Runtime {
 pub const MAX_VOTES_AS_CONST: u32 = 100;
 
 parameter_types! {
-    pub const LaunchPeriod: BlockNumber = 28 * 24 * 60 * MINUTES;
-    pub const VotingPeriod: BlockNumber = 28 * 24 * 60 * MINUTES;
-    pub const FastTrackVotingPeriod: BlockNumber = 3 * 24 * 60 * MINUTES;
+    pub const LaunchPeriod: BlockNumber = 7 * DAYS;
+    pub const VotingPeriod: BlockNumber = 7 * DAYS;
+    pub const FastTrackVotingPeriod: BlockNumber = 3 * DAYS;
     pub const InstantAllowed: bool = true;
-    pub const MinimumDeposit: Balance = 100 * DOLLARS;
-    pub const EnactmentPeriod: BlockNumber = 30 * 24 * 60 * MINUTES;
-    pub const CooloffPeriod: BlockNumber = 28 * 24 * 60 * MINUTES;
+    pub const MinimumDeposit: Balance = 1 * DOLLARS;
+    pub const EnactmentPeriod: BlockNumber = 1 * DAYS;
+    pub const CooloffPeriod: BlockNumber = 7 * DAYS;
     pub const MaxVotes: u32 = MAX_VOTES_AS_CONST;
     pub const MaxProposals: u32 = 100;
 }

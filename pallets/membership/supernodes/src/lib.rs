@@ -24,6 +24,9 @@ use sp_std::{
 // #[cfg(test)]
 // mod tests;
 
+#[cfg(feature = "runtime-benchmarks")]
+mod benchmarking;
+
 /// A maximum number of members. When membership reaches this number, no new members may join.
 pub const MAX_MEMBERS: usize = 16;
 

@@ -1291,7 +1291,7 @@ extern crate frame_benchmarking;
 
 #[cfg(feature = "runtime-benchmarks")]
 mod benches {
-	define_benchmarks!(
+    define_benchmarks!(
         [frame_system, SystemBench::<Runtime>]
         [pallet_utility, Utility]
         [pallet_timestamp, Timestamp]
@@ -1346,7 +1346,7 @@ mod benches {
         [mining_execution_token, MiningExecutionToken]
         [exchange_rate, ExchangeRate]
         [treasury_dao, TreasuryDao]
-	);
+    );
 }
 
 impl_runtime_apis! {

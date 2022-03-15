@@ -7,6 +7,6 @@ use crate::Pallet as RoamingNetworkProfiles;
 use frame_benchmarking::{benchmarks, impl_benchmark_test_suite, whitelisted_caller};
 use frame_system::RawOrigin;
 
-benchmarks! {}
+// benchmarks! {}
 
 impl_benchmark_test_suite!(RoamingNetworkProfiles, crate::mock::new_test_ext(), crate::mock::Test,);

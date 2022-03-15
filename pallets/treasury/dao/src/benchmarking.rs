@@ -7,6 +7,6 @@ use crate::Pallet as TreasuryDao;
 use frame_benchmarking::{benchmarks, impl_benchmark_test_suite, whitelisted_caller};
 use frame_system::RawOrigin;
 
-benchmarks! {}
+// benchmarks! {}
 
 impl_benchmark_test_suite!(TreasuryDao, crate::mock::new_test_ext(), crate::mock::Test,);

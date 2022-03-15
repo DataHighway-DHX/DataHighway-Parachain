@@ -11,30 +11,19 @@ pallets=(
   "frame_system" \
   "cumulus_pallet_parachain_system" \
   "pallet_utility" \
-  "pallet_randomness_collective_flip" \
   "pallet_timestamp" \
   "pallet_identity" \
-  "pallet_recovery" \
   "pallet_scheduler" \
-  "pallet_sudo" \
   "parachain_info" \
   "pallet_indices" \
   "pallet_balances" \
   "pallet_transaction_payment" \
-  "pallet_authorship" \
   "pallet_collator_selection" \
-  "pallet_session" \
   "pallet_democracy" \
-  "pallet_aura" \
-  "cumulus_pallet_aura_ext" \
-  "cumulus_pallet_xcmp_queue" \
   "pallet_xcm" \
-  "cumulus_pallet_xcm" \
-  "cumulus_pallet_dmp_queue" \
-  "pallet_collective::<Instance1>" \
-  "pallet_collective::<Instance2>" \
+  "pallet_collective" \
   "pallet_elections_phragmen" \
-  "pallet_membership::<Instance1>" \
+  "pallet_membership" \
   "pallet_treasury" \
   "pallet_bounties" \
   "pallet_child_bounties" \

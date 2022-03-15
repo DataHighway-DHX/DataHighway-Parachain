@@ -5,6 +5,7 @@
 * [Linting](#chapter-c345d7)
 * [Debugging](#chapter-93c645)
 * [Testing](#chapter-e146ec)
+* [Benchmarking](#chapter-6c1b24)
 * [Code Editor Configuration](#chapter-d5a9de)
 * [Create new runtime modules](#chapter-18873f)
 * [FAQ](#chapter-f078a2)
@@ -124,6 +125,13 @@ cargo test -p datahighway-parachain-runtime
 Example
 ```
 cargo test -p datahighway-parachain-runtime --test cli_integration_tests_mining_tokens
+```
+
+## Benchmarking <a id="chapter-6c1b24"></a>
+
+Run the following:
+```
+./scripts/benchmark_all_pallets.sh
 ```
 
 ## Continuous Integration <a id="chapter-7a8301"></a>

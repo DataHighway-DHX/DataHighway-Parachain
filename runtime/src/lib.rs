@@ -213,8 +213,8 @@ pub use impls::Author;
 pub const VERSION: RuntimeVersion = RuntimeVersion {
     spec_name: create_runtime_str!("datahighway-parachain"),
     impl_name: create_runtime_str!("datahighway-parachain"),
-    authoring_version: 3,
-    spec_version: 3,
+    authoring_version: 1,
+    spec_version: 1,
     impl_version: 0,
     apis: RUNTIME_API_VERSIONS,
 	transaction_version: 1,

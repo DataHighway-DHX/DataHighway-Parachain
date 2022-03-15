@@ -14,7 +14,6 @@ targets = ['x86_64-unknown-linux-gnu']
 
 [build-dependencies]
 substrate-build-script-utils = { git = 'https://github.com/paritytech/substrate', branch = 'polkadot-v0.9.17' }
-vergen = '3.0.4'
 
 [[bin]]
 name = 'datahighway-collator'

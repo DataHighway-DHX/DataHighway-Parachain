@@ -9,6 +9,7 @@ sp-api = { git = 'https://github.com/paritytech/substrate', branch = 'polkadot-v
 
 [features]
 default = ['std']
+runtime-benchmarks = ['frame-benchmarking/runtime-benchmarks']
 std = [
 	'sp-api/std',
 ]

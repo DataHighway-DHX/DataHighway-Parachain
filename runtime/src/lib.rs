@@ -35,7 +35,7 @@ pub use frame_support::{
     traits::{
         ConstU8, ConstU16, ConstU32, ConstU64, ConstU128, Currency, EnsureOneOf, EqualPrivilegeOnly,
         Everything, Imbalance, InstanceFilter, Contains, ContainsLengthBound, OnUnbalanced, KeyOwnerProofSystem,
-        LockIdentifier, Randomness, StorageInfo, U128CurrencyToVote,
+        LockIdentifier, Randomness, OnRuntimeUpgrade, StorageInfo, U128CurrencyToVote,
     },
     weights::{
         constants::{BlockExecutionWeight, ExtrinsicBaseWeight, RocksDbWeight, WEIGHT_PER_SECOND},
@@ -124,7 +124,6 @@ pub const NORMAL_DISPATCH_RATIO: Perbill = Perbill::from_percent(75);
 pub const MAXIMUM_BLOCK_WEIGHT: Weight = WEIGHT_PER_SECOND / 2;
 
 /// The address format for describing accounts.
-// TODO - replace () with AccountIndex
 pub type Address = MultiAddress<AccountId, AccountIndex>;
 /// Block header type as expected by this runtime.
 pub type Header = generic::Header<BlockNumber, BlakeTwo256>;
@@ -182,6 +181,24 @@ impl WeightToFeePolynomial for WeightToFee {
     }
 }
 
+// https://docs.substrate.io/v3/tools/try-runtime/#helper-functions
+pub struct EnsureAccountsWontDie;
+impl OnRuntimeUpgrade for EnsureAccountsWontDie {
+    #[cfg(feature = "try-runtime")]
+    fn pre_upgrade() {
+        let account_count = frame_system::Accounts::<Runtime>::iter().count();
+        Self::set_temp_storage(account_count, "account_count");
+    }
+
+    #[cfg(feature = "try-runtime")]
+    fn post_upgrade() {
+        // ensure that this migration doesn't kill any account.
+        let post_migration = frame_system::Accounts::<Runtime>::iter().count();
+        let pre_migration = Self::get_temp_storage::<u32>("account_count");
+        ensure!(post_migration == pre_migration, "error ...");
+    }
+}
+
 /// Opaque types. These are used by the CLI to instantiate machinery that don't need to know
 /// the specifics of the runtime. They can then be made to be agnostic over specific formats
 /// of data like extrinsics, allowing for them to continue syncing the network through upgrades
@@ -215,8 +232,8 @@ use sp_runtime::generic::Era;
 pub const VERSION: RuntimeVersion = RuntimeVersion {
     spec_name: create_runtime_str!("datahighway-parachain"),
     impl_name: create_runtime_str!("datahighway-parachain"),
-    authoring_version: 3,
-    spec_version: 3,
+    authoring_version: 1,
+    spec_version: 1,
     impl_version: 0,
     apis: RUNTIME_API_VERSIONS,
 	transaction_version: 1,
@@ -486,7 +503,7 @@ parameter_types! {
     pub const BountyCuratorDeposit: Permill = Permill::from_percent(50);
     pub const BountyDepositBase: Balance = 1 * DOLLARS;
     pub const BountyDepositPayoutDelay: BlockNumber = 1 * DAYS;
-    pub const BountyUpdatePeriod: BlockNumber = 14 * DAYS;
+    pub const BountyUpdatePeriod: BlockNumber = 7 * DAYS;
     pub const DataDepositPerByte: Balance = 1 * CENTS;
     pub const TreasuryPalletId: PalletId = PalletId(*b"py/trsry");
     pub const MaxApprovals: u32 = 100;
@@ -634,9 +651,9 @@ impl pallet_aura::Config for Runtime {
 }
 
 parameter_types! {
-    pub const BasicDeposit: Balance = 10 * DOLLARS;       // 258 bytes on-chain
-    pub const FieldDeposit: Balance = 250 * CENTS;        // 66 bytes on-chain
-    pub const SubAccountDeposit: Balance = 2 * DOLLARS;   // 53 bytes on-chain
+    pub const BasicDeposit: Balance = 1 * DOLLARS;       // 258 bytes on-chain
+    pub const FieldDeposit: Balance = 25 * CENTS;        // 66 bytes on-chain
+    pub const SubAccountDeposit: Balance = 25 * CENTS;   // 53 bytes on-chain
     pub const MaxSubAccounts: u32 = 100;
     pub const MaxAdditionalFields: u32 = 100;
     pub const MaxRegistrars: u32 = 20;
@@ -658,10 +675,10 @@ impl pallet_identity::Config for Runtime {
 }
 
 parameter_types! {
-    pub const ConfigDepositBase: Balance = 5 * DOLLARS;
+    pub const ConfigDepositBase: Balance = 1 * DOLLARS;
     pub const FriendDepositFactor: Balance = 50 * CENTS;
     pub const MaxFriends: u16 = 9;
-    pub const RecoveryDeposit: Balance = 5 * DOLLARS;
+    pub const RecoveryDeposit: Balance = 1 * DOLLARS;
 }
 
 impl pallet_recovery::Config for Runtime {
@@ -838,7 +855,7 @@ impl pallet_preimage::Config for Runtime {
 
 
 parameter_types! {
-    pub const VoteLockingPeriod: BlockNumber = 30 * DAYS;
+    pub const VoteLockingPeriod: BlockNumber = 7 * DAYS;
 }
 
 impl pallet_conviction_voting::Config for Runtime {
@@ -853,8 +870,8 @@ impl pallet_conviction_voting::Config for Runtime {
 
 parameter_types! {
     pub const AlarmInterval: BlockNumber = 1;
-    pub const SubmissionDeposit: Balance = 100 * DOLLARS;
-    pub const UndecidingTimeout: BlockNumber = 28 * DAYS;
+    pub const SubmissionDeposit: Balance = 1 * DOLLARS;
+    pub const UndecidingTimeout: BlockNumber = 7 * DAYS;
 }
 
 pub struct TracksInfo;
@@ -917,13 +934,13 @@ impl pallet_referenda::Config for Runtime {
 pub const MAX_VOTES_AS_CONST: u32 = 100;
 
 parameter_types! {
-    pub const LaunchPeriod: BlockNumber = 28 * 24 * 60 * MINUTES;
-    pub const VotingPeriod: BlockNumber = 28 * 24 * 60 * MINUTES;
-    pub const FastTrackVotingPeriod: BlockNumber = 3 * 24 * 60 * MINUTES;
+    pub const LaunchPeriod: BlockNumber = 7 * DAYS;
+    pub const VotingPeriod: BlockNumber = 7 * DAYS;
+    pub const FastTrackVotingPeriod: BlockNumber = 3 * DAYS;
     pub const InstantAllowed: bool = true;
-    pub const MinimumDeposit: Balance = 100 * DOLLARS;
-    pub const EnactmentPeriod: BlockNumber = 30 * 24 * 60 * MINUTES;
-    pub const CooloffPeriod: BlockNumber = 28 * 24 * 60 * MINUTES;
+    pub const MinimumDeposit: Balance = 1 * DOLLARS;
+    pub const EnactmentPeriod: BlockNumber = 1 * DAYS;
+    pub const CooloffPeriod: BlockNumber = 7 * DAYS;
     pub const MaxVotes: u32 = MAX_VOTES_AS_CONST;
     pub const MaxProposals: u32 = 100;
 }
@@ -1174,6 +1191,11 @@ impl mining_eligibility_proxy::Config for Runtime {
     type RewardsOfDay = u64;
 }
 
+impl mining_lodgements_hardware::Config for Runtime {
+    type Event = Event;
+    type MiningLodgementsHardwareIndex = u64;
+}
+
 impl mining_claims_token::Config for Runtime {
     type Event = Event;
     type MiningClaimsTokenClaimAmount = u64;
@@ -1203,6 +1225,11 @@ impl exchange_rate::Config for Runtime {
 
 impl membership_supernodes::Config for Runtime {
     type Event = Event;
+}
+
+impl treasury_dao::Config for Runtime {
+    type Event = Event;
+    type Currency = Balances;
 }
 
 parameter_types! {
@@ -1350,10 +1377,12 @@ construct_runtime!(
         MiningEligibilityToken: mining_eligibility_token::{Pallet, Call, Storage, Event<T>},
         MiningEligibilityHardware: mining_eligibility_hardware::{Pallet, Call, Storage, Event<T>},
         MiningEligibilityProxy: mining_eligibility_proxy::{Pallet, Call, Storage, Event<T>},
+        MiningLodgementsHardware: mining_lodgements_hardware::{Pallet, Call, Storage, Event<T>},
         MiningClaimsToken: mining_claims_token::{Pallet, Call, Storage, Event<T>},
         MiningClaimsHardware: mining_claims_hardware::{Pallet, Call, Storage, Event<T>},
         MiningExecutionToken: mining_execution_token::{Pallet, Call, Storage, Event<T>},
         ExchangeRate: exchange_rate::{Pallet, Call, Storage, Event<T>},
+        TreasuryDao: treasury_dao::{Pallet, Call, Storage, Event<T>},
     }
 );
 
@@ -1363,13 +1392,62 @@ extern crate frame_benchmarking;
 
 #[cfg(feature = "runtime-benchmarks")]
 mod benches {
-	define_benchmarks!(
-		[frame_system, SystemBench::<Runtime>]
-		[pallet_balances, Balances]
-		[pallet_session, SessionBench::<Runtime>]
-		[pallet_timestamp, Timestamp]
-		[pallet_collator_selection, CollatorSelection]
-	);
+    define_benchmarks!(
+        [frame_system, SystemBench::<Runtime>]
+        [pallet_utility, Utility]
+        [pallet_timestamp, Timestamp]
+        [pallet_identity, Identity]
+        [pallet_scheduler, Scheduler]
+        [pallet_indices, Indices]
+        [pallet_balances, Balances]
+        [pallet_collator_selection, CollatorSelection]
+        [pallet_democracy, Democracy]
+        [pallet_aura, Aura]
+        [pallet_xcm, PolkadotXcm]
+        [pallet_collective::<Instance1>, Council]
+        [pallet_collective::<Instance2>, TechnicalCommittee]
+        [pallet_elections_phragmen, Elections]
+        [pallet_membership::<Instance1>, TechnicalMembership]
+        [pallet_treasury, Treasury]
+        [pallet_bounties, Bounties]
+        [pallet_child_bounties, ChildBounties]
+        [pallet_tips, Tips]
+        [pallet_preimage, Preimage]
+        [pallet_proxy, Proxy]
+        [pallet_multisig, Multisig]
+        [pallet_referenda, Referenda]
+        [pallet_conviction_voting, ConvictionVoting]
+        [membership_supernodes, MembershipSupernodes]
+        [roaming_operators, RoamingOperators]
+        [roaming_networks, RoamingNetworks]
+        [roaming_organizations, RoamingOrganizations]
+        [roaming_network_servers, RoamingNetworkServers]
+        [roaming_devices, RoamingDevices]
+        [roaming_routing_profiles, RoamingRoutingProfiles]
+        [roaming_service_profiles, RoamingServiceProfiles]
+        [roaming_accounting_policies, RoamingAccountingPolicies]
+        [roaming_agreement_policies, RoamingAgreementPolicies]
+        [roaming_network_profiles, RoamingNetworkProfiles]
+        [roaming_device_profiles, RoamingDeviceProfiles]
+        [roaming_sessions, RoamingSessions]
+        [roaming_billing_policies, RoamingBillingPolicies]
+        [roaming_charging_policies, RoamingChargingPolicies]
+        [roaming_packet_bundles, RoamingPacketBundles]
+        [mining_setting_token, MiningSettingToken]
+        [mining_rates_token, MiningRatesToken]
+        [mining_rates_hardware, MiningRatesHardware]
+        [mining_sampling_token, MiningSamplingToken]
+        [mining_sampling_hardware, MiningSamplingHardware]
+        [mining_eligibility_token, MiningEligibilityToken]
+        [mining_eligibility_hardware, MiningEligibilityHardware]
+        [mining_eligibility_proxy, MiningEligibilityProxy]
+        [mining_lodgements_hardware, MiningLodgementsHardware]
+        [mining_claims_token, MiningClaimsToken]
+        [mining_claims_hardware, MiningClaimsHardware]
+        [mining_execution_token, MiningExecutionToken]
+        [exchange_rate, ExchangeRate]
+        [treasury_dao, TreasuryDao]
+    );
 }
 
 impl_runtime_apis! {
@@ -1483,10 +1561,10 @@ impl_runtime_apis! {
 
 	#[cfg(feature = "try-runtime")]
 	impl frame_try_runtime::TryRuntime<Block> for Runtime {
-		fn on_runtime_upgrade() -> (Weight, Weight) {
+		fn on_runtime_upgrade() -> Result<(Weight, Weight), sp_runtime::RuntimeString> {
 			log::info!("try-runtime::on_runtime_upgrade parachain-template.");
 			let weight = Executive::try_runtime_upgrade().unwrap();
-			(weight, RuntimeBlockWeights::get().max_block)
+			Ok((weight, RuntimeBlockWeights::get().max_block))
 		}
 
 		fn execute_block_no_check(block: Block) -> Weight {

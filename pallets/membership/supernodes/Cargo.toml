@@ -18,15 +18,12 @@ compatibility_version = '2.0.0'
 [dependencies]
 codec = { version = '2.0.0', package = 'parity-scale-codec', default-features = false, features = ['derive', 'max-encoded-len'] }
 scale-info = { version = '1.0', default-features = false, features = ['derive'] }
-
-# Substrate packages
+frame-benchmarking = { git = 'https://github.com/paritytech/substrate', branch = 'polkadot-v0.9.17', default-features = false, optional = true }
 frame-support = { git = 'https://github.com/paritytech/substrate', branch = 'polkadot-v0.9.17', default-features = false }
 frame-system = { git = 'https://github.com/paritytech/substrate', branch = 'polkadot-v0.9.17', default-features = false }
 pallet-balances = { git = 'https://github.com/paritytech/substrate', branch = 'polkadot-v0.9.17', default-features = false }
 sp-runtime = { git = 'https://github.com/paritytech/substrate', branch = 'polkadot-v0.9.17', default-features = false }
 sp-std = { git = 'https://github.com/paritytech/substrate', branch = 'polkadot-v0.9.17', default-features = false }
-
-# local packages
 account-set = { path = '../../../traits/account-set', default-features = false }
 
 [dev-dependencies]
@@ -35,12 +32,15 @@ sp-io = { git = 'https://github.com/paritytech/substrate', branch = 'polkadot-v0
 
 [features]
 default = ['std']
+runtime-benchmarks = ['frame-benchmarking/runtime-benchmarks']
 std = [
     'account-set/std',
     'codec/std',
     'scale-info/std',
     'frame-support/std',
     'frame-system/std',
+    'frame-benchmarking/std',
     'pallet-balances/std',
     'sp-runtime/std',
 ]
+try-runtime = ['frame-support/try-runtime']

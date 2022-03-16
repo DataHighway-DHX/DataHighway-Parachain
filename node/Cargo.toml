@@ -14,14 +14,17 @@ targets = ['x86_64-unknown-linux-gnu']
 
 [build-dependencies]
 substrate-build-script-utils = { git = 'https://github.com/paritytech/substrate', branch = 'polkadot-v0.9.17' }
-vergen = '3.0.4'
 
 [[bin]]
 name = 'datahighway-collator'
 path = 'src/main.rs'
 
 [features]
-runtime-benchmarks = ['datahighway-parachain-runtime/runtime-benchmarks']
+runtime-benchmarks = [
+    'datahighway-parachain-runtime/runtime-benchmarks',
+    'polkadot-cli/runtime-benchmarks',
+    'try-runtime-cli',
+]
 try-runtime = [ 'datahighway-parachain-runtime/try-runtime' ]
 
 [dependencies]
@@ -44,33 +47,19 @@ module-primitives = { version = '3.0.6', default-features = false, path = '../pa
 # Substrate Dependencies
 frame-benchmarking = { git = 'https://github.com/paritytech/substrate', branch = 'polkadot-v0.9.17' }
 frame-benchmarking-cli = { git = 'https://github.com/paritytech/substrate', branch = 'polkadot-v0.9.17' }
-try-runtime-cli = { git = 'https://github.com/paritytech/substrate', branch = 'polkadot-v0.9.17' }
+frame-try-runtime = { git = 'https://github.com/paritytech/substrate', branch = 'polkadot-v0.9.17', optional = true }
+try-runtime-cli = { git = 'https://github.com/paritytech/substrate', branch = 'polkadot-v0.9.17', optional = true }
 
 pallet-transaction-payment-rpc = { git = 'https://github.com/paritytech/substrate', branch = 'polkadot-v0.9.17' }
-# TODO - do we need this for parachain?
-# pallet-authority-discovery = { git = 'https://github.com/paritytech/substrate', branch = 'polkadot-v0.9.17' }
-# TODO - do we need this for parachain?
-# pallet-democracy = { git = 'https://github.com/paritytech/substrate', branch = 'polkadot-v0.9.17' }
-
 substrate-frame-rpc-system = { git = 'https://github.com/paritytech/substrate', branch = 'polkadot-v0.9.17' }
 substrate-prometheus-endpoint = { git = 'https://github.com/paritytech/substrate', branch = 'polkadot-v0.9.17' }
 
 ## Substrate Client Dependencies
-# TODO - do we need this for parachain?
-# sc-authority-discovery = { git = 'https://github.com/paritytech/substrate', branch = 'polkadot-v0.9.17' }
 sc-basic-authorship = { git = 'https://github.com/paritytech/substrate', branch = 'polkadot-v0.9.17' }
 sc-chain-spec = { git = 'https://github.com/paritytech/substrate', branch = 'polkadot-v0.9.17' }
 sc-cli = { git = 'https://github.com/paritytech/substrate', branch = 'polkadot-v0.9.17', features = ['wasmtime'] }
 sc-client-api = { git = 'https://github.com/paritytech/substrate', branch = 'polkadot-v0.9.17' }
-# TODO - do we need this for parachain?
-sc-client-db = { git = 'https://github.com/paritytech/substrate', branch = 'polkadot-v0.9.17' }
 sc-consensus = { git = 'https://github.com/paritytech/substrate', branch = 'polkadot-v0.9.17' }
-# TODO - do we need this for parachain?
-sc-consensus-epochs = { git = 'https://github.com/paritytech/substrate', branch = 'polkadot-v0.9.17' }
-# TODO - do we need this for parachain?
-sc-consensus-slots = { git = 'https://github.com/paritytech/substrate', branch = 'polkadot-v0.9.17' }
-# TODO - do we need this for parachain?
-sc-consensus-uncles = { git = 'https://github.com/paritytech/substrate', branch = 'polkadot-v0.9.17' }
 sc-executor = { git = 'https://github.com/paritytech/substrate', branch = 'polkadot-v0.9.17', features = ['wasmtime'] }
 sc-network = { git = 'https://github.com/paritytech/substrate', branch = 'polkadot-v0.9.17' }
 sc-keystore = { git = 'https://github.com/paritytech/substrate', branch = 'polkadot-v0.9.17' }
@@ -83,10 +72,7 @@ sc-transaction-pool-api = { git = 'https://github.com/paritytech/substrate', bra
 sc-tracing = { git = 'https://github.com/paritytech/substrate', branch = 'polkadot-v0.9.17' }
 
 ## Substrate Primitive Dependencies
-# TODO - do we need this for parachain?
 sp-authorship = { git = 'https://github.com/paritytech/substrate', branch = 'polkadot-v0.9.17' }
-# TODO - do we need this for parachain?
-# sp-authority-discovery = { git = 'https://github.com/paritytech/substrate', branch = 'polkadot-v0.9.17' }
 sp-api = { git = 'https://github.com/paritytech/substrate', branch = 'polkadot-v0.9.17' }
 sp-block-builder = { git = 'https://github.com/paritytech/substrate', branch = 'polkadot-v0.9.17' }
 sp-blockchain = { git = 'https://github.com/paritytech/substrate', branch = 'polkadot-v0.9.17' }
@@ -99,11 +85,8 @@ sp-offchain = { git = 'https://github.com/paritytech/substrate', branch = 'polka
 sp-runtime = { git = 'https://github.com/paritytech/substrate', branch = 'polkadot-v0.9.17' }
 sp-session = { git = 'https://github.com/paritytech/substrate', branch = 'polkadot-v0.9.17' }
 sp-timestamp = { git = 'https://github.com/paritytech/substrate', branch = 'polkadot-v0.9.17' }
-# TODO - do we need this for parachain?
 sp-tracing = { git = 'https://github.com/paritytech/substrate', branch = 'polkadot-v0.9.17' }
 sp-transaction-pool = { git = 'https://github.com/paritytech/substrate', branch = 'polkadot-v0.9.17' }
-# TODO - do we need this for parachain?
-sp-transaction-storage-proof = { git = 'https://github.com/paritytech/substrate', branch = 'polkadot-v0.9.17' }
 
 # Cumulus dependencies
 cumulus-client-cli = { git = 'https://github.com/paritytech/cumulus', branch = 'polkadot-v0.9.17' }
@@ -124,7 +107,5 @@ polkadot-primitives = { git = 'https://github.com/paritytech/polkadot', branch =
 polkadot-service = { git = 'https://github.com/paritytech/polkadot', branch = 'release-v0.9.17' }
 xcm = { git = 'https://github.com/paritytech/polkadot', default-features = false, branch = 'release-v0.9.17' }
 
-# TODO - do we need this for parachain?
 [dev-dependencies]
-# TODO - do we need this for parachain?
 futures = { version = '0.3.16' }

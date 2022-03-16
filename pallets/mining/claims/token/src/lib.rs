@@ -43,6 +43,9 @@ mod mock;
 #[cfg(test)]
 mod tests;
 
+#[cfg(feature = "runtime-benchmarks")]
+mod benchmarking;
+
 /// The module's configuration trait.
 pub trait Config:
     frame_system::Config
@@ -155,7 +158,7 @@ decl_module! {
             Self::deposit_event(RawEvent::Transferred(sender, to, mining_claims_token_id));
         }
 
-        #[weight = 10_000 + T::DbWeight::get().writes(1)]
+        #[weight = 10_000 + T::DbWeight::get().writes(0)]
         pub fn claim(
             origin,
             mining_setting_token_id: T::MiningSettingTokenIndex,

@@ -36,12 +36,16 @@ use mining_setting_hardware;
 use mining_eligibility_hardware;
 use mining_rates_hardware;
 use mining_sampling_hardware;
+use mining_claims_hardware;
 
-#[cfg(test)]
-mod mock;
+// #[cfg(test)]
+// mod mock;
 
-#[cfg(test)]
-mod tests;
+// #[cfg(test)]
+// mod tests;
+
+#[cfg(feature = "runtime-benchmarks")]
+mod benchmarking;
 
 /// The module's configuration trait.
 pub trait Config:
@@ -51,15 +55,10 @@ pub trait Config:
     + mining_eligibility_hardware::Config
     + mining_rates_hardware::Config
     + mining_sampling_hardware::Config
+    + mining_claims_hardware::Config
 {
     type Event: From<Event<Self>> + Into<<Self as frame_system::Config>::Event>;
-    type MiningClaimsHardwareIndex: Parameter + Member + AtLeast32Bit + Bounded + Default + Copy;
-    type MiningClaimsHardwareClaimAmount: Parameter
-        + Member
-        + AtLeast32Bit
-        + Bounded
-        + Default
-        + Copy;
+    type MiningLodgementsHardwareIndex: Parameter + Member + AtLeast32Bit + Bounded + Default + Copy;
 }
 
 // type BalanceOf<T> = <<T as roaming_operators::Config>::Currency as Currency<<T as
@@ -79,8 +78,8 @@ pub struct MiningClaimsHardwareClaimResult<U, V> {
 decl_event!(
     pub enum Event<T> where
         <T as frame_system::Config>::AccountId,
-        <T as Config>::MiningClaimsHardwareIndex,
-        <T as Config>::MiningClaimsHardwareClaimAmount,
+        <T as mining_claims_hardware::Config>::MiningClaimsHardwareIndex,
+        <T as mining_claims_hardware::Config>::MiningClaimsHardwareClaimAmount,
         <T as mining_setting_hardware::Config>::MiningSettingHardwareIndex,
         <T as frame_system::Config>::BlockNumber,
         // Balance = BalanceOf<T>,
@@ -160,7 +159,7 @@ decl_module! {
             Self::deposit_event(RawEvent::Transferred(sender, to, mining_claims_hardware_id));
         }
 
-        #[weight = 10_000 + T::DbWeight::get().writes(1)]
+        #[weight = 10_000 + T::DbWeight::get().writes(0)]
         pub fn claim(
             origin,
             mining_setting_hardware_id: T::MiningSettingHardwareIndex,

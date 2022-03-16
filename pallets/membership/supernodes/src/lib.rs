@@ -11,6 +11,9 @@ use frame_support::{
     decl_storage,
     dispatch::DispatchResult,
     ensure,
+    traits::{
+        Get,
+    },
 };
 use frame_system::{
     self as system,
@@ -23,6 +26,9 @@ use sp_std::{
 
 // #[cfg(test)]
 // mod tests;
+
+#[cfg(feature = "runtime-benchmarks")]
+mod benchmarking;
 
 /// A maximum number of members. When membership reaches this number, no new members may join.
 pub const MAX_MEMBERS: usize = 16;
@@ -71,7 +77,7 @@ decl_module! {
         type Error = Error<T>;
 
         /// Adds a member to the membership set unless the max is reached
-        #[weight = 10_000]
+        #[weight = 10_000 + T::DbWeight::get().writes(2)]
         pub fn add_member(
             origin,
             new_member: T::AccountId,
@@ -101,7 +107,7 @@ decl_module! {
         }
 
         /// Removes a member.
-        #[weight = 10_000]
+        #[weight = 10_000 + T::DbWeight::get().writes(2)]
         pub fn remove_member(
             origin,
             old_member: T::AccountId,

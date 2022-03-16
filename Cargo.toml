@@ -28,7 +28,12 @@ members = [
     'pallets/mining/sampling/hardware',
     'pallets/mining/eligibility/token',
     'pallets/mining/eligibility/hardware',
+    'pallets/mining/eligibility/proxy',
+    'pallets/mining/execution/token',
+    'pallets/mining/lodgements/hardware',
     'pallets/mining/claims/token',
     'pallets/mining/claims/hardware',
+    'pallets/primitives',
+    'pallets/treasury/dao',
     'runtime',
 ]

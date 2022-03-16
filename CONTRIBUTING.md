@@ -5,6 +5,9 @@
 * [Linting](#chapter-c345d7)
 * [Debugging](#chapter-93c645)
 * [Testing](#chapter-e146ec)
+* [Benchmarking](#chapter-6c1b24)
+* [Try-Runtime](#chapter-397b84)
+* [Memory Profiling](#chapter-585a25)
 * [Code Editor Configuration](#chapter-d5a9de)
 * [Create new runtime modules](#chapter-18873f)
 * [FAQ](#chapter-f078a2)
@@ -23,7 +26,7 @@ To skip running the CI unnecessarily for simple changes such as updating the doc
 
 ### Linting
 
-Check with Rust Format. Note: If you need a specific version of it replace `+nightly` with say `+nightly-2021-12-15`
+Check with Rust Format. Note: If you need a specific version of it replace `+nightly` with say `+nightly-2022-03-16`
 ```
 cargo +nightly fmt --all -- --check
 ```
@@ -125,6 +128,78 @@ Example
 ```
 cargo test -p datahighway-parachain-runtime --test cli_integration_tests_mining_tokens
 ```
+
+## Benchmarking <a id="chapter-6c1b24"></a>
+
+Run the following:
+```
+./scripts/benchmark_all_pallets.sh
+```
+
+## Try-Runtime <a id="chapter-397b84"></a>
+
+* Run Collator nodes
+
+* Build whilst specifying the `try-runtime` feature
+```
+cargo build --release features=try-runtime
+```
+
+* Run Try-Runtime so `on-runtime-upgrade` will invoke all  `OnRuntimeUpgrade` hooks in pallets and the runtime
+```
+RUST_LOG=runtime=trace,try-runtime::cli=trace,executor=trace \
+./target/release/datahighway-collator \
+try-runtime \
+--chain <chain-spec> \
+--execution Wasm \
+--wasm-execution Compiled \
+--uri <ws/s port>
+--block-at <block-hash> \
+on-runtime-upgrade \
+live
+```
+
+Notes:
+* Ensure that the Collator node was run with:
+```
+--rpc-max-payload 1000 \
+--rpc-cors=all \
+```
+* The `--chain` argument must be provided
+* Provide a `--uri` and `--block-at` hash from the testnet where the Collator node was launched. The defaults are the wss://127.0.0.1:9944 port and the latest finalized block respectively.
+* `live` means we are going to scrape a live testnet, as opposed to loading a saved file.
+
+References:
+* https://docs.substrate.io/how-to-guides/v3/tools/try-runtime/
+* https://docs.substrate.io/v3/tools/try-runtime/
+
+## Memory Profiling <a id="chapter-585a25"></a>
+
+```
+curl -L https://github.com/koute/memory-profiler/releases/download/0.6.1/memory-profiler-x86_64-unknown-linux-gnu.tgz -o memory-profiler-x86_64-unknown-linux-gnu.tgz
+tar -xf memory-profiler-x86_64-unknown-linux-gnu.tgz
+
+export MEMORY_PROFILER_LOG=info
+export MEMORY_PROFILER_LOGFILE=profiling_%e_%t.log
+export MEMORY_PROFILER_OUTPUT=profiling_%e_%t.dat
+export MEMORY_PROFILER_CULL_TEMPORARY_ALLOCATIONS=1
+```
+
+It should only be run on a testnet. See https://github.com/paritytech/subport/issues/257.
+Purge local chain from previous tests, then:
+```
+LD_PRELOAD=<INSERT_PATH_TO_MEMORY_PROFILER>/libmemory_profiler.so \
+./target/release/datahighway-collator <INSERT_TESTNET_ARGS>
+```
+
+```
+./memory-profiler-cli server *.dat
+```
+
+View output at http://localhost:8080/
+
+Reference:
+* https://docs.substrate.io/v3/tools/memory-profiling/
 
 ## Continuous Integration <a id="chapter-7a8301"></a>
 

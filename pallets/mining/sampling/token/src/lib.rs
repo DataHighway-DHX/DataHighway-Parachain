@@ -40,6 +40,9 @@ mod mock;
 #[cfg(test)]
 mod tests;
 
+#[cfg(feature = "runtime-benchmarks")]
+mod benchmarking;
+
 /// The module's configuration trait.
 pub trait Config: frame_system::Config + roaming_operators::Config + mining_setting_token::Config {
     type Event: From<Event<Self>> + Into<<Self as frame_system::Config>::Event>;

@@ -250,6 +250,22 @@ pub fn run() -> Result<()> {
                 You can enable it with `--features runtime-benchmarks`."
                     .into())
             },
+        Some(Subcommand::BenchmarkStorage(cmd)) => {
+            if !cfg!(feature = "runtime-benchmarks") {
+                return Err("Benchmarking wasn't enabled when building the node. \
+                You can enable it with `--features runtime-benchmarks`."
+                    .into())
+            }
+
+            let runner = cli.create_runner(cmd)?;
+            runner.async_run(|config| {
+                let PartialComponents { client, task_manager, backend, .. } = new_partial(&config)?;
+                let db = backend.expose_db();
+                let storage = backend.expose_storage();
+
+                Ok((cmd.run(config, client, db, storage), task_manager))
+            })
+        },
         #[cfg(feature = "try-runtime")]
         Some(Subcommand::TryRuntime(cmd)) => {
             let runner = cli.create_runner(cmd)?;

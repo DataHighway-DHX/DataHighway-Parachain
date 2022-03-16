@@ -185,8 +185,11 @@ export MEMORY_PROFILER_OUTPUT=profiling_%e_%t.dat
 export MEMORY_PROFILER_CULL_TEMPORARY_ALLOCATIONS=1
 ```
 
+It should only be run on a testnet. See https://github.com/paritytech/subport/issues/257.
+Purge local chain from previous tests, then:
 ```
-LD_PRELOAD=<INSERT_PATH_TO_MEMORY_PROFILER>/libmemory_profiler.so ./target/release/datahighway-collator
+LD_PRELOAD=<INSERT_PATH_TO_MEMORY_PROFILER>/libmemory_profiler.so \
+./target/release/datahighway-collator <INSERT_TESTNET_ARGS>
 ```
 
 ```

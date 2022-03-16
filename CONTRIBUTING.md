@@ -7,6 +7,7 @@
 * [Testing](#chapter-e146ec)
 * [Benchmarking](#chapter-6c1b24)
 * [Try-Runtime](#chapter-397b84)
+* [Memory Profiling](#chapter-585a25)
 * [Code Editor Configuration](#chapter-d5a9de)
 * [Create new runtime modules](#chapter-18873f)
 * [FAQ](#chapter-f078a2)
@@ -25,7 +26,7 @@ To skip running the CI unnecessarily for simple changes such as updating the doc
 
 ### Linting
 
-Check with Rust Format. Note: If you need a specific version of it replace `+nightly` with say `+nightly-2021-12-15`
+Check with Rust Format. Note: If you need a specific version of it replace `+nightly` with say `+nightly-2022-03-16`
 ```
 cargo +nightly fmt --all -- --check
 ```
@@ -156,6 +157,7 @@ try-runtime \
 --block-at <block-hash> \
 on-runtime-upgrade \
 live
+```
 
 Notes:
 * Ensure that the Collator node was run with:
@@ -170,6 +172,31 @@ Notes:
 References:
 * https://docs.substrate.io/how-to-guides/v3/tools/try-runtime/
 * https://docs.substrate.io/v3/tools/try-runtime/
+
+## Memory Profiling <a id="chapter-585a25"></a>
+
+```
+curl -L https://github.com/koute/memory-profiler/releases/download/0.6.1/memory-profiler-x86_64-unknown-linux-gnu.tgz -o memory-profiler-x86_64-unknown-linux-gnu.tgz
+tar -xf memory-profiler-x86_64-unknown-linux-gnu.tgz
+
+export MEMORY_PROFILER_LOG=info
+export MEMORY_PROFILER_LOGFILE=profiling_%e_%t.log
+export MEMORY_PROFILER_OUTPUT=profiling_%e_%t.dat
+export MEMORY_PROFILER_CULL_TEMPORARY_ALLOCATIONS=1
+```
+
+```
+LD_PRELOAD=<INSERT_PATH_TO_MEMORY_PROFILER>/libmemory_profiler.so ./target/release/datahighway-collator
+```
+
+```
+./memory-profiler-cli server *.dat
+```
+
+View output at http://localhost:8080/
+
+Reference:
+* https://docs.substrate.io/v3/tools/memory-profiling/
 
 ## Continuous Integration <a id="chapter-7a8301"></a>
 

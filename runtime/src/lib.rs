@@ -651,47 +651,6 @@ impl pallet_aura::Config for Runtime {
 }
 
 parameter_types! {
-    pub const BasicDeposit: Balance = 1 * DOLLARS;       // 258 bytes on-chain
-    pub const FieldDeposit: Balance = 25 * CENTS;        // 66 bytes on-chain
-    pub const SubAccountDeposit: Balance = 25 * CENTS;   // 53 bytes on-chain
-    pub const MaxSubAccounts: u32 = 100;
-    pub const MaxAdditionalFields: u32 = 100;
-    pub const MaxRegistrars: u32 = 20;
-}
-
-impl pallet_identity::Config for Runtime {
-    type Event = Event;
-    type Currency = Balances;
-    type BasicDeposit = BasicDeposit;
-    type FieldDeposit = FieldDeposit;
-    type SubAccountDeposit = SubAccountDeposit;
-    type MaxSubAccounts = MaxSubAccounts;
-    type MaxAdditionalFields = MaxAdditionalFields;
-    type MaxRegistrars = MaxRegistrars;
-    type Slashed = Treasury;
-    type ForceOrigin = EnsureRootOrHalfCouncil;
-    type RegistrarOrigin = EnsureRootOrHalfCouncil;
-    type WeightInfo = pallet_identity::weights::SubstrateWeight<Runtime>;
-}
-
-parameter_types! {
-    pub const ConfigDepositBase: Balance = 1 * DOLLARS;
-    pub const FriendDepositFactor: Balance = 50 * CENTS;
-    pub const MaxFriends: u16 = 9;
-    pub const RecoveryDeposit: Balance = 1 * DOLLARS;
-}
-
-impl pallet_recovery::Config for Runtime {
-    type Event = Event;
-    type Call = Call;
-    type Currency = Balances;
-    type ConfigDepositBase = ConfigDepositBase;
-    type FriendDepositFactor = FriendDepositFactor;
-    type MaxFriends = MaxFriends;
-    type RecoveryDeposit = RecoveryDeposit;
-}
-
-parameter_types! {
     pub const AssetDeposit: Balance = 100 * DOLLARS;
     pub const ApprovalDeposit: Balance = 1 * DOLLARS;
     pub const StringLimit: u32 = 50;
@@ -723,93 +682,6 @@ impl pallet_utility::Config for Runtime {
     type Call = Call;
     type PalletsOrigin = OriginCaller;
     type WeightInfo = pallet_utility::weights::SubstrateWeight<Runtime>;
-}
-
-pub const MAX_SIGNATORIES_AS_CONST: u16 = 100;
-
-parameter_types! {
-    // One storage item; key size is 32; value is size 4+4+16+32 bytes = 56 bytes.
-    pub const DepositBase: Balance = deposit(1, 88);
-    // Additional storage item size of 32 bytes.
-    pub const DepositFactor: Balance = deposit(0, 32);
-    pub const MaxSignatories: u16 = MAX_SIGNATORIES_AS_CONST;
-}
-
-impl pallet_multisig::Config for Runtime {
-    type Event = Event;
-    type Call = Call;
-    type Currency = Balances;
-    type DepositBase = DepositBase;
-    type DepositFactor = DepositFactor;
-    type MaxSignatories = ConstU16<MAX_SIGNATORIES_AS_CONST>;
-    type WeightInfo = pallet_multisig::weights::SubstrateWeight<Runtime>;
-}
-
-parameter_types! {
-    // One storage item; key size 32, value size 8; .
-    pub const ProxyDepositBase: Balance = deposit(1, 8);
-    // Additional storage item size of 33 bytes.
-    pub const ProxyDepositFactor: Balance = deposit(0, 33);
-    pub const AnnouncementDepositBase: Balance = deposit(1, 8);
-    pub const AnnouncementDepositFactor: Balance = deposit(0, 66);
-}
-
-/// The type used to represent the kinds of proxying allowed.
-#[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Encode, Decode,
-    RuntimeDebug, MaxEncodedLen, scale_info::TypeInfo,
-)]
-pub enum ProxyType {
-    Any,
-    NonTransfer,
-    Governance,
-}
-impl Default for ProxyType {
-    fn default() -> Self {
-        Self::Any
-    }
-}
-impl InstanceFilter<Call> for ProxyType {
-    fn filter(&self, c: &Call) -> bool {
-        match self {
-            ProxyType::Any => true,
-            ProxyType::NonTransfer => !matches!(
-                c,
-                Call::Balances(..) |
-                Call::Indices(pallet_indices::Call::transfer { .. })
-            ),
-            ProxyType::Governance => matches!(
-                c,
-                Call::Democracy(..) |
-                Call::Council(..) |
-                Call::TechnicalCommittee(..) |
-                Call::Elections(..) | Call::Treasury(..)
-            ),
-        }
-    }
-    fn is_superset(&self, o: &Self) -> bool {
-        match (self, o) {
-            (x, y) if x == y => true,
-            (ProxyType::Any, _) => true,
-            (_, ProxyType::Any) => false,
-            (ProxyType::NonTransfer, _) => true,
-            _ => false,
-        }
-    }
-}
-
-impl pallet_proxy::Config for Runtime {
-    type Event = Event;
-    type Call = Call;
-    type Currency = Balances;
-    type ProxyType = ProxyType;
-    type ProxyDepositBase = ProxyDepositBase;
-    type ProxyDepositFactor = ProxyDepositFactor;
-    type MaxProxies = ConstU32<32>;
-    type WeightInfo = pallet_proxy::weights::SubstrateWeight<Runtime>;
-    type MaxPending = ConstU32<32>;
-    type CallHasher = BlakeTwo256;
-    type AnnouncementDepositBase = AnnouncementDepositBase;
-    type AnnouncementDepositFactor = AnnouncementDepositFactor;
 }
 
 pub const MAX_SCHEDULED_PER_BLOCK_AS_CONST: u32 = 50;
@@ -1085,8 +957,6 @@ construct_runtime!(
         Utility: pallet_utility = 2,
         RandomnessCollectiveFlip: pallet_randomness_collective_flip::{Pallet, Storage} = 3,
         Timestamp: pallet_timestamp::{Pallet, Call, Storage, Inherent} = 4,
-        Identity: pallet_identity = 5,
-        Recovery: pallet_recovery = 6,
         Scheduler: pallet_scheduler = 7,
         Sudo: pallet_sudo::{Pallet, Call, Config<T>, Storage, Event<T>} = 8,
         ParachainInfo: parachain_info::{Pallet, Storage, Config} = 9,
@@ -1123,8 +993,6 @@ construct_runtime!(
         Tips: pallet_tips,
         Assets: pallet_assets,
         Preimage: pallet_preimage,
-        Proxy: pallet_proxy,
-        Multisig: pallet_multisig,
         Referenda: pallet_referenda,
         ConvictionVoting: pallet_conviction_voting,
     }
@@ -1140,7 +1008,6 @@ mod benches {
         [frame_system, SystemBench::<Runtime>]
         [pallet_utility, Utility]
         [pallet_timestamp, Timestamp]
-        [pallet_identity, Identity]
         [pallet_scheduler, Scheduler]
         [pallet_indices, Indices]
         [pallet_balances, Balances]
@@ -1157,8 +1024,6 @@ mod benches {
         [pallet_child_bounties, ChildBounties]
         [pallet_tips, Tips]
         [pallet_preimage, Preimage]
-        [pallet_proxy, Proxy]
-        [pallet_multisig, Multisig]
         [pallet_referenda, Referenda]
         [pallet_conviction_voting, ConvictionVoting]
     );

@@ -6,17 +6,12 @@ use datahighway_parachain_runtime::{
     AuraConfig,
     BalancesConfig,
     CollatorSelectionConfig,
-    CouncilConfig,
-    DemocracyConfig,
-    ElectionsConfig,
     GenesisConfig,
     IndicesConfig,
     SessionConfig,
     // SessionKeys,
     SudoConfig,
     // SystemConfig,
-    TechnicalCommitteeConfig,
-    TechnicalMembershipConfig,
     TransactionPaymentConfig,
     TreasuryConfig,
 };
@@ -1224,28 +1219,9 @@ fn spreehafen_testnet_genesis(
                 })
                 .collect(),
         },
-        democracy: DemocracyConfig::default(),
-        elections: ElectionsConfig {
-            members: endowed_accounts
-                .iter()
-                .take((num_endowed_accounts + 1) / 2)
-                .cloned()
-                .map(|member| (member, INITIAL_ENDOWMENT))
-                .collect(),
-        },
-        // https://github.com/paritytech/substrate/commit/d6ac9f551b71d9c7b69afcebfc68ace310ef74ee
-        // collective_Instance1
-        council: CouncilConfig::default(),
-        // collective_Instance2
-        technical_committee: TechnicalCommitteeConfig::default(),
         // no need to pass anything to aura, in fact it will panic if we do. Session will take care
         // of this.
         aura: Default::default(),
-        // pallet_membership_Instance1
-        technical_membership: TechnicalMembershipConfig {
-            members: vec![root_key.clone()],
-            phantom: Default::default(),
-        },
         assets: Default::default(),
         transaction_payment: TransactionPaymentConfig::default(),
         aura_ext: Default::default(),
@@ -1304,28 +1280,9 @@ fn testnet_genesis(
                 })
                 .collect(),
         },
-        democracy: DemocracyConfig::default(),
-        elections: ElectionsConfig {
-            members: endowed_accounts
-                .iter()
-                .take((num_endowed_accounts + 1) / 2)
-                .cloned()
-                .map(|member| (member, INITIAL_ENDOWMENT))
-                .collect(),
-        },
-        // https://github.com/paritytech/substrate/commit/d6ac9f551b71d9c7b69afcebfc68ace310ef74ee
-        // collective_Instance1
-        council: CouncilConfig::default(),
-        // collective_Instance2
-        technical_committee: TechnicalCommitteeConfig::default(),
         // no need to pass anything to aura, in fact it will panic if we do. Session will take care
         // of this.
         aura: Default::default(),
-        // pallet_membership_Instance1
-        technical_membership: TechnicalMembershipConfig {
-            members: vec![root_key.clone()],
-            phantom: Default::default(),
-        },
         assets: Default::default(),
         transaction_payment: TransactionPaymentConfig::default(),
         aura_ext: Default::default(),
@@ -1384,28 +1341,9 @@ fn dev_genesis(
                 })
                 .collect(),
         },
-        democracy: DemocracyConfig::default(),
-        elections: ElectionsConfig {
-            members: endowed_accounts
-                .iter()
-                .take((num_endowed_accounts + 1) / 2)
-                .cloned()
-                .map(|member| (member, INITIAL_ENDOWMENT))
-                .collect(),
-        },
-        // https://github.com/paritytech/substrate/commit/d6ac9f551b71d9c7b69afcebfc68ace310ef74ee
-        // collective_Instance1
-        council: CouncilConfig::default(),
-        // collective_Instance2
-        technical_committee: TechnicalCommitteeConfig::default(),
         // no need to pass anything to aura, in fact it will panic if we do. Session will take care
         // of this.
         aura: Default::default(),
-        // pallet_membership_Instance1
-        technical_membership: TechnicalMembershipConfig {
-            members: vec![root_key.clone()],
-            phantom: Default::default(),
-        },
         assets: Default::default(),
         transaction_payment: TransactionPaymentConfig::default(),
         aura_ext: Default::default(),
@@ -1475,28 +1413,9 @@ fn baikal_testnet_genesis(
                 })
                 .collect(),
         },
-        democracy: DemocracyConfig::default(),
-        elections: ElectionsConfig {
-            members: endowed_accounts
-                .iter()
-                .take((num_endowed_accounts + 1) / 2)
-                .cloned()
-                .map(|member| (member, INITIAL_ENDOWMENT))
-                .collect(),
-        },
-        // https://github.com/paritytech/substrate/commit/d6ac9f551b71d9c7b69afcebfc68ace310ef74ee
-        // collective_Instance1
-        council: CouncilConfig::default(),
-        // collective_Instance2
-        technical_committee: TechnicalCommitteeConfig::default(),
         // no need to pass anything to aura, in fact it will panic if we do. Session will take care
         // of this.
         aura: Default::default(),
-        // pallet_membership_Instance1
-        technical_membership: TechnicalMembershipConfig {
-            members: vec![root_key.clone()],
-            phantom: Default::default(),
-        },
         assets: Default::default(),
         transaction_payment: TransactionPaymentConfig::default(),
         aura_ext: Default::default(),
@@ -1555,28 +1474,9 @@ fn tanganika_testnet_genesis(
                 })
                 .collect(),
         },
-        democracy: DemocracyConfig::default(),
-        elections: ElectionsConfig {
-            members: endowed_accounts
-                .iter()
-                .take((num_endowed_accounts + 1) / 2)
-                .cloned()
-                .map(|member| (member, INITIAL_ENDOWMENT))
-                .collect(),
-        },
-        // https://github.com/paritytech/substrate/commit/d6ac9f551b71d9c7b69afcebfc68ace310ef74ee
-        // collective_Instance1
-        council: CouncilConfig::default(),
-        // collective_Instance2
-        technical_committee: TechnicalCommitteeConfig::default(),
         // no need to pass anything to aura, in fact it will panic if we do. Session will take care
         // of this.
         aura: Default::default(),
-        // pallet_membership_Instance1
-        technical_membership: TechnicalMembershipConfig {
-            members: vec![root_key.clone()],
-            phantom: Default::default(),
-        },
         assets: Default::default(),
         transaction_payment: TransactionPaymentConfig::default(),
         aura_ext: Default::default(),

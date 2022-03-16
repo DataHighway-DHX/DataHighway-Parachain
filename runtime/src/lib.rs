@@ -292,7 +292,7 @@ impl frame_system::Config for Runtime {
     type Hash = Hash;
     type Hashing = BlakeTwo256;
     type AccountId = AccountId;
-    type Lookup = AccountIdLookup<AccountId, ()>;
+    type Lookup = AccountIdLookup<AccountId, AccountIndex>;
     type Header = generic::Header<BlockNumber, BlakeTwo256>;
     type Event = Event;
     type BlockHashCount = ConstU32<BLOCK_HASH_COUNT_AS_CONST>;

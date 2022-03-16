@@ -35,7 +35,7 @@ pub use frame_support::{
     traits::{
         ConstU8, ConstU16, ConstU32, ConstU64, ConstU128, Currency, EnsureOneOf, EqualPrivilegeOnly,
         Everything, Imbalance, InstanceFilter, Contains, ContainsLengthBound, OnUnbalanced, KeyOwnerProofSystem,
-        LockIdentifier, Randomness, StorageInfo, U128CurrencyToVote,
+        LockIdentifier, Randomness, OnRuntimeUpgrade, StorageInfo, U128CurrencyToVote,
     },
     weights::{
         constants::{BlockExecutionWeight, ExtrinsicBaseWeight,RocksDbWeight, WEIGHT_PER_SECOND},
@@ -178,6 +178,24 @@ impl WeightToFeePolynomial for WeightToFee {
         	coeff_frac: Perbill::from_rational(p % q, q),
         	coeff_integer: p / q,
         }]
+    }
+}
+
+// https://docs.substrate.io/v3/tools/try-runtime/#helper-functions
+pub struct EnsureAccountsWontDie;
+impl OnRuntimeUpgrade for EnsureAccountsWontDie {
+    #[cfg(feature = "try-runtime")]
+    fn pre_upgrade() {
+        let account_count = frame_system::Accounts::<Runtime>::iter().count();
+        Self::set_temp_storage(account_count, "account_count");
+    }
+
+    #[cfg(feature = "try-runtime")]
+    fn post_upgrade() {
+        // ensure that this migration doesn't kill any account.
+        let post_migration = frame_system::Accounts::<Runtime>::iter().count();
+        let pre_migration = Self::get_temp_storage::<u32>("account_count");
+        ensure!(post_migration == pre_migration, "error ...");
     }
 }
 
@@ -1460,10 +1478,10 @@ impl_runtime_apis! {
 
 	#[cfg(feature = "try-runtime")]
 	impl frame_try_runtime::TryRuntime<Block> for Runtime {
-		fn on_runtime_upgrade() -> (Weight, Weight) {
+		fn on_runtime_upgrade() -> Result<(Weight, Weight), sp_runtime::RuntimeString> {
 			log::info!("try-runtime::on_runtime_upgrade parachain-template.");
 			let weight = Executive::try_runtime_upgrade().unwrap();
-			(weight, RuntimeBlockWeights::get().max_block)
+			Ok((weight, RuntimeBlockWeights::get().max_block))
 		}
 
 		fn execute_block_no_check(block: Block) -> Weight {

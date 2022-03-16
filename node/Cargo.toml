@@ -20,7 +20,11 @@ name = 'datahighway-collator'
 path = 'src/main.rs'
 
 [features]
-runtime-benchmarks = ['datahighway-parachain-runtime/runtime-benchmarks']
+runtime-benchmarks = [
+    'datahighway-parachain-runtime/runtime-benchmarks',
+    'polkadot-cli/runtime-benchmarks',
+    'try-runtime-cli',
+]
 try-runtime = [ 'datahighway-parachain-runtime/try-runtime' ]
 
 [dependencies]
@@ -43,7 +47,8 @@ module-primitives = { version = '3.0.6', default-features = false, path = '../pa
 # Substrate Dependencies
 frame-benchmarking = { git = 'https://github.com/paritytech/substrate', branch = 'polkadot-v0.9.17' }
 frame-benchmarking-cli = { git = 'https://github.com/paritytech/substrate', branch = 'polkadot-v0.9.17' }
-try-runtime-cli = { git = 'https://github.com/paritytech/substrate', branch = 'polkadot-v0.9.17' }
+frame-try-runtime = { git = 'https://github.com/paritytech/substrate', branch = 'polkadot-v0.9.17', optional = true }
+try-runtime-cli = { git = 'https://github.com/paritytech/substrate', branch = 'polkadot-v0.9.17', optional = true }
 
 pallet-transaction-payment-rpc = { git = 'https://github.com/paritytech/substrate', branch = 'polkadot-v0.9.17' }
 substrate-frame-rpc-system = { git = 'https://github.com/paritytech/substrate', branch = 'polkadot-v0.9.17' }

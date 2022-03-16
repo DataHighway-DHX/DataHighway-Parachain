@@ -6,6 +6,7 @@
 * [Debugging](#chapter-93c645)
 * [Testing](#chapter-e146ec)
 * [Benchmarking](#chapter-6c1b24)
+* [Try-Runtime](#chapter-397b84)
 * [Code Editor Configuration](#chapter-d5a9de)
 * [Create new runtime modules](#chapter-18873f)
 * [FAQ](#chapter-f078a2)
@@ -133,6 +134,42 @@ Run the following:
 ```
 ./scripts/benchmark_all_pallets.sh
 ```
+
+## Try-Runtime <a id="chapter-397b84"></a>
+
+* Run Collator nodes
+
+* Build whilst specifying the `try-runtime` feature
+```
+cargo build --release features=try-runtime
+```
+
+* Run Try-Runtime so `on-runtime-upgrade` will invoke all  `OnRuntimeUpgrade` hooks in pallets and the runtime
+```
+RUST_LOG=runtime=trace,try-runtime::cli=trace,executor=trace \
+./target/release/datahighway-collator \
+try-runtime \
+--chain <chain-spec> \
+--execution Wasm \
+--wasm-execution Compiled \
+--uri <ws/s port>
+--block-at <block-hash> \
+on-runtime-upgrade \
+live
+
+Notes:
+* Ensure that the Collator node was run with:
+```
+--rpc-max-payload 1000 \
+--rpc-cors=all \
+```
+* The `--chain` argument must be provided
+* Provide a `--uri` and `--block-at` hash from the testnet where the Collator node was launched. The defaults are the wss://127.0.0.1:9944 port and the latest finalized block respectively.
+* `live` means we are going to scrape a live testnet, as opposed to loading a saved file.
+
+References:
+* https://docs.substrate.io/how-to-guides/v3/tools/try-runtime/
+* https://docs.substrate.io/v3/tools/try-runtime/
 
 ## Continuous Integration <a id="chapter-7a8301"></a>
 

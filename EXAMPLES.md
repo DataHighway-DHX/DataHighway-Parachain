@@ -53,6 +53,7 @@ rm -rf /tmp/parachain/alice
 --ws-port 8844 \
 --unsafe-ws-external \
 --unsafe-rpc-external \
+--rpc-max-payload 1000 \
 --rpc-cors=all \
 --rpc-methods=Unsafe \
 -- \

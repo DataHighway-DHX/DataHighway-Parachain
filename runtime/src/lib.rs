@@ -583,13 +583,14 @@ extern crate frame_benchmarking;
 mod benches {
     define_benchmarks!(
         [frame_system, SystemBench::<Runtime>]
+        // [cumulus_pallet_parachain_system, ParachainSystem]
         [pallet_utility, Utility]
         [pallet_timestamp, Timestamp]
         [pallet_indices, Indices]
         [pallet_balances, Balances]
         [pallet_collator_selection, CollatorSelection]
-        [pallet_aura, Aura]
-        [pallet_xcm, PolkadotXcm]
+        // [pallet_aura, Aura]
+        // [pallet_xcm, PolkadotXcm]
         [pallet_treasury, Treasury]
     );
 }

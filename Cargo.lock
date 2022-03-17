@@ -1602,7 +1602,6 @@ name = "cumulus-pallet-session-benchmarking"
 version = "3.0.0"
 source = "git+https://github.com/paritytech/cumulus?branch=polkadot-v0.9.17#db11baacc325537be74ad34517fcb28ed9ded6c6"
 dependencies = [
- "frame-benchmarking",
  "frame-support",
  "frame-system",
  "pallet-session",

@@ -588,8 +588,6 @@ mod benches {
         [pallet_indices, Indices]
         [pallet_balances, Balances]
         [pallet_collator_selection, CollatorSelection]
-        [pallet_aura, Aura]
-        [pallet_xcm, PolkadotXcm]
         [pallet_treasury, Treasury]
     );
 }

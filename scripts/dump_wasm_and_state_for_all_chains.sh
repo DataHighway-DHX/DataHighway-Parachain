@@ -19,14 +19,14 @@ mkdir -p ${DUMP_DIR}
 
 # Note: chachacha and polkadot have been omitted
 chainspecs=(
-      "rococo-dev" \
-      "rococo-local" \
-      "rococo" \
-      "kusama" \
-      "kusama-dev" \
-      "kusama-local" \
-      "kusama" \
-      )
+    "rococo-dev" \
+    "rococo-local" \
+    "rococo" \
+    "kusama" \
+    "kusama-dev" \
+    "kusama-local" \
+    "kusama" \
+)
 
 $COLLATOR --version
 # Print array values in  lines

@@ -42,7 +42,7 @@ pub use frame_support::{
         DispatchClass, IdentityFee, Weight, WeightToFeeCoefficient, WeightToFeeCoefficients,
         WeightToFeePolynomial,
     },
-	PalletId,
+    PalletId,
     RuntimeDebug,
     StorageValue,
 };

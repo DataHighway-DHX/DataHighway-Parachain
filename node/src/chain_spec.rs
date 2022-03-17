@@ -2,16 +2,15 @@ use crate::fixtures::get_allocation;
 use cumulus_primitives_core::ParaId;
 use datahighway_parachain_runtime::{
     AuraId,
-    // AuthorityDiscoveryConfig,
     AuraConfig,
     BalancesConfig,
     CollatorSelectionConfig,
     GenesisConfig,
     IndicesConfig,
     SessionConfig,
-    // SessionKeys,
+    SessionKeys,
     SudoConfig,
-    // SystemConfig,
+    SystemConfig,
     TransactionPaymentConfig,
     TreasuryConfig,
 };
@@ -20,7 +19,7 @@ use module_primitives::{
         DOLLARS,
         EXISTENTIAL_DEPOSIT,
     },
-	types::{
+    types::{
         AccountId,
         Balance,
         Signature,
@@ -78,7 +77,7 @@ const KUSAMA_LOCAL_PROTOCOL_ID: &str = "dhx-kusama-local";
 const KUSAMA_TANGANIKA_PROTOCOL_ID: &str = "dhx-kusama-tanganika";
 
 /// Specialized `ChainSpec` for the normal parachain runtime.
-pub type ChainSpec = sc_service::GenericChainSpec<datahighway_parachain_runtime::GenesisConfig, Extensions>;
+pub type ChainSpec = sc_service::GenericChainSpec<GenesisConfig, Extensions>;
 
 // Note this is the URL for the telemetry server
 const POLKADOT_STAGING_TELEMETRY_URL: &str = "wss://telemetry.polkadot.io/submit/";
@@ -129,8 +128,8 @@ where
 /// Generate the session keys from individual elements.
 ///
 /// The input must be a tuple of individual keys (a single arg for now since we have just one key).
-pub fn datahighway_session_keys(keys: AuraId) -> datahighway_parachain_runtime::SessionKeys {
-    datahighway_parachain_runtime::SessionKeys { aura: keys }
+pub fn datahighway_session_keys(keys: AuraId) -> SessionKeys {
+    SessionKeys { aura: keys }
 }
 
 // DHX DAO Unlocked Reserves Balance
@@ -1182,7 +1181,7 @@ fn spreehafen_testnet_genesis(
     let hardspoon_balances = get_balances(endowed_accounts.clone());
 
     GenesisConfig {
-        system: datahighway_parachain_runtime::SystemConfig {
+        system: SystemConfig {
             code: datahighway_parachain_runtime::WASM_BINARY.expect("WASM binary was not build, please build it!").to_vec(),
         },
         balances: BalancesConfig {
@@ -1219,8 +1218,7 @@ fn spreehafen_testnet_genesis(
                 })
                 .collect(),
         },
-        // no need to pass anything to aura, in fact it will panic if we do. Session will take care
-        // of this.
+        // it will panic if we pass anything to Aura. Session will take care of this instead.
         aura: Default::default(),
         transaction_payment: TransactionPaymentConfig::default(),
         aura_ext: Default::default(),
@@ -1242,7 +1240,7 @@ fn testnet_genesis(
     let hardspoon_balances = get_balances(endowed_accounts.clone());
 
     GenesisConfig {
-        system: datahighway_parachain_runtime::SystemConfig {
+        system: SystemConfig {
             code: datahighway_parachain_runtime::WASM_BINARY.expect("WASM binary was not build, please build it!").to_vec(),
         },
         balances: BalancesConfig {
@@ -1279,8 +1277,7 @@ fn testnet_genesis(
                 })
                 .collect(),
         },
-        // no need to pass anything to aura, in fact it will panic if we do. Session will take care
-        // of this.
+        // it will panic if we pass anything to Aura. Session will take care of this instead.
         aura: Default::default(),
         transaction_payment: TransactionPaymentConfig::default(),
         aura_ext: Default::default(),
@@ -1297,12 +1294,12 @@ fn dev_genesis(
     endowed_accounts: Vec<AccountId>,
     id: ParaId,
     _enable_println: bool,
-) -> datahighway_parachain_runtime::GenesisConfig {
+) -> GenesisConfig {
     let num_endowed_accounts = endowed_accounts.len();
     let hardspoon_balances = get_balances(endowed_accounts.clone());
 
-    datahighway_parachain_runtime::GenesisConfig {
-        system: datahighway_parachain_runtime::SystemConfig {
+    GenesisConfig {
+        system: SystemConfig {
             code: datahighway_parachain_runtime::WASM_BINARY.expect("WASM binary was not build, please build it!").to_vec(),
         },
         balances: BalancesConfig {
@@ -1339,8 +1336,7 @@ fn dev_genesis(
                 })
                 .collect(),
         },
-        // no need to pass anything to aura, in fact it will panic if we do. Session will take care
-        // of this.
+        // it will panic if we pass anything to Aura. Session will take care of this instead.
         aura: Default::default(),
         transaction_payment: TransactionPaymentConfig::default(),
         aura_ext: Default::default(),
@@ -1361,7 +1357,7 @@ fn baikal_testnet_genesis(
     let num_endowed_accounts = endowed_accounts.len();
 
     GenesisConfig {
-        system: datahighway_parachain_runtime::SystemConfig {
+        system: SystemConfig {
             code: datahighway_parachain_runtime::WASM_BINARY.expect("WASM binary was not build, please build it!").to_vec(),
         },
         balances: BalancesConfig {
@@ -1410,8 +1406,7 @@ fn baikal_testnet_genesis(
                 })
                 .collect(),
         },
-        // no need to pass anything to aura, in fact it will panic if we do. Session will take care
-        // of this.
+        // it will panic if we pass anything to Aura. Session will take care of this instead.
         aura: Default::default(),
         transaction_payment: TransactionPaymentConfig::default(),
         aura_ext: Default::default(),
@@ -1433,7 +1428,7 @@ fn tanganika_testnet_genesis(
     let hardspoon_balances = get_balances(endowed_accounts.clone());
 
     GenesisConfig {
-        system: datahighway_parachain_runtime::SystemConfig {
+        system: SystemConfig {
             code: datahighway_parachain_runtime::WASM_BINARY.expect("WASM binary was not build, please build it!").to_vec(),
         },
         balances: BalancesConfig {
@@ -1470,8 +1465,7 @@ fn tanganika_testnet_genesis(
                 })
                 .collect(),
         },
-        // no need to pass anything to aura, in fact it will panic if we do. Session will take care
-        // of this.
+        // it will panic if we pass anything to Aura. Session will take care of this instead.
         aura: Default::default(),
         transaction_payment: TransactionPaymentConfig::default(),
         aura_ext: Default::default(),

@@ -13,7 +13,7 @@ jobs:
 
     steps:
       - name: Checkout sources
-        uses: actions/checkout@master
+        uses: actions/checkout@main
 
       - name: Add wasm toolchain
         uses: actions-rs/toolchain@v1
@@ -28,6 +28,7 @@ jobs:
           rustup toolchain install nightly-2021-12-15
           rustup default nightly-2021-12-15
           rustup target add wasm32-unknown-unknown --toolchain nightly-2021-12-15
+          rustup override set nightly-2021-12-15
           cargo build --release
 
       - name: Upload artifact

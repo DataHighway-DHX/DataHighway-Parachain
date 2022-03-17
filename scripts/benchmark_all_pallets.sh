@@ -9,13 +9,11 @@ mkdir -p $DATAHIGHWAY_RUNTIME_WEIGHT_DIR
 
 pallets=(
     "frame_system" \
-    # "cumulus_pallet_parachain_system" \
     "pallet_utility" \
     "pallet_timestamp" \
     "pallet_indices" \
     "pallet_balances" \
     "pallet_collator_selection" \
-    # "pallet_xcm" \
     "pallet_treasury" \
 )
 

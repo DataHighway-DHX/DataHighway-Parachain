@@ -1,18 +1,29 @@
 use crate::fixtures::get_allocation;
 use cumulus_primitives_core::ParaId;
 use datahighway_parachain_runtime::{
-    AccountId,
     AuraId,
     AuraConfig,
-    Balance,
     BalancesConfig,
     CollatorSelectionConfig,
-    GeneralCouncilMembershipConfig,
     GenesisConfig,
+    IndicesConfig,
     SessionConfig,
-    Signature,
+    SessionKeys,
     SudoConfig,
-    EXISTENTIAL_DEPOSIT,
+    SystemConfig,
+    TransactionPaymentConfig,
+    TreasuryConfig,
+};
+use module_primitives::{
+    constants::currency::{
+        DOLLARS,
+        EXISTENTIAL_DEPOSIT,
+    },
+    types::{
+        AccountId,
+        Balance,
+        Signature,
+    },
 };
 // required for AccountId::from_str
 use std::str::FromStr;
@@ -31,6 +42,7 @@ use serde::{
     Deserialize,
     Serialize,
 };
+use serde_json::map::Map;
 use sp_core::{
     crypto::{
         UncheckedFrom,
@@ -65,7 +77,7 @@ const KUSAMA_LOCAL_PROTOCOL_ID: &str = "dhx-kusama-local";
 const KUSAMA_TANGANIKA_PROTOCOL_ID: &str = "dhx-kusama-tanganika";
 
 /// Specialized `ChainSpec` for the normal parachain runtime.
-pub type ChainSpec = sc_service::GenericChainSpec<datahighway_parachain_runtime::GenesisConfig, Extensions>;
+pub type ChainSpec = sc_service::GenericChainSpec<GenesisConfig, Extensions>;
 
 // Note this is the URL for the telemetry server
 const POLKADOT_STAGING_TELEMETRY_URL: &str = "wss://telemetry.polkadot.io/submit/";
@@ -116,8 +128,8 @@ where
 /// Generate the session keys from individual elements.
 ///
 /// The input must be a tuple of individual keys (a single arg for now since we have just one key).
-pub fn datahighway_session_keys(keys: AuraId) -> datahighway_parachain_runtime::SessionKeys {
-    datahighway_parachain_runtime::SessionKeys { aura: keys }
+pub fn datahighway_session_keys(keys: AuraId) -> SessionKeys {
+    SessionKeys { aura: keys }
 }
 
 // DHX DAO Unlocked Reserves Balance
@@ -131,7 +143,7 @@ pub fn datahighway_session_keys(keys: AuraId) -> datahighway_parachain_runtime::
 // But since DataHighway is using an SS58 address prefix of 33 instead of
 // Substrate's default of 42, the address corresponds to
 // 4LTFqiD6H6g8a7ur9WH4RxhWx2givWfK7o5EDed3ai1nYTvk.
-// This is pallet_treasury's account_id.
+// This is treasury's account_id.
 //
 // In the older version of Substrate 2 it did not have instantiable support for treasury
 // but was later supported in Substrate 3 and was fixed here
@@ -949,28 +961,28 @@ pub fn datahighway_westend_parachain_config() -> ChainSpec {
                 vec![
                     // authority #1
                     (
-                        //account
+                        // account
                         hex!["2628f7a7bb067a23daa14b1aa9f10ff44545d37907f2d5cefee905236944060a"].into(),
                         // aura
                         hex!["2628f7a7bb067a23daa14b1aa9f10ff44545d37907f2d5cefee905236944060a"].unchecked_into()
                     ),
                     // authority #2
                     (
-                        //account
+                        // account
                         hex!["709f96ae975cd0cfafd98fb241810a2870d58fcfdbb1ee6892a8740525f4d871"].into(),
                         // aura
                         hex!["709f96ae975cd0cfafd98fb241810a2870d58fcfdbb1ee6892a8740525f4d871"].unchecked_into()
                     ),
                     // authority #3
                     (
-                        //account
+                        // account
                         hex!["ce7f04896b8d13da7a4f3f0a49bf6c1d77076043a1184a993ce75d96f6e0ee56"].into(),
                         // aura
                         hex!["ce7f04896b8d13da7a4f3f0a49bf6c1d77076043a1184a993ce75d96f6e0ee56"].unchecked_into()
                     ),
                     // authority #4
                     (
-                        //account
+                        // account
                         hex!["c27631914b41a8f58e24277158817d064a4144df430dd2cf7baeaa17414deb3e"].into(),
                         // aura
                         hex!["c27631914b41a8f58e24277158817d064a4144df430dd2cf7baeaa17414deb3e"].unchecked_into()
@@ -1165,10 +1177,11 @@ fn spreehafen_testnet_genesis(
     id: ParaId,
     _enable_println: bool,
 ) -> GenesisConfig {
+    let num_endowed_accounts = endowed_accounts.len();
     let hardspoon_balances = get_balances(endowed_accounts.clone());
 
     GenesisConfig {
-        system: datahighway_parachain_runtime::SystemConfig {
+        system: SystemConfig {
             code: datahighway_parachain_runtime::WASM_BINARY.expect("WASM binary was not build, please build it!").to_vec(),
         },
         balances: BalancesConfig {
@@ -1178,12 +1191,10 @@ fn spreehafen_testnet_genesis(
                 .map(|x| (x.0.clone(), x.1.clone()))
                 .collect(),
         },
-        general_council: Default::default(),
-        general_council_membership: GeneralCouncilMembershipConfig {
-            members: vec![root_key.clone()],
-            phantom: Default::default(),
+        indices: IndicesConfig {
+            indices: endowed_accounts.iter().enumerate().map(|(index, x)| (index as u32, (*x).clone())).collect(),
         },
-        pallet_treasury: Default::default(),
+        treasury: TreasuryConfig::default(),
         sudo: SudoConfig {
             key: Some(root_key.clone()),
         },
@@ -1207,9 +1218,9 @@ fn spreehafen_testnet_genesis(
                 })
                 .collect(),
         },
-        // no need to pass anything to aura, in fact it will panic if we do. Session will take care
-        // of this.
+        // it will panic if we pass anything to Aura. Session will take care of this instead.
         aura: Default::default(),
+        transaction_payment: TransactionPaymentConfig::default(),
         aura_ext: Default::default(),
         parachain_system: Default::default(),
 		polkadot_xcm: datahighway_parachain_runtime::PolkadotXcmConfig {
@@ -1225,10 +1236,11 @@ fn testnet_genesis(
     id: ParaId,
     _enable_println: bool,
 ) -> GenesisConfig {
+    let num_endowed_accounts = endowed_accounts.len();
     let hardspoon_balances = get_balances(endowed_accounts.clone());
 
     GenesisConfig {
-        system: datahighway_parachain_runtime::SystemConfig {
+        system: SystemConfig {
             code: datahighway_parachain_runtime::WASM_BINARY.expect("WASM binary was not build, please build it!").to_vec(),
         },
         balances: BalancesConfig {
@@ -1238,15 +1250,13 @@ fn testnet_genesis(
                 .map(|x| (x.0.clone(), x.1.clone()))
                 .collect(),
         },
+        indices: IndicesConfig {
+            indices: endowed_accounts.iter().enumerate().map(|(index, x)| (index as u32, (*x).clone())).collect(),
+        },
+        treasury: TreasuryConfig::default(),
         sudo: SudoConfig {
             key: Some(root_key.clone()),
         },
-        general_council: Default::default(),
-        general_council_membership: GeneralCouncilMembershipConfig {
-            members: vec![root_key.clone()],
-            phantom: Default::default(),
-        },
-        pallet_treasury: Default::default(),
         parachain_info: datahighway_parachain_runtime::ParachainInfoConfig {
             parachain_id: id,
         },
@@ -1267,9 +1277,9 @@ fn testnet_genesis(
                 })
                 .collect(),
         },
-        // no need to pass anything to aura, in fact it will panic if we do. Session will take care
-        // of this.
+        // it will panic if we pass anything to Aura. Session will take care of this instead.
         aura: Default::default(),
+        transaction_payment: TransactionPaymentConfig::default(),
         aura_ext: Default::default(),
         parachain_system: Default::default(),
 		polkadot_xcm: datahighway_parachain_runtime::PolkadotXcmConfig {
@@ -1284,11 +1294,12 @@ fn dev_genesis(
     endowed_accounts: Vec<AccountId>,
     id: ParaId,
     _enable_println: bool,
-) -> datahighway_parachain_runtime::GenesisConfig {
+) -> GenesisConfig {
+    let num_endowed_accounts = endowed_accounts.len();
     let hardspoon_balances = get_balances(endowed_accounts.clone());
 
-    datahighway_parachain_runtime::GenesisConfig {
-        system: datahighway_parachain_runtime::SystemConfig {
+    GenesisConfig {
+        system: SystemConfig {
             code: datahighway_parachain_runtime::WASM_BINARY.expect("WASM binary was not build, please build it!").to_vec(),
         },
         balances: BalancesConfig {
@@ -1298,15 +1309,13 @@ fn dev_genesis(
                 .map(|x| (x.0.clone(), x.1.clone()))
                 .collect(),
         },
+        indices: IndicesConfig {
+            indices: endowed_accounts.iter().enumerate().map(|(index, x)| (index as u32, (*x).clone())).collect(),
+        },
+        treasury: TreasuryConfig::default(),
         sudo: SudoConfig {
             key: Some(root_key.clone()),
         },
-        general_council: Default::default(),
-        general_council_membership: GeneralCouncilMembershipConfig {
-            members: vec![root_key],
-            phantom: Default::default(),
-        },
-        pallet_treasury: Default::default(),
         parachain_info: datahighway_parachain_runtime::ParachainInfoConfig {
             parachain_id: id,
         },
@@ -1327,9 +1336,9 @@ fn dev_genesis(
                 })
                 .collect(),
         },
-        // no need to pass anything to aura, in fact it will panic if we do. Session will take care
-        // of this.
+        // it will panic if we pass anything to Aura. Session will take care of this instead.
         aura: Default::default(),
+        transaction_payment: TransactionPaymentConfig::default(),
         aura_ext: Default::default(),
         parachain_system: Default::default(),
 		polkadot_xcm: datahighway_parachain_runtime::PolkadotXcmConfig {
@@ -1345,8 +1354,10 @@ fn baikal_testnet_genesis(
     id: ParaId,
     _enable_println: bool,
 ) -> GenesisConfig {
+    let num_endowed_accounts = endowed_accounts.len();
+
     GenesisConfig {
-        system: datahighway_parachain_runtime::SystemConfig {
+        system: SystemConfig {
             code: datahighway_parachain_runtime::WASM_BINARY.expect("WASM binary was not build, please build it!").to_vec(),
         },
         balances: BalancesConfig {
@@ -1368,12 +1379,10 @@ fn baikal_testnet_genesis(
                 })
                 .collect(),
         },
-        general_council: Default::default(),
-        general_council_membership: GeneralCouncilMembershipConfig {
-            members: vec![root_key.clone()],
-            phantom: Default::default(),
+        indices: IndicesConfig {
+            indices: endowed_accounts.iter().enumerate().map(|(index, x)| (index as u32, (*x).clone())).collect(),
         },
-        pallet_treasury: Default::default(),
+        treasury: TreasuryConfig::default(),
         sudo: SudoConfig {
             key: Some(root_key.clone()),
         },
@@ -1397,9 +1406,9 @@ fn baikal_testnet_genesis(
                 })
                 .collect(),
         },
-        // no need to pass anything to aura, in fact it will panic if we do. Session will take care
-        // of this.
+        // it will panic if we pass anything to Aura. Session will take care of this instead.
         aura: Default::default(),
+        transaction_payment: TransactionPaymentConfig::default(),
         aura_ext: Default::default(),
         parachain_system: Default::default(),
 		polkadot_xcm: datahighway_parachain_runtime::PolkadotXcmConfig {
@@ -1415,10 +1424,11 @@ fn tanganika_testnet_genesis(
     id: ParaId,
     _enable_println: bool,
 ) -> GenesisConfig {
+    let num_endowed_accounts = endowed_accounts.len();
     let hardspoon_balances = get_balances(endowed_accounts.clone());
 
     GenesisConfig {
-        system: datahighway_parachain_runtime::SystemConfig {
+        system: SystemConfig {
             code: datahighway_parachain_runtime::WASM_BINARY.expect("WASM binary was not build, please build it!").to_vec(),
         },
         balances: BalancesConfig {
@@ -1428,12 +1438,10 @@ fn tanganika_testnet_genesis(
                 .map(|x| (x.0.clone(), x.1.clone()))
                 .collect(),
         },
-        general_council: Default::default(),
-        general_council_membership: GeneralCouncilMembershipConfig {
-            members: vec![root_key.clone()],
-            phantom: Default::default(),
+        indices: IndicesConfig {
+            indices: endowed_accounts.iter().enumerate().map(|(index, x)| (index as u32, (*x).clone())).collect(),
         },
-        pallet_treasury: Default::default(),
+        treasury: TreasuryConfig::default(),
         sudo: SudoConfig {
             key: Some(root_key.clone()),
         },
@@ -1457,9 +1465,9 @@ fn tanganika_testnet_genesis(
                 })
                 .collect(),
         },
-        // no need to pass anything to aura, in fact it will panic if we do. Session will take care
-        // of this.
+        // it will panic if we pass anything to Aura. Session will take care of this instead.
         aura: Default::default(),
+        transaction_payment: TransactionPaymentConfig::default(),
         aura_ext: Default::default(),
         parachain_system: Default::default(),
 		polkadot_xcm: datahighway_parachain_runtime::PolkadotXcmConfig {

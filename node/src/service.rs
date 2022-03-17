@@ -5,9 +5,16 @@ use std::{sync::Arc, time::Duration};
 
 // Local Runtime Types
 use datahighway_parachain_runtime::{
-    opaque::{Block, Header}, AccountId, Balance, Hash, Index as Nonce, RuntimeApi,
+    opaque::{Block, Header}, RuntimeApi,
 };
-
+use module_primitives::{
+    types::{
+        AccountId,
+        Balance,
+        Hash,
+        Index as Nonce,
+    },
+};
 // Cumulus Imports
 use cumulus_client_consensus_aura::{AuraConsensus, BuildAuraConsensusParams, SlotProportion};
 use cumulus_client_consensus_common::ParachainConsensus;

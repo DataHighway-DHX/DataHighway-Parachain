@@ -1,29 +1,35 @@
 [package]
-name = "account-set"
-version = "2.0.0"
-edition = "2018"
+name = 'account-set'
+version = '2.0.0'
+edition = '2021'
 authors = ['Substrate DevHub <https://github.com/substrate-developer-hub>']
 repository = 'https://github.com/substrate-developer-hub/recipes'
-description = "A trait that supplies a set of accounts for use in a Substrate runtime"
-license = "GPL-3.0-or-later"
+description = 'A trait that supplies a set of accounts for use in a Substrate runtime'
+license = 'GPL-3.0-or-later'
 
 [package.metadata.substrate]
 categories = [
-	"trait",
-	"accounts",
-	"recipe",
+    'trait',
+    'accounts',
+    'recipe',
 ]
-compatibility_version = "2.0.0"
+compatibility_version = '2.0.0'
 
 [features]
 default = ['std']
+runtime-benchmarks = ['frame-benchmarking/runtime-benchmarks']
 std = [
-	'sp-std/std',
+    'frame-support/std',
+    'frame-system/std',
+    'frame-benchmarking/std',
+    'sp-std/std',
 ]
+try-runtime = ['frame-support/try-runtime']
 
 [dependencies]
 # Substrate packages
-[dependencies.sp-std]
-default-features = false
-git = 'https://github.com/paritytech/substrate.git'
-branch = "polkadot-v0.9.17"
+frame-support = { git = 'https://github.com/paritytech/substrate', branch = 'polkadot-v0.9.17', default-features = false }
+frame-system = { git = 'https://github.com/paritytech/substrate', branch = 'polkadot-v0.9.17', default-features = false }
+frame-benchmarking = { git = 'https://github.com/paritytech/substrate', branch = 'polkadot-v0.9.17', default-features = false, optional = true }
+sp-std = { git = 'https://github.com/paritytech/substrate', branch = 'polkadot-v0.9.17', default-features = false }
+

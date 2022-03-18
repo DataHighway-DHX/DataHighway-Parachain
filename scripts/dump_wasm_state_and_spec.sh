@@ -22,9 +22,9 @@ echo "collator:         ${COLLATOR}"
 echo "dump_dir:         ${DUMP_DIR}"
 echo ""
 
-$COLLATOR build-spec --chain ${CHAIN_SPEC} --disable-default-bootnode > $DUMP_DIR/${CHAIN_SPEC}.json
-$COLLATOR build-spec --chain ${CHAIN_SPEC} --raw --disable-default-bootnode > $DUMP_DIR/${CHAIN_SPEC}-raw-unsorted.json
-jq --sort-keys . $DUMP_DIR/${CHAIN_SPEC}-raw-unsorted.json > $DUMP_DIR/${CHAIN_SPEC}-raw.json
+$COLLATOR build-spec --chain ${CHAIN_SPEC} --disable-default-bootnode > $DUMP_DIR/${CHAIN_SPEC}-parachain-plain.json
+$COLLATOR build-spec --chain $DUMP_DIR/${CHAIN_SPEC}-parachain-plain.json --raw --disable-default-bootnode > $DUMP_DIR/${CHAIN_SPEC}-parachain-raw-unsorted.json
+jq --sort-keys . $DUMP_DIR/${CHAIN_SPEC}-parachain-raw-unsorted.json > $DUMP_DIR/${CHAIN_SPEC}-parachain-raw.json
 
-$COLLATOR export-genesis-state --chain $DUMP_DIR/${CHAIN_SPEC}-raw.json > $DUMP_DIR/${CHAIN_SPEC}.state
-$COLLATOR export-genesis-wasm --chain $DUMP_DIR/${CHAIN_SPEC}-raw.json > $DUMP_DIR/${CHAIN_SPEC}.wasm
+$COLLATOR export-genesis-state --chain $DUMP_DIR/${CHAIN_SPEC}-parachain-raw.json > $DUMP_DIR/${CHAIN_SPEC}-parachain-state
+$COLLATOR export-genesis-wasm --chain $DUMP_DIR/${CHAIN_SPEC}-parachain-raw.json > $DUMP_DIR/${CHAIN_SPEC}-parachain-wasm

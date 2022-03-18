@@ -539,7 +539,7 @@ pub fn datahighway_rococo_parachain_config() -> ChainSpec {
                     hex!["ea239700d67f53d30e39bee0c056f1165a6fb59ad4d5dd495c06d001af366c02"].into(),
                 ],
                 // Parachain ID
-                2026.into(),
+                2007.into(),
                 // Enable println
                 true,
             )
@@ -560,7 +560,7 @@ pub fn datahighway_rococo_parachain_config() -> ChainSpec {
         // Extensions
         Extensions {
             relay_chain: "rococo".into(),
-            para_id: 2026,
+            para_id: 2007,
         },
     )
 }

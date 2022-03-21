@@ -1,6 +1,6 @@
 [package]
 name = 'datahighway-collator'
-version = '3.3.0'
+version = '3.4.0'
 authors = ['Anonymous']
 description = 'DataHighway parachain collator FRAME-based Substrate Node based upon the Cumulus.'
 license = 'Unlicense'
@@ -41,7 +41,7 @@ hex-literal = '0.3.4'
 jsonrpc-core = '18.0.0'
 
 # Local Dependencies
-datahighway-parachain-runtime = { path = '../runtime', version = '3.3.0' }
+datahighway-parachain-runtime = { path = '../runtime', version = '3.4.0' }
 module-primitives = { version = '3.0.6', default-features = false, path = '../pallets/primitives' }
 
 # Substrate Dependencies

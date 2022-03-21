@@ -1220,6 +1220,7 @@ fn spreehafen_testnet_genesis(
         },
         // it will panic if we pass anything to Aura. Session will take care of this instead.
         aura: Default::default(),
+        assets: Default::default(),
         transaction_payment: TransactionPaymentConfig::default(),
         aura_ext: Default::default(),
         parachain_system: Default::default(),
@@ -1279,6 +1280,7 @@ fn testnet_genesis(
         },
         // it will panic if we pass anything to Aura. Session will take care of this instead.
         aura: Default::default(),
+        assets: Default::default(),
         transaction_payment: TransactionPaymentConfig::default(),
         aura_ext: Default::default(),
         parachain_system: Default::default(),
@@ -1338,6 +1340,7 @@ fn dev_genesis(
         },
         // it will panic if we pass anything to Aura. Session will take care of this instead.
         aura: Default::default(),
+        assets: Default::default(),
         transaction_payment: TransactionPaymentConfig::default(),
         aura_ext: Default::default(),
         parachain_system: Default::default(),
@@ -1408,6 +1411,7 @@ fn baikal_testnet_genesis(
         },
         // it will panic if we pass anything to Aura. Session will take care of this instead.
         aura: Default::default(),
+        assets: Default::default(),
         transaction_payment: TransactionPaymentConfig::default(),
         aura_ext: Default::default(),
         parachain_system: Default::default(),
@@ -1467,6 +1471,7 @@ fn tanganika_testnet_genesis(
         },
         // it will panic if we pass anything to Aura. Session will take care of this instead.
         aura: Default::default(),
+        assets: Default::default(),
         transaction_payment: TransactionPaymentConfig::default(),
         aura_ext: Default::default(),
         parachain_system: Default::default(),

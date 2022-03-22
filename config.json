@@ -53,7 +53,7 @@
         },
         {
             "bin": "./target/release/datahighway-collator",
-            "id": "3000",
+            "id": "2116",
             "balance": "1000000000000000000000",
             "nodes": [
                 {
@@ -68,7 +68,7 @@
     "hrmpChannels": [
         {
             "sender": 2000,
-            "recipient": 3000,
+            "recipient": 2116,
             "maxCapacity": 8,
             "maxMessageSize": 512
         }

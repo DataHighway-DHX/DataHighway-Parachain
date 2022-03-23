@@ -5,12 +5,21 @@ authors = ['Laminar Developers <hello@laminar.one>', 'MXC Foundation GmbH <https
 edition = '2021'
 
 [dependencies]
-serde = { version = '1.0.136', optional = true, features = ['derive'] }
-codec = { version = '3.0.0', package = 'parity-scale-codec', default-features = false, features = ['derive', 'max-encoded-len'] }
+codec = { version = '3.1.2', package = 'parity-scale-codec', default-features = false, features = ['derive', 'max-encoded-len'] }
+scale-info = { version = '2.0.1', default-features = false, features = ['derive'] }
 bitmask = { version = '0.5.0', default-features = false }
+
+# Substrate
 frame-benchmarking = { git = 'https://github.com/paritytech/substrate', branch = 'polkadot-v0.9.18', default-features = false, optional = true }
 frame-support = { git = 'https://github.com/paritytech/substrate', branch = 'polkadot-v0.9.18', default-features = false }
+frame-system = { git = 'https://github.com/paritytech/substrate', branch = 'polkadot-v0.9.18', default-features = false }
+
+# [dev-dependencies]
+serde = { version = '1.0.136', optional = true, features = ['derive'] }
+
+# Substrate
 sp-core = { git = 'https://github.com/paritytech/substrate', branch = 'polkadot-v0.9.18', default-features = false }
+sp-io = { git = 'https://github.com/paritytech/substrate', branch = 'polkadot-v0.9.18', default-features = false }
 sp-runtime = { git = 'https://github.com/paritytech/substrate', branch = 'polkadot-v0.9.18', default-features = false }
 sp-std = { git = 'https://github.com/paritytech/substrate', branch = 'polkadot-v0.9.18', default-features = false }
 
@@ -18,11 +27,15 @@ sp-std = { git = 'https://github.com/paritytech/substrate', branch = 'polkadot-v
 default = ['std']
 runtime-benchmarks = ['frame-benchmarking/runtime-benchmarks']
 std = [
-    'bitmask/std',
     'codec/std',
+    'scale-info/std',
+    'bitmask/std',
+    'frame-benchmarking/std',
     'frame-support/std',
+    'frame-system/std',
     'serde',
     'sp-core/std',
+    'sp-io/std',
     'sp-runtime/std',
     'sp-std/std',
 ]

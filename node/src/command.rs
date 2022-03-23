@@ -7,7 +7,7 @@ use codec::Encode;
 use cumulus_client_service::genesis::generate_genesis_block;
 use cumulus_primitives_core::ParaId;
 use log::info;
-use datahighway_parachain_runtime::{Block, RuntimeApi};
+use datahighway_parachain_runtime::{AuraId, Block, RuntimeApi};
 use polkadot_parachain::primitives::AccountIdConversion;
 use sc_cli::{
 	ChainSpec, CliConfiguration, DefaultConfigurationValues, ImportParams, KeystoreParams,
@@ -15,6 +15,7 @@ use sc_cli::{
 };
 use sc_service::{
 	config::{BasePath, PrometheusConfig},
+    PartialComponents,
 	TaskManager,
 };
 use sp_core::hexdisplay::HexDisplay;
@@ -259,7 +260,10 @@ pub fn run() -> Result<()> {
 
             let runner = cli.create_runner(cmd)?;
             runner.async_run(|config| {
-                let PartialComponents { client, task_manager, backend, .. } = new_partial(&config)?;
+                let PartialComponents { client, task_manager, backend, .. } = new_partial(
+                    &config,
+                    crate::service::parachain_build_import_queue,
+                )?;
                 let db = backend.expose_db();
                 let storage = backend.expose_storage();
 
@@ -286,6 +290,7 @@ pub fn run() -> Result<()> {
             .into()),
         None => {
             let runner = cli.create_runner(&cli.run.normalize())?;
+            let collator_options = cli.run.collator_options();
 
             runner.run_node_until_exit(|config| async move {
                 let para_id = chain_spec::Extensions::try_get(&*config.chain_spec)
@@ -318,10 +323,15 @@ pub fn run() -> Result<()> {
 				info!("Parachain genesis state: {}", genesis_state);
 				info!("Is collating: {}", if config.role.is_authority() { "yes" } else { "no" });
 
-				crate::service::start_parachain_node(config, polkadot_config, id)
-					.await
-					.map(|r| r.0)
-					.map_err(Into::into)
+				crate::service::start_parachain_node(
+                    config,
+                    polkadot_config,
+                    collator_options,
+                    id
+                )
+                .await
+                .map(|r| r.0)
+                .map_err(Into::into)
             })
         }
     }

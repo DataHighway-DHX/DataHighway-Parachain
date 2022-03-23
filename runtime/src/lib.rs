@@ -471,19 +471,19 @@ impl pallet_indices::Config for Runtime {
 }
 
 parameter_types! {
-	pub const ReservedXcmpWeight: Weight = MAXIMUM_BLOCK_WEIGHT / 4;
-	pub const ReservedDmpWeight: Weight = MAXIMUM_BLOCK_WEIGHT / 4;
+    pub const ReservedXcmpWeight: Weight = MAXIMUM_BLOCK_WEIGHT / 4;
+    pub const ReservedDmpWeight: Weight = MAXIMUM_BLOCK_WEIGHT / 4;
 }
 
 impl cumulus_pallet_parachain_system::Config for Runtime {
-	type Event = Event;
-	type OnSystemEvent = ();
-	type SelfParaId = parachain_info::Pallet<Runtime>;
-	type DmpMessageHandler = DmpQueue;
-	type ReservedDmpWeight = ReservedDmpWeight;
-	type OutboundXcmpMessageSource = XcmpQueue;
-	type XcmpMessageHandler = XcmpQueue;
-	type ReservedXcmpWeight = ReservedXcmpWeight;
+    type Event = Event;
+    type OnSystemEvent = ();
+    type SelfParaId = parachain_info::Pallet<Runtime>;
+    type DmpMessageHandler = DmpQueue;
+    type ReservedDmpWeight = ReservedDmpWeight;
+    type OutboundXcmpMessageSource = XcmpQueue;
+    type XcmpMessageHandler = XcmpQueue;
+    type ReservedXcmpWeight = ReservedXcmpWeight;
 }
 
 impl parachain_info::Config for Runtime {}
@@ -491,13 +491,13 @@ impl parachain_info::Config for Runtime {}
 impl cumulus_pallet_aura_ext::Config for Runtime {}
 
 impl cumulus_pallet_xcmp_queue::Config for Runtime {
-	type Event = Event;
-	type XcmExecutor = XcmExecutor<XcmConfig>;
-	type ChannelInfo = ParachainSystem;
-	type VersionWrapper = ();
-	type ExecuteOverweightOrigin = EnsureRoot<AccountId>;
-	type ControllerOrigin = EnsureRoot<AccountId>;
-	type ControllerOriginConverter = XcmOriginToTransactDispatchOrigin;
+    type Event = Event;
+    type XcmExecutor = XcmExecutor<XcmConfig>;
+    type ChannelInfo = ParachainSystem;
+    type VersionWrapper = ();
+    type ExecuteOverweightOrigin = EnsureRoot<AccountId>;
+    type ControllerOrigin = EnsureRoot<AccountId>;
+    type ControllerOriginConverter = XcmOriginToTransactDispatchOrigin;
     type WeightInfo = cumulus_pallet_xcmp_queue::weights::SubstrateWeight<Runtime>;
 }
 
@@ -508,12 +508,12 @@ impl cumulus_pallet_dmp_queue::Config for Runtime {
 }
 
 parameter_types! {
-	pub const PotId: PalletId = PalletId(*b"PotStake");
-	pub const MaxCandidates: u32 = 1000;
-	pub const MinCandidates: u32 = 5;
-	pub const SessionLength: BlockNumber = 6 * HOURS;
-	pub const MaxInvulnerables: u32 = 100;
-	pub const ExecutiveBody: BodyId = BodyId::Executive;
+    pub const PotId: PalletId = PalletId(*b"PotStake");
+    pub const MaxCandidates: u32 = 1000;
+    pub const MinCandidates: u32 = 5;
+    pub const SessionLength: BlockNumber = 6 * HOURS;
+    pub const MaxInvulnerables: u32 = 100;
+    pub const ExecutiveBody: BodyId = BodyId::Executive;
 }
 
 // We allow root only to execute privileged collator selection operations.
@@ -703,9 +703,8 @@ impl_runtime_apis! {
 		}
     }
 
-
-	#[cfg(feature = "try-runtime")]
-	impl frame_try_runtime::TryRuntime<Block> for Runtime {
+    #[cfg(feature = "try-runtime")]
+    impl frame_try_runtime::TryRuntime<Block> for Runtime {
         fn on_runtime_upgrade() -> (Weight, Weight) {
             // NOTE: intentional unwrap: we don't want to propagate the error backwards, and want to
             // have a backtrace here. If any of the pre/post migration checks fail, we shall stop
@@ -714,88 +713,88 @@ impl_runtime_apis! {
             (weight, BlockWeights::get().max_block)
         }
 
-		fn execute_block_no_check(block: Block) -> Weight {
-			Executive::execute_block_no_check(block)
-		}
-	}
+        fn execute_block_no_check(block: Block) -> Weight {
+            Executive::execute_block_no_check(block)
+        }
+    }
 
-	#[cfg(feature = "runtime-benchmarks")]
-	impl frame_benchmarking::Benchmark<Block> for Runtime {
-		fn benchmark_metadata(extra: bool) -> (
-			Vec<frame_benchmarking::BenchmarkList>,
-			Vec<frame_support::traits::StorageInfo>,
-		) {
-			use frame_benchmarking::{Benchmarking, BenchmarkList};
-			use frame_support::traits::StorageInfoTrait;
-			use frame_system_benchmarking::Pallet as SystemBench;
-			use cumulus_pallet_session_benchmarking::Pallet as SessionBench;
+    #[cfg(feature = "runtime-benchmarks")]
+    impl frame_benchmarking::Benchmark<Block> for Runtime {
+        fn benchmark_metadata(extra: bool) -> (
+            Vec<frame_benchmarking::BenchmarkList>,
+            Vec<frame_support::traits::StorageInfo>,
+        ) {
+            use frame_benchmarking::{Benchmarking, BenchmarkList};
+            use frame_support::traits::StorageInfoTrait;
+            use frame_system_benchmarking::Pallet as SystemBench;
+            use cumulus_pallet_session_benchmarking::Pallet as SessionBench;
 
-			let mut list = Vec::<BenchmarkList>::new();
-			list_benchmarks!(list, extra);
+            let mut list = Vec::<BenchmarkList>::new();
+            list_benchmarks!(list, extra);
 
-			let storage_info = AllPalletsWithSystem::storage_info();
-			return (list, storage_info)
-		}
+            let storage_info = AllPalletsWithSystem::storage_info();
+            return (list, storage_info)
+        }
 
-		fn dispatch_benchmark(
-			config: frame_benchmarking::BenchmarkConfig
-		) -> Result<Vec<frame_benchmarking::BenchmarkBatch>, sp_runtime::RuntimeString> {
-			use frame_benchmarking::{Benchmarking, BenchmarkBatch, TrackedStorageKey};
+        fn dispatch_benchmark(
+            config: frame_benchmarking::BenchmarkConfig
+        ) -> Result<Vec<frame_benchmarking::BenchmarkBatch>, sp_runtime::RuntimeString> {
+            use frame_benchmarking::{Benchmarking, BenchmarkBatch, TrackedStorageKey};
 
-			use frame_system_benchmarking::Pallet as SystemBench;
-			impl frame_system_benchmarking::Config for Runtime {}
+            use frame_system_benchmarking::Pallet as SystemBench;
+            impl frame_system_benchmarking::Config for Runtime {}
 
-			use cumulus_pallet_session_benchmarking::Pallet as SessionBench;
-			impl cumulus_pallet_session_benchmarking::Config for Runtime {}
+            use cumulus_pallet_session_benchmarking::Pallet as SessionBench;
+            impl cumulus_pallet_session_benchmarking::Config for Runtime {}
 
-			let whitelist: Vec<TrackedStorageKey> = vec![
-				// Block Number
-				hex_literal::hex!("26aa394eea5630e07c48ae0c9558cef702a5c1b19ab7a04f536c519aca4983ac").to_vec().into(),
-				// Total Issuance
-				hex_literal::hex!("c2261276cc9d1f8598ea4b6a74b15c2f57c875e4cff74148e4628f264b974c80").to_vec().into(),
-				// Execution Phase
-				hex_literal::hex!("26aa394eea5630e07c48ae0c9558cef7ff553b5a9862a516939d82b3d3d8661a").to_vec().into(),
-				// Event Count
-				hex_literal::hex!("26aa394eea5630e07c48ae0c9558cef70a98fdbe9ce6c55837576c60c7af3850").to_vec().into(),
-				// System Events
-				hex_literal::hex!("26aa394eea5630e07c48ae0c9558cef780d41e5e16056765bc8461851072c9d7").to_vec().into(),
-			];
+            let whitelist: Vec<TrackedStorageKey> = vec![
+                // Block Number
+                hex_literal::hex!("26aa394eea5630e07c48ae0c9558cef702a5c1b19ab7a04f536c519aca4983ac").to_vec().into(),
+                // Total Issuance
+                hex_literal::hex!("c2261276cc9d1f8598ea4b6a74b15c2f57c875e4cff74148e4628f264b974c80").to_vec().into(),
+                // Execution Phase
+                hex_literal::hex!("26aa394eea5630e07c48ae0c9558cef7ff553b5a9862a516939d82b3d3d8661a").to_vec().into(),
+                // Event Count
+                hex_literal::hex!("26aa394eea5630e07c48ae0c9558cef70a98fdbe9ce6c55837576c60c7af3850").to_vec().into(),
+                // System Events
+                hex_literal::hex!("26aa394eea5630e07c48ae0c9558cef780d41e5e16056765bc8461851072c9d7").to_vec().into(),
+            ];
 
-			let mut batches = Vec::<BenchmarkBatch>::new();
-			let params = (&config, &whitelist);
-			add_benchmarks!(params, batches);
+            let mut batches = Vec::<BenchmarkBatch>::new();
+            let params = (&config, &whitelist);
+            add_benchmarks!(params, batches);
 
-			if batches.is_empty() { return Err("Benchmark not found for this pallet.".into()) }
-			Ok(batches)
-		}
-	}
+            if batches.is_empty() { return Err("Benchmark not found for this pallet.".into()) }
+            Ok(batches)
+        }
+    }
 }
 
 struct CheckInherents;
 
 impl cumulus_pallet_parachain_system::CheckInherents<Block> for CheckInherents {
-	fn check_inherents(
-		block: &Block,
-		relay_state_proof: &cumulus_pallet_parachain_system::RelayChainStateProof,
-	) -> sp_inherents::CheckInherentsResult {
-		let relay_chain_slot = relay_state_proof
-			.read_slot()
-			.expect("Could not read the relay chain slot from the proof");
+    fn check_inherents(
+        block: &Block,
+        relay_state_proof: &cumulus_pallet_parachain_system::RelayChainStateProof,
+    ) -> sp_inherents::CheckInherentsResult {
+        let relay_chain_slot = relay_state_proof
+            .read_slot()
+            .expect("Could not read the relay chain slot from the proof");
 
-		let inherent_data =
-			cumulus_primitives_timestamp::InherentDataProvider::from_relay_chain_slot_and_duration(
-				relay_chain_slot,
-				sp_std::time::Duration::from_secs(6),
-			)
-			.create_inherent_data()
-			.expect("Could not create the timestamp inherent data");
+        let inherent_data =
+            cumulus_primitives_timestamp::InherentDataProvider::from_relay_chain_slot_and_duration(
+                relay_chain_slot,
+                sp_std::time::Duration::from_secs(6),
+            )
+            .create_inherent_data()
+            .expect("Could not create the timestamp inherent data");
 
-		inherent_data.check_extrinsics(block)
-	}
+        inherent_data.check_extrinsics(block)
+    }
 }
 
 cumulus_pallet_parachain_system::register_validate_block! {
-	Runtime = Runtime,
-	BlockExecutor = cumulus_pallet_aura_ext::BlockExecutor::<Runtime, Executive>,
-	CheckInherents = CheckInherents,
+    Runtime = Runtime,
+    BlockExecutor = cumulus_pallet_aura_ext::BlockExecutor::<Runtime, Executive>,
+    CheckInherents = CheckInherents,
 }

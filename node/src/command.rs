@@ -14,9 +14,9 @@ use sc_cli::{
 	NetworkParams, Result, RuntimeVersion, SharedParams, SubstrateCli,
 };
 use sc_service::{
-	config::{BasePath, PrometheusConfig},
+    config::{BasePath, PrometheusConfig},
     PartialComponents,
-	TaskManager,
+    TaskManager,
 };
 use sp_core::hexdisplay::HexDisplay;
 use sp_runtime::traits::Block as BlockT;
@@ -304,26 +304,26 @@ pub fn run() -> Result<()> {
 
 				let id = ParaId::from(para_id);
 
-				let parachain_account =
-					AccountIdConversion::<polkadot_primitives::v0::AccountId>::into_account(&id);
+                let parachain_account =
+                    AccountIdConversion::<polkadot_primitives::v0::AccountId>::into_account(&id);
 
-				let state_version =
-					RelayChainCli::native_runtime_version(&config.chain_spec).state_version();
-				let block: Block = generate_genesis_block(&config.chain_spec, state_version)
-					.map_err(|e| format!("{:?}", e))?;
-				let genesis_state = format!("0x{:?}", HexDisplay::from(&block.header().encode()));
+                let state_version =
+                    RelayChainCli::native_runtime_version(&config.chain_spec).state_version();
+                let block: Block = generate_genesis_block(&config.chain_spec, state_version)
+                    .map_err(|e| format!("{:?}", e))?;
+                let genesis_state = format!("0x{:?}", HexDisplay::from(&block.header().encode()));
 
-				let tokio_handle = config.tokio_handle.clone();
-				let polkadot_config =
-					SubstrateCli::create_configuration(&polkadot_cli, &polkadot_cli, tokio_handle)
-						.map_err(|err| format!("Relay chain argument error: {}", err))?;
+                let tokio_handle = config.tokio_handle.clone();
+                let polkadot_config =
+                    SubstrateCli::create_configuration(&polkadot_cli, &polkadot_cli, tokio_handle)
+                        .map_err(|err| format!("Relay chain argument error: {}", err))?;
 
-				info!("Parachain id: {:?}", id);
-				info!("Parachain Account: {}", parachain_account);
-				info!("Parachain genesis state: {}", genesis_state);
-				info!("Is collating: {}", if config.role.is_authority() { "yes" } else { "no" });
+                info!("Parachain id: {:?}", id);
+                info!("Parachain Account: {}", parachain_account);
+                info!("Parachain genesis state: {}", genesis_state);
+                info!("Is collating: {}", if config.role.is_authority() { "yes" } else { "no" });
 
-				crate::service::start_parachain_node(
+                crate::service::start_parachain_node(
                     config,
                     polkadot_config,
                     collator_options,

@@ -43,6 +43,10 @@ pub enum Subcommand {
     #[clap(name = "benchmark", about = "Benchmark runtime pallets.")]
     Benchmark(frame_benchmarking_cli::BenchmarkCmd),
 
+    /// Sub command for benchmarking the storage speed.
+    #[clap(name = "benchmark-storage", about = "Benchmark storage speed.")]
+    BenchmarkStorage(frame_benchmarking_cli::StorageCmd),
+
     /// Try some command against runtime state.
     #[cfg(feature = "try-runtime")]
     TryRuntime(try_runtime_cli::TryRuntimeCmd),
@@ -98,7 +102,7 @@ pub struct Cli {
     pub run: cumulus_client_cli::RunCmd,
 
     /// Relay chain arguments
-    #[clap(raw = true)]
+    #[clap(raw = true, conflicts_with = "relay-chain-rpc-url")]
     pub relay_chain_args: Vec<String>,
 }
 

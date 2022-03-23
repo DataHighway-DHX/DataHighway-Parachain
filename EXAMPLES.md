@@ -83,10 +83,10 @@ cargo build --release
 #### Create custom chain spec
 
 ```bash
-rm rococo-parachain-2007-plain.json
-rm rococo-parachain-2007-raw.json
-./target/release/datahighway-collator build-spec --chain "rococo" --disable-default-bootnode > rococo-parachain-2007-plain.json
-./target/release/datahighway-collator build-spec --chain rococo-parachain-2007-plain.json --raw --disable-default-bootnode > rococo-parachain-2007-raw.json
+rm res/rococo-parachain-raw.json
+./scripts/dump_wasm_state_and_spec.sh "rococo"
+mv chain_dumps/rococo-parachain-raw.json res/rococo-parachain-raw.json
+
 ```
 
 Copy the "rococo" relay chain specification into the `./res` folder of the DataHighway-Parachain directory (i.e. `./res/rococo.json`).
@@ -95,7 +95,7 @@ Since on Rococo you would likely be using a chain specification with custom keys
 
 ```
 ./target/release/datahighway-collator key insert --base-path /tmp/parachain/datahighway-collator \
---chain rococo-parachain-2007-raw.json \
+--chain rococo-parachain-raw.json \
 --scheme sr25519 \
 --suri <secret seed> \
 --key-type aura
@@ -123,7 +123,7 @@ Run Alice's bootnode using the raw chain definition file that was generated
 --alice \
 --collator \
 --force-authoring \
---chain rococo-parachain-2007-raw.json \
+--chain rococo-parachain-raw.json \
 --base-path /tmp/parachain/datahighway-collator \
 --port 40333 \
 --ws-port 8844 \

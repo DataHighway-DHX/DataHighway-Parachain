@@ -9,7 +9,7 @@ use std::sync::Arc;
 
 use datahighway_parachain_runtime::{opaque::Block};
 use module_primitives::{
-	types::{
+    types::{
         AccountId,
         Balance,
         Index as Nonce,

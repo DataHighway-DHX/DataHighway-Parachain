@@ -1,4 +1,4 @@
-# Data Highway [![GitHub license](https://img.shields.io/badge/license-GPL3%2FApache2-blue)](LICENSE) ![Test](https://github.com/DataHighway-DHX/node/workflows/Test/badge.svg?branch=master) ![Create release](https://github.com/DataHighway-DHX/node/workflows/Create%20release/badge.svg?branch=master)
+# DataHighway [![GitHub license](https://img.shields.io/badge/license-GPL3%2FApache2-blue)](LICENSE) ![Test](https://github.com/DataHighway-DHX/DataHighway-Parachain/workflows/Test/badge.svg?branch=main) ![Create release](https://github.com/DataHighway-DHX/DataHighway-Parachain/workflows/Create%20linux%20release/badge.svg?branch=main) ![Publish to Dockerhub](https://github.com/DataHighway-DHX/DataHighway-Parachain/workflows/Publish%20to%20Dockerhub/badge.svg?branch=main)
 
 The DataHighway Substrate-based blockchain node is based upon the [substrate-parachain-template](https://github.com/substrate-developer-hub/substrate-parachain-template/blob/master/README.md).
 

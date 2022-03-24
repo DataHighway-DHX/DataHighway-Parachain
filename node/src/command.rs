@@ -280,7 +280,6 @@ pub fn run() -> Result<()> {
                 let task_manager =
                     sc_service::TaskManager::new(config.tokio_handle.clone(), registry)
                         .map_err(|e| sc_cli::Error::Service(sc_service::Error::Prometheus(e)))?;
-
                 Ok((cmd.run::<Block, ExecutorDispatch>(config), task_manager))
             })
         },

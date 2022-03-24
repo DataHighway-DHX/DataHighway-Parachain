@@ -544,7 +544,7 @@ pub fn datahighway_rococo_parachain_config() -> ChainSpec {
                     hex!["ea239700d67f53d30e39bee0c056f1165a6fb59ad4d5dd495c06d001af366c02"].into(),
                 ],
                 // Parachain ID
-                2007.into(),
+                2116.into(),
                 // Enable println
                 true,
             )
@@ -565,7 +565,7 @@ pub fn datahighway_rococo_parachain_config() -> ChainSpec {
         // Extensions
         Extensions {
             relay_chain: "rococo".into(),
-            para_id: 2007,
+            para_id: 2116,
         },
     )
 }
@@ -1133,7 +1133,7 @@ pub fn datahighway_kusama_parachain_config() -> ChainSpec {
                     hex!["10a3d6854dc35e4b3fd77af4beda98f79dbe9edf5c29c14c8d57bec4bd733c0f"].into(),
                 ],
                 // Parachain ID
-                2000.into(),
+                2116.into(),
                 // Enable println
                 true,
             )
@@ -1154,7 +1154,7 @@ pub fn datahighway_kusama_parachain_config() -> ChainSpec {
         // Extensions
         Extensions {
             relay_chain: "kusama".into(),
-            para_id: 2000,
+            para_id: 2116,
         },
     )
 }

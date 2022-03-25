@@ -1,6 +1,6 @@
 [package]
 name = 'datahighway-collator'
-version = '3.4.0'
+version = '3.5.0'
 authors = ['Anonymous']
 description = 'DataHighway parachain collator FRAME-based Substrate Node based upon the Cumulus.'
 license = 'Unlicense'
@@ -17,7 +17,7 @@ path = 'src/main.rs'
 derive_more = '0.99.2'
 log = '0.4.14'
 codec = { version = '3.1.2', package = 'parity-scale-codec', default-features = false, features = ['derive', 'max-encoded-len'] }
-clap = { version = '3.1', features = ['derive'] }
+clap = { version = '3.1.6', features = ['derive'] }
 serde = { version = '1.0.136', features = ['derive'] }
 serde_json = '1.0.74'
 hex = { version = '0.4.3', default_features = false, features = ['alloc'] }
@@ -26,7 +26,7 @@ hex-literal = '0.3.4'
 jsonrpc-core = '18.0.0'
 
 # Local
-datahighway-parachain-runtime = { path = '../runtime', version = '3.4.0' }
+datahighway-parachain-runtime = { path = '../runtime', version = '3.5.0' }
 module-primitives = { version = '3.0.6', default-features = false, path = '../pallets/primitives' }
 
 # Substrate
@@ -69,7 +69,7 @@ sp-tracing = { git = 'https://github.com/paritytech/substrate', branch = 'polkad
 sp-transaction-pool = { git = 'https://github.com/paritytech/substrate', branch = 'polkadot-v0.9.18' }
 substrate-frame-rpc-system = { git = 'https://github.com/paritytech/substrate', branch = 'polkadot-v0.9.18' }
 substrate-prometheus-endpoint = { git = 'https://github.com/paritytech/substrate', branch = 'polkadot-v0.9.18' }
-try-runtime-cli = { git = 'https://github.com/paritytech/substrate', branch = 'polkadot-v0.9.18' }
+try-runtime-cli = { git = 'https://github.com/paritytech/substrate', optional = true, branch = 'polkadot-v0.9.18' }
 
 # Polkadot
 polkadot-cli = { git = 'https://github.com/paritytech/polkadot', branch = 'release-v0.9.18' }
@@ -98,9 +98,14 @@ futures = { version = '0.3.19' }
 substrate-build-script-utils = { git = 'https://github.com/paritytech/substrate', branch = 'polkadot-v0.9.18' }
 
 [features]
+default = []
 runtime-benchmarks = [
     'datahighway-parachain-runtime/runtime-benchmarks',
     'polkadot-cli/runtime-benchmarks',
-
 ]
-try-runtime = [ 'datahighway-parachain-runtime/try-runtime' ]
+# Enable features that allow the runtime to be tried and debugged. Name might be subject to change
+# in the near future.
+try-runtime = [
+    'datahighway-parachain-runtime/try-runtime',
+    'try-runtime-cli',
+]

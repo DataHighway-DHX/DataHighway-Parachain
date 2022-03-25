@@ -88,32 +88,7 @@ Refer to Susbtrate Debugging documentation [here](https://docs.substrate.io/v3/r
 ### Run All Tests
 
 ```bash
-cargo test -p datahighway-parachain-runtime &&
-cargo test -p roaming-operators &&
-cargo test -p roaming-networks &&
-cargo test -p roaming-organizations &&
-cargo test -p roaming-network-servers &&
-cargo test -p roaming-devices &&
-cargo test -p roaming-routing-profiles &&
-cargo test -p roaming-service-profiles &&
-cargo test -p roaming-accounting-policies &&
-cargo test -p roaming-agreement-policies &&
-cargo test -p roaming-network-profiles &&
-cargo test -p roaming-device-profiles &&
-cargo test -p roaming-sessions &&
-cargo test -p roaming-billing-policies &&
-cargo test -p roaming-charging-policies &&
-cargo test -p roaming-packet-bundles &&
-cargo test -p mining-setting-token &&
-cargo test -p mining-setting-hardware &&
-cargo test -p mining-rates-token &&
-cargo test -p mining-rates-hardware &&
-cargo test -p mining-sampling-token &&
-cargo test -p mining-sampling-hardware &&
-cargo test -p mining-eligibility-token &&
-cargo test -p mining-eligibility-hardware &&
-cargo test -p mining-claims-token &&
-cargo test -p mining-claims-hardware
+cargo test -p datahighway-parachain-runtime
 ```
 
 ### Run Integration Tests Only
@@ -126,7 +101,7 @@ cargo test -p datahighway-parachain-runtime
 
 Example
 ```
-cargo test -p datahighway-parachain-runtime --test cli_integration_tests_mining_tokens
+cargo test -p datahighway-parachain-runtime --test <INSERT_INTEGRATION_TEST_FILENAME>
 ```
 
 ## Benchmarking <a id="chapter-6c1b24"></a>

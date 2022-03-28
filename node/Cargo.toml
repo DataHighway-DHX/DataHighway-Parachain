@@ -27,7 +27,7 @@ jsonrpc-core = '18.0.0'
 
 # Local
 datahighway-parachain-runtime = { path = '../runtime', version = '3.5.0' }
-module-primitives = { version = '3.0.6', default-features = false, path = '../pallets/primitives' }
+module-primitives = { version = '3.0.7', default-features = false, path = '../pallets/primitives' }
 
 # Substrate
 frame-benchmarking = { git = 'https://github.com/paritytech/substrate', branch = 'polkadot-v0.9.18' }

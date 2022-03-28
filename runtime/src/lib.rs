@@ -233,7 +233,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
     spec_name: create_runtime_str!("datahighway-parachain"),
     impl_name: create_runtime_str!("datahighway-parachain"),
     authoring_version: 2,
-    spec_version: 4,
+    spec_version: 5,
     impl_version: 1,
     apis: RUNTIME_API_VERSIONS,
 	transaction_version: 1,
@@ -1013,6 +1013,231 @@ impl pallet_indices::Config for Runtime {
     type WeightInfo = pallet_indices::weights::SubstrateWeight<Runtime>;
 }
 
+impl roaming_operators::Config for Runtime {
+    type Currency = Balances;
+    type Event = Event;
+    type Randomness = RandomnessCollectiveFlip;
+    type RoamingOperatorIndex = u64;
+}
+
+impl roaming_networks::Config for Runtime {
+    type Event = Event;
+    type RoamingNetworkIndex = u64;
+}
+
+impl roaming_organizations::Config for Runtime {
+    type Event = Event;
+    type RoamingOrganizationIndex = u64;
+}
+
+impl roaming_network_servers::Config for Runtime {
+    type Event = Event;
+    type RoamingNetworkServerIndex = u64;
+}
+
+impl roaming_devices::Config for Runtime {
+    type Event = Event;
+    type RoamingDeviceIndex = u64;
+}
+
+impl roaming_routing_profiles::Config for Runtime {
+    type Event = Event;
+    // https://polkadot.js.org/api/types/#primitive-types
+    type RoamingRoutingProfileAppServer = Vec<u8>;
+    type RoamingRoutingProfileIndex = u64;
+}
+
+impl roaming_service_profiles::Config for Runtime {
+    type Event = Event;
+    type RoamingServiceProfileDownlinkRate = u32;
+    type RoamingServiceProfileIndex = u64;
+    type RoamingServiceProfileUplinkRate = u32;
+}
+
+impl roaming_accounting_policies::Config for Runtime {
+    type Event = Event;
+    type RoamingAccountingPolicyDownlinkFeeFactor = u32;
+    type RoamingAccountingPolicyIndex = u64;
+    type RoamingAccountingPolicyType = Vec<u8>;
+    type RoamingAccountingPolicyUplinkFeeFactor = u32;
+}
+
+impl roaming_agreement_policies::Config for Runtime {
+    type Event = Event;
+    type RoamingAgreementPolicyActivationType = Vec<u8>;
+    type RoamingAgreementPolicyIndex = u64; // <pallet_timestamp::Module<Runtime> as Config>::Moment` timestamp::Module<Runtime>::Moment;
+}
+
+impl roaming_network_profiles::Config for Runtime {
+    type Event = Event;
+    type RoamingNetworkProfileIndex = u64;
+}
+
+impl roaming_device_profiles::Config for Runtime {
+    type Event = Event;
+    type RoamingDeviceProfileDevAddr = Vec<u8>;
+    type RoamingDeviceProfileDevEUI = Vec<u8>;
+    type RoamingDeviceProfileIndex = u64;
+    type RoamingDeviceProfileJoinEUI = Vec<u8>;
+    type RoamingDeviceProfileVendorID = Vec<u8>;
+}
+
+impl roaming_sessions::Config for Runtime {
+    type Event = Event;
+    type RoamingSessionIndex = u64;
+}
+
+impl roaming_billing_policies::Config for Runtime {
+    type Event = Event;
+    type RoamingBillingPolicyIndex = u64;
+}
+
+impl roaming_charging_policies::Config for Runtime {
+    type Event = Event;
+    type RoamingChargingPolicyIndex = u64;
+}
+
+impl roaming_packet_bundles::Config for Runtime {
+    type Event = Event;
+    type RoamingPacketBundleExternalDataStorageHash = Hash;
+    type RoamingPacketBundleIndex = u64;
+    type RoamingPacketBundleReceivedAtHome = bool;
+    type RoamingPacketBundleReceivedPacketsCount = u64;
+    type RoamingPacketBundleReceivedPacketsOkCount = u64;
+}
+
+impl mining_setting_token::Config for Runtime {
+    type Event = Event;
+    // FIXME - restore when stop temporarily using roaming-operators
+    // type Currency = Balances;
+    // type Randomness = RandomnessCollectiveFlip;
+    type MiningSettingTokenIndex = u64;
+    type MiningSettingTokenLockAmount = u64;
+    // Mining Speed Boost Token Mining Config
+    // FIXME - how to use this enum from std? (including importing `use std::str::FromStr;`)
+    type MiningSettingTokenType = Vec<u8>;
+}
+
+impl mining_setting_hardware::Config for Runtime {
+    type Event = Event;
+    type MiningSettingHardwareDevEUI = u64;
+    // type MiningSettingHardwareType =
+    // MiningSettingHardwareTypes;
+    type MiningSettingHardwareID = u64;
+    // FIXME - restore when stop temporarily using roaming-operators
+    // type Currency = Balances;
+    // type Randomness = RandomnessCollectiveFlip;
+    type MiningSettingHardwareIndex = u64;
+    // Mining Speed Boost Hardware Mining Config
+    type MiningSettingHardwareSecure = bool;
+    // FIXME - how to use this enum from std? (including importing `use std::str::FromStr;`)
+    type MiningSettingHardwareType = Vec<u8>;
+}
+
+impl mining_rates_token::Config for Runtime {
+    type Event = Event;
+    type MiningRatesTokenIndex = u64;
+    type MiningRatesTokenMaxLoyalty = u32;
+    // Mining Speed Boost Max Rates
+    type MiningRatesTokenMaxToken = u32;
+    type MiningRatesTokenTokenDOT = u32;
+    type MiningRatesTokenTokenIOTA = u32;
+    // Mining Speed Boost Rate
+    type MiningRatesTokenTokenMXC = u32;
+}
+
+impl mining_rates_hardware::Config for Runtime {
+    type Event = Event;
+    type MiningRatesHardwareCategory1MaxTokenBonusPerGateway = u32;
+    type MiningRatesHardwareCategory2MaxTokenBonusPerGateway = u32;
+    type MiningRatesHardwareCategory3MaxTokenBonusPerGateway = u32;
+    type MiningRatesHardwareIndex = u64;
+    type MiningRatesHardwareInsecure = u32;
+    // Mining Speed Boost Max Rates
+    type MiningRatesHardwareMaxHardware = u32;
+    // Mining Speed Boost Rate
+    type MiningRatesHardwareSecure = u32;
+}
+
+impl mining_sampling_token::Config for Runtime {
+    type Event = Event;
+    type MiningSamplingTokenIndex = u64;
+    type MiningSamplingTokenSampleLockedAmount = u64;
+}
+
+impl mining_sampling_hardware::Config for Runtime {
+    type Event = Event;
+    type MiningSamplingHardwareIndex = u64;
+    type MiningSamplingHardwareSampleHardwareOnline = u64;
+}
+
+impl mining_eligibility_token::Config for Runtime {
+    type Event = Event;
+    type MiningEligibilityTokenCalculatedEligibility = u64;
+    type MiningEligibilityTokenIndex = u64;
+    type MiningEligibilityTokenLockedPercentage = u32;
+    // type MiningEligibilityTokenAuditorAccountID = u64;
+}
+
+impl mining_eligibility_hardware::Config for Runtime {
+    type Event = Event;
+    type MiningEligibilityHardwareCalculatedEligibility = u64;
+    type MiningEligibilityHardwareIndex = u64;
+    type MiningEligibilityHardwareUptimePercentage = u32;
+    // type MiningEligibilityHardwareAuditorAccountID = u64;
+}
+
+impl mining_eligibility_proxy::Config for Runtime {
+    type Event = Event;
+    type Currency = Balances;
+    type Randomness = RandomnessCollectiveFlip;
+    // Check membership
+    type MembershipSource = MembershipSupernodes;
+    type MiningEligibilityProxyIndex = u64;
+    type RewardsOfDay = u64;
+}
+
+impl mining_lodgements_hardware::Config for Runtime {
+    type Event = Event;
+    type MiningLodgementsHardwareIndex = u64;
+}
+
+impl mining_claims_token::Config for Runtime {
+    type Event = Event;
+    type MiningClaimsTokenClaimAmount = u64;
+    type MiningClaimsTokenIndex = u64;
+}
+
+impl mining_claims_hardware::Config for Runtime {
+    type Event = Event;
+    type MiningClaimsHardwareClaimAmount = u64;
+    type MiningClaimsHardwareIndex = u64;
+}
+
+impl mining_execution_token::Config for Runtime {
+    type Event = Event;
+    type MiningExecutionTokenIndex = u64;
+}
+
+impl exchange_rate::Config for Runtime {
+    type DOTRate = u64;
+    type DecimalsAfterPoint = u32;
+    type Event = Event;
+    type ExchangeRateIndex = u64;
+    type FILRate = u64;
+    type HBTCRate = u64;
+    type IOTARate = u64;
+}
+
+impl membership_supernodes::Config for Runtime {
+    type Event = Event;
+}
+
+impl treasury_dao::Config for Runtime {
+    type Event = Event;
+    type Currency = Balances;
+}
+
 parameter_types! {
     pub const ReservedXcmpWeight: Weight = MAXIMUM_BLOCK_WEIGHT / 4;
     pub const ReservedDmpWeight: Weight = MAXIMUM_BLOCK_WEIGHT / 4;
@@ -1134,6 +1359,37 @@ construct_runtime!(
         Multisig: pallet_multisig,
         Referenda: pallet_referenda,
         ConvictionVoting: pallet_conviction_voting,
+        MembershipSupernodes: membership_supernodes::{Pallet, Call, Storage, Event<T>},
+        RoamingOperators: roaming_operators::{Pallet, Call, Storage, Event<T>},
+        RoamingNetworks: roaming_networks::{Pallet, Call, Storage, Event<T>},
+        RoamingOrganizations: roaming_organizations::{Pallet, Call, Storage, Event<T>},
+        RoamingNetworkServers: roaming_network_servers::{Pallet, Call, Storage, Event<T>},
+        RoamingDevices: roaming_devices::{Pallet, Call, Storage, Event<T>},
+        RoamingRoutingProfiles: roaming_routing_profiles::{Pallet, Call, Storage, Event<T>},
+        RoamingServiceProfiles: roaming_service_profiles::{Pallet, Call, Storage, Event<T>},
+        RoamingAccountingPolicies: roaming_accounting_policies::{Pallet, Call, Storage, Event<T>},
+        RoamingAgreementPolicies: roaming_agreement_policies::{Pallet, Call, Storage, Event<T>},
+        RoamingNetworkProfiles: roaming_network_profiles::{Pallet, Call, Storage, Event<T>},
+        RoamingDeviceProfiles: roaming_device_profiles::{Pallet, Call, Storage, Event<T>},
+        RoamingSessions: roaming_sessions::{Pallet, Call, Storage, Event<T>},
+        RoamingBillingPolicies: roaming_billing_policies::{Pallet, Call, Storage, Event<T>},
+        RoamingChargingPolicies: roaming_charging_policies::{Pallet, Call, Storage, Event<T>},
+        RoamingPacketBundles: roaming_packet_bundles::{Pallet, Call, Storage, Event<T>},
+        MiningSettingToken: mining_setting_token::{Pallet, Call, Storage, Event<T>},
+        MiningSettingHardware: mining_setting_hardware::{Pallet, Call, Storage, Event<T>},
+        MiningRatesToken: mining_rates_token::{Pallet, Call, Storage, Event<T>},
+        MiningRatesHardware: mining_rates_hardware::{Pallet, Call, Storage, Event<T>},
+        MiningSamplingToken: mining_sampling_token::{Pallet, Call, Storage, Event<T>},
+        MiningSamplingHardware: mining_sampling_hardware::{Pallet, Call, Storage, Event<T>},
+        MiningEligibilityToken: mining_eligibility_token::{Pallet, Call, Storage, Event<T>},
+        MiningEligibilityHardware: mining_eligibility_hardware::{Pallet, Call, Storage, Event<T>},
+        MiningEligibilityProxy: mining_eligibility_proxy::{Pallet, Call, Storage, Event<T>},
+        MiningLodgementsHardware: mining_lodgements_hardware::{Pallet, Call, Storage, Event<T>},
+        MiningClaimsToken: mining_claims_token::{Pallet, Call, Storage, Event<T>},
+        MiningClaimsHardware: mining_claims_hardware::{Pallet, Call, Storage, Event<T>},
+        MiningExecutionToken: mining_execution_token::{Pallet, Call, Storage, Event<T>},
+        ExchangeRate: exchange_rate::{Pallet, Call, Storage, Event<T>},
+        TreasuryDao: treasury_dao::{Pallet, Call, Storage, Event<T>},
     }
 );
 
@@ -1168,6 +1424,36 @@ mod benches {
         [pallet_multisig, Multisig]
         [pallet_referenda, Referenda]
         [pallet_conviction_voting, ConvictionVoting]
+        [membership_supernodes, MembershipSupernodes]
+        [roaming_operators, RoamingOperators]
+        [roaming_networks, RoamingNetworks]
+        [roaming_organizations, RoamingOrganizations]
+        [roaming_network_servers, RoamingNetworkServers]
+        [roaming_devices, RoamingDevices]
+        [roaming_routing_profiles, RoamingRoutingProfiles]
+        [roaming_service_profiles, RoamingServiceProfiles]
+        [roaming_accounting_policies, RoamingAccountingPolicies]
+        [roaming_agreement_policies, RoamingAgreementPolicies]
+        [roaming_network_profiles, RoamingNetworkProfiles]
+        [roaming_device_profiles, RoamingDeviceProfiles]
+        [roaming_sessions, RoamingSessions]
+        [roaming_billing_policies, RoamingBillingPolicies]
+        [roaming_charging_policies, RoamingChargingPolicies]
+        [roaming_packet_bundles, RoamingPacketBundles]
+        [mining_setting_token, MiningSettingToken]
+        [mining_rates_token, MiningRatesToken]
+        [mining_rates_hardware, MiningRatesHardware]
+        [mining_sampling_token, MiningSamplingToken]
+        [mining_sampling_hardware, MiningSamplingHardware]
+        [mining_eligibility_token, MiningEligibilityToken]
+        [mining_eligibility_hardware, MiningEligibilityHardware]
+        [mining_eligibility_proxy, MiningEligibilityProxy]
+        [mining_lodgements_hardware, MiningLodgementsHardware]
+        [mining_claims_token, MiningClaimsToken]
+        [mining_claims_hardware, MiningClaimsHardware]
+        [mining_execution_token, MiningExecutionToken]
+        [exchange_rate, ExchangeRate]
+        [treasury_dao, TreasuryDao]
     );
 }
 

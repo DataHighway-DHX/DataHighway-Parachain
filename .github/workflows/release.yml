@@ -35,4 +35,4 @@ jobs:
         uses: actions/upload-artifact@v1
         with:
           name: datahighway
-          path: target/release/datahighway
+          path: target/release/datahighway-collator

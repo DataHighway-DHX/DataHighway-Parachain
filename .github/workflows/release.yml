@@ -30,9 +30,31 @@ jobs:
           rustup target add wasm32-unknown-unknown --toolchain nightly-2021-12-15
           rustup override set nightly-2021-12-15
           cargo build --release
+          cp ./target/release/datahighway-collator .
+          gzip datahighway-collator
 
-      - name: Upload artifact
-        uses: actions/upload-artifact@v1
+      - name: get version
+        run: echo "::set-output name=version::$(./target/release/datahighway-collator --version)"
+        id: version
+
+      - name: create release
+        uses: actions/create-release@v1
+        id: create_release
         with:
-          name: datahighway
-          path: target/release/datahighway-collator
+          draft: false
+          prerelease: false
+          release_name: ${{ steps.version.outputs.version }}
+          tag_name: ${{ github.ref }}
+          body_path: CHANGELOG.md
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+
+      - name: upload linux artifact
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: datahighway-collator.gzip
+          asset_name: datahighway-collator-amd64.gzip
+          asset_content_type: application/gzip

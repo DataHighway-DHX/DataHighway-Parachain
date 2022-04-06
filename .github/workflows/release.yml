@@ -55,6 +55,6 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: datahighway-collator.gzip
-          asset_name: datahighway-collator-amd64.gzip
+          asset_path: datahighway-collator.gz
+          asset_name: datahighway-collator-amd64.gz
           asset_content_type: application/gzip

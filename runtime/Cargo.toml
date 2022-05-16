@@ -87,6 +87,7 @@ xcm-builder = { git = 'https://github.com/paritytech/polkadot', default-features
 xcm-executor = { git = 'https://github.com/paritytech/polkadot', default-features = false, branch = 'release-v0.9.18' }
 
 # Cumulus
+# FIXME - why doesn't the nimbus repository use 'cumulus-pallet-aura-ext'?
 cumulus-pallet-aura-ext = { git = 'https://github.com/paritytech/cumulus', branch = 'polkadot-v0.9.18', default-features = false }
 cumulus-pallet-dmp-queue = { git = 'https://github.com/paritytech/cumulus', branch = 'polkadot-v0.9.18', default-features = false }
 cumulus-pallet-parachain-system = { git = 'https://github.com/paritytech/cumulus', branch = 'polkadot-v0.9.18', default-features = false }
@@ -98,6 +99,11 @@ cumulus-primitives-timestamp = { git = 'https://github.com/paritytech/cumulus', 
 cumulus-primitives-utility = { git = 'https://github.com/paritytech/cumulus', branch = 'polkadot-v0.9.18', default-features = false }
 pallet-collator-selection = { git = 'https://github.com/paritytech/cumulus', branch = 'polkadot-v0.9.18', default-features = false }
 parachain-info = { git = 'https://github.com/paritytech/cumulus', branch = 'polkadot-v0.9.18', default-features = false }
+
+# Nimbus Dependencies
+nimbus-primitives = { git = 'https://github.com/purestake/nimbus', branch = 'moonbeam-polkadot-v0.9.18', default-features = false }
+pallet-author-inherent = { git = 'https://github.com/purestake/nimbus', branch = 'moonbeam-polkadot-v0.9.18', default-features = false }
+pallet-author-slot-filter = { git = 'https://github.com/purestake/nimbus', branch = 'moonbeam-polkadot-v0.9.18', default-features = false }
 
 [features]
 default = [
@@ -123,6 +129,7 @@ std = [
     'frame-system-rpc-runtime-api/std',
     'frame-system/std',
     'frame-try-runtime/std',
+    'nimbus-primitives/std',
     'pallet-aura/std',
     'pallet-assets/std',
     'pallet-authorship/std',

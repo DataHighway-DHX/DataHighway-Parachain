@@ -11,10 +11,6 @@ pub mod xcm_config;
 use smallvec::smallvec;
 use sp_api::impl_runtime_apis;
 use sp_core::{crypto::KeyTypeId, OpaqueMetadata};
-use sp_inherents::{
-    CheckInherentsResult,
-    InherentData,
-};
 use sp_runtime::{
     create_runtime_str, curve::PiecewiseLinear, generic, impl_opaque_keys, traits,
     traits::{AccountIdLookup, BlakeTwo256, BlindCheckable, Block as BlockT, Convert, ConvertInto, Checkable, IdentifyAccount,
@@ -22,6 +18,11 @@ use sp_runtime::{
     transaction_validity::{TransactionPriority, TransactionSource, TransactionValidity},
         ApplyExtrinsicResult, MultiSignature, FixedPointNumber,
 };
+
+pub use nimbus_primitives::NimbusId;
+pub use pallet_author_slot_filter::EligibilityValue;
+pub use pallet_author_inherent;
+
 pub use sp_runtime::{MultiAddress, Perbill, Percent, Permill, Perquintill};
 use sp_std::prelude::*;
 #[cfg(feature = "std")]
@@ -74,8 +75,19 @@ pub use frame_system::Call as SystemCall;
 use polkadot_runtime_common::{BlockHashCount as BlockHashCountCommon, RocksDbWeight, SlowAdjustingFeeUpdate};
 
 // XCM Imports
+// FIXME - change to `use xcm::latest::prelude::*;`?
 use xcm::latest::prelude::BodyId;
+use xcm_builder::{
+    AccountId32Aliases, AllowTopLevelPaidExecutionFrom, AllowUnpaidExecutionFrom, CurrencyAdapter,
+    EnsureXcmOrigin, FixedWeightBounds, IsConcrete, LocationInverter, NativeAsset,
+    ParentAsSuperuser, ParentIsPreset, RelayChainAsNative, SiblingParachainAsNative,
+    SiblingParachainConvertsVia, SignedAccountId32AsNative, SignedToAccountId32,
+    SovereignSignedViaLocation, TakeWeightCredit, UsingComponents,
+};
+// FIXME - change to `use xcm_executor::{Config, XcmExecutor};`?
 use xcm_executor::XcmExecutor;
+
+mod pallet_account_set;
 
 pub use module_primitives::{
     constants::currency::{
@@ -152,7 +164,16 @@ pub type SignedPayload = generic::SignedPayload<Call, SignedExtra>;
 pub type CheckedExtrinsic = generic::CheckedExtrinsic<AccountId, Call, SignedExtra>;
 /// Executive: handles dispatch to the various modules.
 pub type Executive =
-    frame_executive::Executive<Runtime, Block, frame_system::ChainContext<Runtime>, Runtime, AllPalletsWithSystem>;
+    frame_executive::Executive<Runtime, Block, frame_system::ChainContext<Runtime>, Runtime, AllPalletsReversedWithSystemFirst, CustomOnRuntimeUpgrade>;
+
+pub struct CustomOnRuntimeUpgrade;
+impl OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
+    fn on_runtime_upgrade() -> u64 {
+        frame_support::migrations::migrate_from_pallet_version_to_storage_version::<
+            AllPalletsWithSystem,
+        >(&RocksDbWeight::get())
+    }
+}
 
 /// Handles converting a weight scalar to a fee value, based on the scale and granularity of the
 /// node's balance type.
@@ -218,7 +239,7 @@ pub mod opaque {
 
 impl_opaque_keys! {
     pub struct SessionKeys {
-        pub aura: Aura,
+        pub nimbus: AuthorInherent,
     }
 }
 
@@ -333,7 +354,8 @@ parameter_types! {
 impl pallet_timestamp::Config for Runtime {
     type MinimumPeriod = MinimumPeriod;
     type Moment = Moment;
-    type OnTimestampSet = Aura;
+    // FIXME - should we change this to `AuthorInherent`?
+    type OnTimestampSet = AuthorInherent;
     type WeightInfo = pallet_timestamp::weights::SubstrateWeight<Runtime>;
 }
 
@@ -386,8 +408,8 @@ impl pallet_transaction_payment::Config for Runtime {
     type OnChargeTransaction = pallet_transaction_payment::CurrencyAdapter<Balances, DealWithFees>;
     type TransactionByteFee = TransactionByteFee;
     type WeightToFee = IdentityFee<Balance>;
-    type FeeMultiplierUpdate =
-        TargetedFeeAdjustment<Self, TargetBlockFullness, AdjustmentVariable, MinimumMultiplier>;
+    // FIXME - should we have change it to this value?
+    type FeeMultiplierUpdate = SlowAdjustingFeeUpdate<Self>;
     type OperationalFeeMultiplier = ConstU8<OPERATIONAL_FEE_MULTIPLIER_AS_CONST>;
 }
 
@@ -1021,7 +1043,9 @@ parameter_types! {
 impl cumulus_pallet_parachain_system::Config for Runtime {
     type Event = Event;
     type OnSystemEvent = ();
+    // FIXME - or just `ParachainInfo`?
     type SelfParaId = parachain_info::Pallet<Runtime>;
+    // FIXME - or `MaintenanceMode`?
     type DmpMessageHandler = DmpQueue;
     type ReservedDmpWeight = ReservedDmpWeight;
     type OutboundXcmpMessageSource = XcmpQueue;
@@ -1031,13 +1055,14 @@ impl cumulus_pallet_parachain_system::Config for Runtime {
 
 impl parachain_info::Config for Runtime {}
 
+// FIXME - should we be using this with Nimbus and parachain-staking?
 impl cumulus_pallet_aura_ext::Config for Runtime {}
 
 impl cumulus_pallet_xcmp_queue::Config for Runtime {
     type Event = Event;
     type XcmExecutor = XcmExecutor<XcmConfig>;
     type ChannelInfo = ParachainSystem;
-    type VersionWrapper = ();
+    type VersionWrapper = PolkadotXcm;
     type ExecuteOverweightOrigin = EnsureRoot<AccountId>;
     type ControllerOrigin = EnsureRoot<AccountId>;
     type ControllerOriginConverter = XcmOriginToTransactDispatchOrigin;
@@ -1078,6 +1103,78 @@ impl pallet_collator_selection::Config for Runtime {
     type WeightInfo = ();
 }
 
+parameter_types! {
+	/// Default fixed percent a collator takes off the top of due rewards
+	pub const DefaultCollatorCommission: Perbill = Perbill::from_percent(20);
+	/// Default percent of inflation set aside for parachain bond every round
+	pub const DefaultParachainBondReservePercent: Percent = Percent::from_percent(30);
+}
+
+impl parachain_staking::Config for Runtime {
+	type Event = Event;
+    type Currency = Balances;
+	type MonetaryGovernanceOrigin = EnsureRoot<AccountId>;
+	/// Minimum round length is 2 minutes (10 * 12 second block times)
+	type MinBlocksPerRound = ConstU32<10>;
+	/// Blocks per round
+	type DefaultBlocksPerRound = ConstU32<{ 6 * HOURS }>;
+	/// Rounds before the collator leaving the candidates request can be executed
+	type LeaveCandidatesDelay = ConstU32<{ 4 * 7 }>;
+	/// Rounds before the candidate bond increase/decrease can be executed
+	type CandidateBondLessDelay = ConstU32<{ 4 * 7 }>;
+	/// Rounds before the delegator exit can be executed
+	type LeaveDelegatorsDelay = ConstU32<{ 4 * 7 }>;
+	/// Rounds before the delegator revocation can be executed
+	type RevokeDelegationDelay = ConstU32<{ 4 * 7 }>;
+	/// Rounds before the delegator bond increase/decrease can be executed
+	type DelegationBondLessDelay = ConstU32<{ 4 * 7 }>;
+	/// Rounds before the reward is paid
+	type RewardPaymentDelay = ConstU32<2>;
+	/// Minimum collators selected per round, default at genesis and minimum forever after
+	type MinSelectedCandidates = ConstU32<8>;
+	/// Maximum top delegations per candidate
+	type MaxTopDelegationsPerCandidate = ConstU32<300>;
+	/// Maximum bottom delegations per candidate
+	type MaxBottomDelegationsPerCandidate = ConstU32<50>;
+	/// Maximum delegations per delegator
+	type MaxDelegationsPerDelegator = ConstU32<100>;
+	type DefaultCollatorCommission = DefaultCollatorCommission;
+	type DefaultParachainBondReservePercent = DefaultParachainBondReservePercent;
+	/// Minimum stake required to become a collator
+    type MinCollatorStk = ConstU128<{ 1000 * currency::UNITS }>;
+	/// Minimum stake required to be reserved to be a candidate
+	type MinCandidateStk = ConstU128<{ 1000 * currency::UNITS }>;
+	/// Minimum stake required to be reserved to be a delegator
+	type MinDelegation = ConstU128<{ 500 * currency::MILLIUNITS }>;
+	/// Minimum stake required to be reserved to be a delegator
+	type MinDelegatorStk = ConstU128<{ 500 * currency::MILLIUNITS }>;
+	type WeightInfo = parachain_staking::weights::SubstrateWeight<Runtime>;
+}
+
+impl pallet_author_inherent::Config for Runtime {
+	type SlotBeacon = RelaychainBlockNumberProvider<Self>;
+	type AccountLookup = AuthorMapping;
+	type EventHandler = ParachainStaking;
+	type CanAuthor = AuthorFilter;
+}
+
+impl pallet_author_slot_filter::Config for Runtime {
+	type Event = Event;
+	type RandomnessSource = RandomnessCollectiveFlip;
+	type PotentialAuthors = ParachainStaking;
+	type WeightInfo = pallet_author_slot_filter::weights::SubstrateWeight<Runtime>;
+}
+
+// This is a simple session key manager. It should probably either work with, or be replaced
+// entirely by pallet sessions
+impl pallet_author_mapping::Config for Runtime {
+	type Event = Event;
+	type DepositCurrency = Balances;
+	type DepositAmount = ConstU128<{ 100 * currency::UNITS }>;
+	type Keys = NimbusId; // TODO: consider making custom type?
+	type WeightInfo = pallet_author_mapping::weights::SubstrateWeight<Runtime>;
+}
+
 // Create the runtime by composing the FRAME pallets that were previously configured.
 construct_runtime!(
     pub enum Runtime where
@@ -1104,15 +1201,24 @@ construct_runtime!(
         TransactionPayment: pallet_transaction_payment::{Pallet, Storage, Config} = 16,
         AssetTxPayment: pallet_asset_tx_payment = 17,
 
+		// Consensus support.
+		ParachainStaking: parachain_staking::{Pallet, Call, Storage, Event<T>, Config<T>} = 20,
+		AuthorInherent: pallet_author_inherent::{Pallet, Call, Storage, Inherent} = 21,
+		AuthorFilter: pallet_author_slot_filter::{Pallet, Call, Storage, Event, Config} = 22,
+		AuthorMapping: pallet_author_mapping::{Pallet, Call, Config<T>, Storage, Event<T>} = 23,
+
         // Collator support. The order of these 4 are important and shall not change.
         // Authorship must be before session in order to note author in the correct session and era
         // for im-online and staking.
-        Authorship: pallet_authorship::{Pallet, Call, Storage} = 20,
-        CollatorSelection: pallet_collator_selection::{Pallet, Call, Storage, Event<T>, Config<T>} = 21,
-        Session: pallet_session::{Pallet, Call, Storage, Event, Config<T>} = 22,
-        Democracy: pallet_democracy = 23,
-        Aura: pallet_aura::{Pallet, Storage, Config<T>} = 24,
-        AuraExt: cumulus_pallet_aura_ext::{Pallet, Storage, Config} = 25,
+        // FIXME - do we need this?
+        // Authorship: pallet_authorship::{Pallet, Call, Storage} = 20,
+        // FIXME - do we need this?
+        // CollatorSelection: pallet_collator_selection::{Pallet, Call, Storage, Event<T>, Config<T>} = 21,
+        // FIXME - do we need this?
+        // Session: pallet_session::{Pallet, Call, Storage, Event, Config<T>} = 22,
+        Democracy: pallet_democracy = 24,
+        // Aura: pallet_aura::{Pallet, Storage, Config<T>} = 24,
+        // AuraExt: cumulus_pallet_aura_ext::{Pallet, Storage, Config} = 25,
 
         // XCM helpers.
         XcmpQueue: cumulus_pallet_xcmp_queue::{Pallet, Call, Storage, Event<T>} = 30,

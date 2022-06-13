@@ -1,0 +1,20 @@
+[package]
+name = 'lockdrop-runtime-api'
+version = '0.1.0'
+authors = ['Ilya Beregovskiy']
+edition = '2021'
+
+[dependencies]
+# Substrate
+frame-benchmarking = { git = 'https://github.com/paritytech/substrate', branch = 'polkadot-v0.9.18', default-features = false, optional = true }
+frame-support = { git = 'https://github.com/paritytech/substrate', branch = 'polkadot-v0.9.18', default-features = false }
+frame-system = { git = 'https://github.com/paritytech/substrate', branch = 'polkadot-v0.9.18', default-features = false }
+
+sp-api = { git = 'https://github.com/paritytech/substrate', branch = 'polkadot-v0.9.18', default-features = false}
+
+[features]
+default = ['std']
+runtime-benchmarks = ['frame-benchmarking/runtime-benchmarks']
+std = [
+	'sp-api/std',
+]

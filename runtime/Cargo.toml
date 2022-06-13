@@ -25,7 +25,38 @@ smallvec = '1.8.0'
 static_assertions = '1.1.0'
 
 # Local
-module-primitives = { default-features = false, path = '../pallets/primitives' }
+module-primitives = { default-features = false, package = 'module-primitives', path = '../pallets/primitives' }
+roaming-operators = { default_features = false, package = 'roaming-operators', path = '../pallets/roaming/roaming-operators' }
+roaming-networks = { default_features = false, package = 'roaming-networks', path = '../pallets/roaming/roaming-networks' }
+roaming-organizations = { default_features = false, package = 'roaming-organizations', path = '../pallets/roaming/roaming-organizations' }
+roaming-network-servers = { default_features = false, package = 'roaming-network-servers', path = '../pallets/roaming/roaming-network-servers' }
+roaming-devices = { default_features = false, package = 'roaming-devices', path = '../pallets/roaming/roaming-devices' }
+roaming-routing-profiles = { default_features = false, package = 'roaming-routing-profiles', path = '../pallets/roaming/roaming-routing-profiles' }
+roaming-service-profiles = { default_features = false, package = 'roaming-service-profiles', path = '../pallets/roaming/roaming-service-profiles' }
+roaming-accounting-policies = { default_features = false, package = 'roaming-accounting-policies', path = '../pallets/roaming/roaming-accounting-policies' }
+roaming-agreement-policies = { default_features = false, package = 'roaming-agreement-policies', path = '../pallets/roaming/roaming-agreement-policies' }
+roaming-network-profiles = { default_features = false, package = 'roaming-network-profiles', path = '../pallets/roaming/roaming-network-profiles' }
+roaming-device-profiles = { default_features = false, package = 'roaming-device-profiles', path = '../pallets/roaming/roaming-device-profiles' }
+roaming-sessions = { default_features = false, package = 'roaming-sessions', path = '../pallets/roaming/roaming-sessions' }
+roaming-billing-policies = { default_features = false, package = 'roaming-billing-policies', path = '../pallets/roaming/roaming-billing-policies' }
+roaming-charging-policies = { default_features = false, package = 'roaming-charging-policies', path = '../pallets/roaming/roaming-charging-policies' }
+roaming-packet-bundles = { default_features = false, package = 'roaming-packet-bundles', path = '../pallets/roaming/roaming-packet-bundles' }
+membership-supernodes = { default_features = false, package = 'membership-supernodes', path = '../pallets/membership/supernodes' }
+mining-setting-token = { default-features = false, package = 'mining-setting-token', path = '../pallets/mining/setting/token' }
+mining-setting-hardware = { default-features = false, package = 'mining-setting-hardware', path = '../pallets/mining/setting/hardware' }
+mining-rates-token = { default-features = false, package = 'mining-rates-token', path = '../pallets/mining/rates/token' }
+mining-rates-hardware = { default-features = false, package = 'mining-rates-hardware', path = '../pallets/mining/rates/hardware' }
+mining-sampling-token = { default-features = false, package = 'mining-sampling-token', path = '../pallets/mining/sampling/token' }
+mining-sampling-hardware = { default-features = false, package = 'mining-sampling-hardware', path = '../pallets/mining/sampling/hardware' }
+mining-eligibility-token = { default-features = false, package = 'mining-eligibility-token', path = '../pallets/mining/eligibility/token' }
+mining-eligibility-hardware = { default-features = false, package = 'mining-eligibility-hardware', path = '../pallets/mining/eligibility/hardware' }
+mining-eligibility-proxy = { default_features = false, package = 'mining-eligibility-proxy', path = '../pallets/mining/eligibility/proxy' }
+mining-claims-token = { default-features = false, package = 'mining-claims-token', path = '../pallets/mining/claims/token' }
+mining-claims-hardware = { default-features = false, package = 'mining-claims-hardware', path = '../pallets/mining/claims/hardware' }
+mining-execution-token = { default-features = false, package = 'mining-execution-token', path = '../pallets/mining/execution/token' }
+mining-lodgements-hardware = { default_features = false, package = 'mining-lodgements-hardware', path = '../pallets/mining/lodgements/hardware' }
+exchange-rate = { default-features = false, package = 'exchange-rate', path = '../pallets/exchange-rate' }
+treasury-dao = { default-features = false, path = '../pallets/treasury/dao' }
 
 # Substrate
 frame-benchmarking = { git = 'https://github.com/paritytech/substrate', branch = 'polkadot-v0.9.18', default-features = false, optional = true }
@@ -205,6 +236,37 @@ runtime-benchmarks = [
     'sp-runtime/runtime-benchmarks',
     'xcm-builder/runtime-benchmarks',
     'cumulus-pallet-session-benchmarking/runtime-benchmarks',
+    'membership-supernodes/runtime-benchmarks',
+    'roaming-operators/runtime-benchmarks',
+    'roaming-networks/runtime-benchmarks',
+    'roaming-organizations/runtime-benchmarks',
+    'roaming-network-servers/runtime-benchmarks',
+    'roaming-devices/runtime-benchmarks',
+    'roaming-routing-profiles/runtime-benchmarks',
+    'roaming-service-profiles/runtime-benchmarks',
+    'roaming-accounting-policies/runtime-benchmarks',
+    'roaming-agreement-policies/runtime-benchmarks',
+    'roaming-network-profiles/runtime-benchmarks',
+    'roaming-device-profiles/runtime-benchmarks',
+    'roaming-sessions/runtime-benchmarks',
+    'roaming-billing-policies/runtime-benchmarks',
+    'roaming-charging-policies/runtime-benchmarks',
+    'roaming-packet-bundles/runtime-benchmarks',
+    'mining-setting-token/runtime-benchmarks',
+    'mining-setting-hardware/runtime-benchmarks',
+    'mining-rates-token/runtime-benchmarks',
+    'mining-rates-hardware/runtime-benchmarks',
+    'mining-sampling-token/runtime-benchmarks',
+    'mining-sampling-hardware/runtime-benchmarks',
+    'mining-eligibility-token/runtime-benchmarks',
+    'mining-eligibility-hardware/runtime-benchmarks',
+    'mining-eligibility-proxy/runtime-benchmarks',
+    'mining-lodgements-hardware/runtime-benchmarks',
+    'mining-claims-token/runtime-benchmarks',
+    'mining-claims-hardware/runtime-benchmarks',
+    'mining-execution-token/runtime-benchmarks',
+    'exchange-rate/runtime-benchmarks',
+    'treasury-dao/runtime-benchmarks',
 ]
 
 try-runtime = [
@@ -232,4 +294,35 @@ try-runtime = [
     'pallet-tips/try-runtime',
     'pallet-treasury/try-runtime',
     'pallet-utility/try-runtime',
+    'membership-supernodes/try-runtime',
+    'roaming-operators/try-runtime',
+    'roaming-networks/try-runtime',
+    'roaming-organizations/try-runtime',
+    'roaming-network-servers/try-runtime',
+    'roaming-devices/try-runtime',
+    'roaming-routing-profiles/try-runtime',
+    'roaming-service-profiles/try-runtime',
+    'roaming-accounting-policies/try-runtime',
+    'roaming-agreement-policies/try-runtime',
+    'roaming-network-profiles/try-runtime',
+    'roaming-device-profiles/try-runtime',
+    'roaming-sessions/try-runtime',
+    'roaming-billing-policies/try-runtime',
+    'roaming-charging-policies/try-runtime',
+    'roaming-packet-bundles/try-runtime',
+    'mining-setting-token/try-runtime',
+    'mining-setting-hardware/try-runtime',
+    'mining-rates-token/try-runtime',
+    'mining-rates-hardware/try-runtime',
+    'mining-sampling-token/try-runtime',
+    'mining-sampling-hardware/try-runtime',
+    'mining-eligibility-token/try-runtime',
+    'mining-eligibility-hardware/try-runtime',
+    'mining-eligibility-proxy/try-runtime',
+    'mining-lodgements-hardware/try-runtime',
+    'mining-claims-token/try-runtime',
+    'mining-claims-hardware/try-runtime',
+    'mining-execution-token/try-runtime',
+    'exchange-rate/try-runtime',
+    'treasury-dao/try-runtime',
 ]

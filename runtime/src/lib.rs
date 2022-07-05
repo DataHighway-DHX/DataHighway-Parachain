@@ -8,6 +8,7 @@ include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 
 pub mod xcm_config;
 
+use frame_support::weights::ConstantMultiplier;
 use smallvec::smallvec;
 use sp_api::impl_runtime_apis;
 use sp_core::{crypto::KeyTypeId, OpaqueMetadata};
@@ -38,7 +39,7 @@ pub use frame_support::{
         LockIdentifier, Randomness, OnRuntimeUpgrade, StorageInfo, U128CurrencyToVote,
     },
     weights::{
-        constants::{BlockExecutionWeight, ExtrinsicBaseWeight, WEIGHT_PER_SECOND},
+        constants::{BlockExecutionWeight, ExtrinsicBaseWeight, RocksDbWeight, WEIGHT_PER_SECOND},
         DispatchClass, IdentityFee, Weight, WeightToFeeCoefficient, WeightToFeeCoefficients,
         WeightToFeePolynomial,
     },
@@ -71,7 +72,7 @@ pub use pallet_balances::Call as BalancesCall;
 pub use frame_system::Call as SystemCall;
 
 // Polkadot Imports
-use polkadot_runtime_common::{BlockHashCount as BlockHashCountCommon, RocksDbWeight, SlowAdjustingFeeUpdate};
+use polkadot_runtime_common::{BlockHashCount as BlockHashCountCommon, SlowAdjustingFeeUpdate};
 
 // XCM Imports
 use xcm::latest::prelude::BodyId;
@@ -384,7 +385,8 @@ parameter_types! {
 
 impl pallet_transaction_payment::Config for Runtime {
     type OnChargeTransaction = pallet_transaction_payment::CurrencyAdapter<Balances, DealWithFees>;
-    type TransactionByteFee = TransactionByteFee;
+    // type TransactionByteFee = TransactionByteFee;
+    type LengthToFee = ConstantMultiplier<Balance, TransactionByteFee>;
     type WeightToFee = IdentityFee<Balance>;
     type FeeMultiplierUpdate =
         TargetedFeeAdjustment<Self, TargetBlockFullness, AdjustmentVariable, MinimumMultiplier>;
@@ -501,6 +503,8 @@ parameter_types! {
     pub const MaximumReasonLength: u32 = 300;
     pub const BountyValueMinimum: Balance = 5 * DOLLARS;
     pub const BountyCuratorDeposit: Permill = Permill::from_percent(50);
+    pub const BountyCuratorDepositMin: Balance = 10 * DOLLARS;
+    pub const BountyCuratorDepositMax: Balance = 100 * DOLLARS;
     pub const BountyDepositBase: Balance = 1 * DOLLARS;
     pub const BountyDepositPayoutDelay: BlockNumber = 1 * DAYS;
     pub const BountyUpdatePeriod: BlockNumber = 7 * DAYS;
@@ -541,9 +545,11 @@ impl pallet_bounties::Config for Runtime {
     type BountyDepositBase = BountyDepositBase;
     type BountyDepositPayoutDelay = BountyDepositPayoutDelay;
     type BountyUpdatePeriod = BountyUpdatePeriod;
-    type BountyCuratorDeposit = BountyCuratorDeposit;
     type BountyValueMinimum = BountyValueMinimum;
     type DataDepositPerByte = DataDepositPerByte;
+    type CuratorDepositMin = BountyCuratorDepositMin; // TODO: put correct value here
+    type CuratorDepositMax = BountyCuratorDepositMax; // TODO: put correct value here
+    type CuratorDepositMultiplier = BountyCuratorDeposit; // TODO: put correct value here
     type MaximumReasonLength = MaximumReasonLength;
     type WeightInfo = pallet_bounties::weights::SubstrateWeight<Runtime>;
     type ChildBountyManager = ChildBounties;
@@ -553,7 +559,6 @@ impl pallet_child_bounties::Config for Runtime {
     type Event = Event;
     type MaxActiveChildBountyCount = MaxActiveChildBountyCount;
     type ChildBountyValueMinimum = ChildBountyValueMinimum;
-    type ChildBountyCuratorDepositBase = ChildBountyCuratorDepositBase;
     type WeightInfo = pallet_child_bounties::weights::SubstrateWeight<Runtime>;
 }
 
@@ -689,6 +694,7 @@ impl pallet_recovery::Config for Runtime {
     type FriendDepositFactor = FriendDepositFactor;
     type MaxFriends = MaxFriends;
     type RecoveryDeposit = RecoveryDeposit;
+    type WeightInfo = ();
 }
 
 parameter_types! {

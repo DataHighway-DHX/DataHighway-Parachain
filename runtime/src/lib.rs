@@ -503,7 +503,7 @@ parameter_types! {
     pub const BountyValueMinimum: Balance = 5 * DOLLARS;
     pub const BountyCuratorDeposit: Permill = Permill::from_percent(50);
     pub const BountyCuratorDepositMin: Balance = 10 * DOLLARS;
-    pub const BountyCuratorDepositMax: Balance = 100 * DOLLARS;
+    pub const BountyCuratorDepositMax: Balance = 500 * DOLLARS;
     pub const BountyDepositBase: Balance = 1 * DOLLARS;
     pub const BountyDepositPayoutDelay: BlockNumber = 1 * DAYS;
     pub const BountyUpdatePeriod: BlockNumber = 7 * DAYS;
@@ -546,9 +546,9 @@ impl pallet_bounties::Config for Runtime {
     type BountyUpdatePeriod = BountyUpdatePeriod;
     type BountyValueMinimum = BountyValueMinimum;
     type DataDepositPerByte = DataDepositPerByte;
-    type CuratorDepositMin = BountyCuratorDepositMin; // TODO: put correct value here
-    type CuratorDepositMax = BountyCuratorDepositMax; // TODO: put correct value here
-    type CuratorDepositMultiplier = BountyCuratorDeposit; // TODO: put correct value here
+    type CuratorDepositMin = BountyCuratorDepositMin;
+    type CuratorDepositMax = BountyCuratorDepositMax;
+    type CuratorDepositMultiplier = BountyCuratorDeposit;
     type MaximumReasonLength = MaximumReasonLength;
     type WeightInfo = pallet_bounties::weights::SubstrateWeight<Runtime>;
     type ChildBountyManager = ChildBounties;

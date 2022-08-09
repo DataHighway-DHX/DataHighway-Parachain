@@ -30,3 +30,5 @@ pub type DigestItem = generic::DigestItem;
 pub type Moment = u64;
 /// Balance of an account.
 pub type Balance = u128;
+/// Only when Balance type is u128
+pub type CurrencyToVote = frame_support::traits::U128CurrencyToVote;

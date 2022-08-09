@@ -18,6 +18,7 @@
 //! Some configurable implementations as associated type for the substrate runtime.
 
 use crate::{AccountId, Assets, Authorship, Balances, NegativeImbalance, Runtime};
+use frame_support::pallet_prelude::*;
 use frame_support::traits::{
     fungibles::{Balanced, CreditOf},
     Currency, OnUnbalanced,
@@ -44,3 +45,20 @@ impl HandleCredit<AccountId, Assets> for CreditToBlockAuthor {
         }
     }
 }
+
+// pub struct BenchmarkConfig;
+// impl pallet_election_provider_multi_phase::BenchmarkingConfig for BenchmarkConfig {
+// 	const VOTERS: [u32; 2] = [1000, 2000];
+// 	const TARGETS: [u32; 2] = [500, 1000];
+// 	const ACTIVE_VOTERS: [u32; 2] = [500, 800];
+// 	const DESIRED_TARGETS: [u32; 2] = [200, 400];
+// 	const SNAPSHOT_MAXIMUM_VOTERS: u32 = 1000;
+// 	const MINER_MAXIMUM_VOTERS: u32 = 1000;
+// 	const MAXIMUM_TARGETS: u32 = 300;
+// }
+//
+// impl pallet_staking::BenchmarkingConfig for BenchmarkConfig {
+// 	type MaxValidators = ConstU32<1000>;
+// 	type MaxNominators = ConstU32<1000>;
+// }
+//

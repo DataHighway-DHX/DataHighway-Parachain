@@ -1213,7 +1213,8 @@ fn spreehafen_testnet_genesis(
         },
         session: SessionConfig {
             keys: invulnerables
-                .into_iter()
+                .iter()
+                .cloned()
                 .map(|(acc, aura)| {
                     (
                         acc.clone(),                    // account id
@@ -1251,6 +1252,13 @@ fn spreehafen_testnet_genesis(
 		polkadot_xcm: datahighway_parachain_runtime::PolkadotXcmConfig {
 			safe_xcm_version: Some(SAFE_XCM_VERSION),
 		},
+        staking: datahighway_parachain_runtime::StakingConfig {
+            minimum_validator_count: 1,
+            validator_count: invulnerables.len() as u32,
+            slash_reward_fraction: Perbill::from_percent(10),
+            invulnerables: invulnerables.iter().map(|x| x.0.clone()).collect(),
+            ..Default::default()
+        },
     }
 }
 
@@ -1292,7 +1300,8 @@ fn testnet_genesis(
         },
         session: SessionConfig {
             keys: invulnerables
-                .into_iter()
+                .iter()
+                .cloned()
                 .map(|(acc, aura)| {
                     (
                         acc.clone(),                    // account id
@@ -1330,6 +1339,13 @@ fn testnet_genesis(
 		polkadot_xcm: datahighway_parachain_runtime::PolkadotXcmConfig {
 			safe_xcm_version: Some(SAFE_XCM_VERSION),
 		},
+        staking: datahighway_parachain_runtime::StakingConfig {
+            minimum_validator_count: 1,
+            validator_count: invulnerables.len() as u32,
+            slash_reward_fraction: Perbill::from_percent(10),
+            invulnerables: invulnerables.iter().map(|x| x.0.clone()).collect(),
+            ..Default::default()
+        },
     }
 }
 
@@ -1371,7 +1387,8 @@ fn dev_genesis(
         },
         session: SessionConfig {
             keys: invulnerables
-                .into_iter()
+                .iter()
+                .cloned()
                 .map(|(acc, aura)| {
                     (
                         acc.clone(),                    // account id
@@ -1409,6 +1426,13 @@ fn dev_genesis(
 		polkadot_xcm: datahighway_parachain_runtime::PolkadotXcmConfig {
 			safe_xcm_version: Some(SAFE_XCM_VERSION),
 		},
+        staking: datahighway_parachain_runtime::StakingConfig {
+            minimum_validator_count: 1,
+            validator_count: invulnerables.len() as u32,
+            slash_reward_fraction: Perbill::from_percent(10),
+            invulnerables: invulnerables.iter().map(|x| x.0.clone()).collect(),
+            ..Default::default()
+        },
     }
 }
 
@@ -1461,7 +1485,8 @@ fn baikal_testnet_genesis(
         },
         session: SessionConfig {
             keys: invulnerables
-                .into_iter()
+                .iter()
+                .cloned()
                 .map(|(acc, aura)| {
                     (
                         acc.clone(),                    // account id
@@ -1499,6 +1524,13 @@ fn baikal_testnet_genesis(
 		polkadot_xcm: datahighway_parachain_runtime::PolkadotXcmConfig {
 			safe_xcm_version: Some(SAFE_XCM_VERSION),
 		},
+        staking: datahighway_parachain_runtime::StakingConfig {
+            minimum_validator_count: 1,
+            validator_count: invulnerables.len() as u32,
+            slash_reward_fraction: Perbill::from_percent(10),
+            invulnerables: invulnerables.iter().map(|x| x.0.clone()).collect(),
+            ..Default::default()
+        },
     }
 }
 
@@ -1540,7 +1572,8 @@ fn tanganika_testnet_genesis(
         },
         session: SessionConfig {
             keys: invulnerables
-                .into_iter()
+                .iter()
+                .cloned()
                 .map(|(acc, aura)| {
                     (
                         acc.clone(),                    // account id
@@ -1578,5 +1611,12 @@ fn tanganika_testnet_genesis(
 		polkadot_xcm: datahighway_parachain_runtime::PolkadotXcmConfig {
 			safe_xcm_version: Some(SAFE_XCM_VERSION),
 		},
+        staking: datahighway_parachain_runtime::StakingConfig {
+            minimum_validator_count: 2,
+            validator_count: invulnerables.len() as u32,
+            slash_reward_fraction: Perbill::from_percent(10),
+            invulnerables: invulnerables.iter().map(|x| x.0.clone()).collect(),
+            ..Default::default()
+        },
     }
 }

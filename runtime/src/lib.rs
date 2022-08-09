@@ -1297,13 +1297,13 @@ construct_runtime!(
         // Collator support. The order of these 4 are important and shall not change.
         // Authorship must be before session in order to note author in the correct session and era
         // for im-online and staking.
-        Staking: pallet_staking::{Pallet, Call, Config<T>, Storage, Event<T>} = 19,
         Authorship: pallet_authorship::{Pallet, Call, Storage} = 20,
-        CollatorSelection: pallet_collator_selection::{Pallet, Call, Storage, Event<T>, Config<T>} = 21,
-        Session: pallet_session::{Pallet, Call, Storage, Event, Config<T>} = 22,
-        Democracy: pallet_democracy = 23,
-        Aura: pallet_aura::{Pallet, Storage, Config<T>} = 24,
-        AuraExt: cumulus_pallet_aura_ext::{Pallet, Storage, Config} = 25,
+        Staking: pallet_staking::{Pallet, Call, Config<T>, Storage, Event<T>} = 21,
+        CollatorSelection: pallet_collator_selection::{Pallet, Call, Storage, Event<T>, Config<T>} = 22,
+        Session: pallet_session::{Pallet, Call, Storage, Event, Config<T>} = 23,
+        Democracy: pallet_democracy = 24,
+        Aura: pallet_aura::{Pallet, Storage, Config<T>} = 25,
+        AuraExt: cumulus_pallet_aura_ext::{Pallet, Storage, Config} = 26,
 
         // XCM helpers.
         XcmpQueue: cumulus_pallet_xcmp_queue::{Pallet, Call, Storage, Event<T>} = 30,

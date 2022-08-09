@@ -32,3 +32,16 @@ pub type Moment = u64;
 pub type Balance = u128;
 /// Only when Balance type is u128
 pub type CurrencyToVote = frame_support::traits::U128CurrencyToVote;
+
+pub mod utility {
+    use sp_runtime::traits::Convert;
+
+    pub struct TryIntoAsOption;
+    impl<S, T> Convert<T, Option<S>> for TryIntoAsOption
+    where
+        S: TryFrom<T> {
+            fn convert(a: T) -> Option<S> {
+                a.try_into().ok()
+            }
+    }
+}

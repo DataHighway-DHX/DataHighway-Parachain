@@ -348,7 +348,7 @@ impl pallet_authorship::Config for Runtime {
     type FindAuthor = pallet_session::FindAccountFromAuthorIndex<Self, Aura>;
     type UncleGenerations = UncleGenerations;
     type FilterUncle = ();
-    type EventHandler = (CollatorSelection,);
+    type EventHandler = (Staking,);
 }
 
 pub const MAX_LOCKS_AS_CONST: u32 = 50;
@@ -808,10 +808,14 @@ impl pallet_session::Config for Runtime {
     type Event = Event;
     type ValidatorId = <Self as frame_system::Config>::AccountId;
     // we don't have stash and controller, thus we don't need the convert as well.
-    type ValidatorIdOf = pallet_collator_selection::IdentityCollator;
+    // EDIT:
+    // Now we have moved from pallet_collator_selection to pallet_staking
+    // it might be better to have a stash rather than identity
+    // if so use: pallet_staking::StashOf<>
+    type ValidatorIdOf = module_primitives::types::utility::TryIntoAsOption;
     type ShouldEndSession = pallet_session::PeriodicSessions<Period, Offset>;
     type NextSessionRotation = pallet_session::PeriodicSessions<Period, Offset>;
-    type SessionManager = CollatorSelection;
+    type SessionManager = pallet_session::historical::NoteHistoricalRoot<Self, Staking>;
     // Essentially just Aura, but lets be pedantic.
     type SessionHandler = <SessionKeys as sp_runtime::traits::OpaqueKeys>::KeyTypeIdProviders;
     type Keys = SessionKeys;

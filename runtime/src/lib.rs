@@ -79,6 +79,8 @@ use xcm::latest::prelude::BodyId;
 use xcm_executor::XcmExecutor;
 
 pub use module_primitives::{
+    constants,
+    constants::staking as staking_constants,
     constants::currency::{
         CENTS,
         deposit,
@@ -325,7 +327,7 @@ impl frame_system::Config for Runtime {
     type MaxConsumers = ConstU32<MAX_CONSUMERS_AS_CONST>;
 }
 
-pub const MAX_AUTHORITIES_AS_CONST: u32 = 100;
+pub const MAX_AUTHORITIES_AS_CONST: u32 = constants::aura::MAX_AUTHORITIES;
 
 parameter_types! {
     pub const MinimumPeriod: u64 = SLOT_DURATION / 2;
@@ -346,7 +348,7 @@ impl pallet_authorship::Config for Runtime {
     type FindAuthor = pallet_session::FindAccountFromAuthorIndex<Self, Aura>;
     type UncleGenerations = UncleGenerations;
     type FilterUncle = ();
-    type EventHandler = (CollatorSelection,);
+    type EventHandler = ParachainStaking;
 }
 
 pub const MAX_LOCKS_AS_CONST: u32 = 50;
@@ -627,10 +629,10 @@ impl pallet_session::Config for Runtime {
     type Event = Event;
     type ValidatorId = <Self as frame_system::Config>::AccountId;
     // we don't have stash and controller, thus we don't need the convert as well.
-    type ValidatorIdOf = pallet_collator_selection::IdentityCollator;
-    type ShouldEndSession = pallet_session::PeriodicSessions<Period, Offset>;
-    type NextSessionRotation = pallet_session::PeriodicSessions<Period, Offset>;
-    type SessionManager = CollatorSelection;
+    type ValidatorIdOf = ConvertInto;
+    type ShouldEndSession = ParachainStaking;
+    type NextSessionRotation = ParachainStaking;
+    type SessionManager = ParachainStaking;
     // Essentially just Aura, but lets be pedantic.
     type SessionHandler = <SessionKeys as sp_runtime::traits::OpaqueKeys>::KeyTypeIdProviders;
     type Keys = SessionKeys;
@@ -1064,23 +1066,32 @@ parameter_types! {
     pub const ExecutiveBody: BodyId = BodyId::Executive;
 }
 
-// We allow root only to execute privileged collator selection operations.
-pub type CollatorSelectionUpdateOrigin = EnsureRoot<AccountId>;
+impl parachain_staking::Config for Runtime {
+	type Event = Event;
+	type Currency = Balances;
+	type CurrencyBalance = Balance;
 
-impl pallet_collator_selection::Config for Runtime {
-    type Event = Event;
-    type Currency = Balances;
-    type UpdateOrigin = CollatorSelectionUpdateOrigin;
-    type PotId = PotId;
-    type MaxCandidates = MaxCandidates;
-    type MinCandidates = MinCandidates;
-    type MaxInvulnerables = MaxInvulnerables;
-    // should be a multiple of session or things will get inconsistent
-    type KickThreshold = Period;
-    type ValidatorId = <Self as frame_system::Config>::AccountId;
-    type ValidatorIdOf = pallet_collator_selection::IdentityCollator;
-    type ValidatorRegistration = Session;
-    type WeightInfo = ();
+	type MinBlocksPerRound = staking_constants::MinBlocksPerRound;
+	type DefaultBlocksPerRound = staking_constants::DefaultBlocksPerRound;
+	type StakeDuration = staking_constants::StakeDuration;
+	type ExitQueueDelay = staking_constants::ExitQueueDelay;
+	type MinCollators = staking_constants::MinCollators;
+	type MinRequiredCollators = staking_constants::MinRequiredCollators;
+	type MaxDelegationsPerRound = staking_constants::MaxDelegationsPerRound;
+	type MaxDelegatorsPerCollator = staking_constants::MaxDelegatorsPerCollator;
+	type MaxCollatorsPerDelegator = staking_constants::MaxCollatorsPerDelegator;
+	type MinCollatorStake = staking_constants::MinCollatorStake;
+	type MinCollatorCandidateStake = staking_constants::MinCollatorStake;
+	type MaxTopCandidates = staking_constants::MaxCollatorCandidates;
+	type MinDelegation = staking_constants::MinDelegatorStake;
+	type MinDelegatorStake = staking_constants::MinDelegatorStake;
+	type MaxUnstakeRequests = staking_constants::MaxUnstakeRequests;
+	type NetworkRewardRate = staking_constants::NetworkRewardRate;
+	type NetworkRewardStart = staking_constants::NetworkRewardStart;
+
+    type NetworkRewardBeneficiary = Treasury;
+	const BLOCKS_PER_YEAR: BlockNumber = 365 * DAYS;
+	type WeightInfo = parachain_staking::default_weights::SubstrateWeight<Runtime>;
 }
 
 // Create the runtime by composing the FRAME pallets that were previously configured.
@@ -1113,7 +1124,7 @@ construct_runtime!(
         // Authorship must be before session in order to note author in the correct session and era
         // for im-online and staking.
         Authorship: pallet_authorship::{Pallet, Call, Storage} = 20,
-        CollatorSelection: pallet_collator_selection::{Pallet, Call, Storage, Event<T>, Config<T>} = 21,
+        ParachainStaking: parachain_staking::{Pallet, Call, Storage, Event<T>, Config<T>} = 21,
         Session: pallet_session::{Pallet, Call, Storage, Event, Config<T>} = 22,
         Democracy: pallet_democracy = 23,
         Aura: pallet_aura::{Pallet, Storage, Config<T>} = 24,

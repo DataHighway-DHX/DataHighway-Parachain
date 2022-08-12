@@ -26,6 +26,7 @@ static_assertions = '1.1.0'
 
 # Local
 module-primitives = { default-features = false, path = '../pallets/primitives' }
+parachain-staking = { path = "../pallets/parachain-staking", default_features = false }
 
 # Substrate
 frame-benchmarking = { git = 'https://github.com/paritytech/substrate', branch = 'polkadot-v0.9.24', default-features = false, optional = true }
@@ -155,6 +156,7 @@ std = [
     'pallet-utility/std',
     'pallet-xcm/std',
     'parachain-info/std',
+    'parachain-staking/std',
     'polkadot-parachain/std',
     'polkadot-runtime-common/std',
     'sp-api/std',
@@ -201,6 +203,7 @@ runtime-benchmarks = [
     'pallet-treasury/runtime-benchmarks',
     'pallet-utility/runtime-benchmarks',
     'pallet-xcm/runtime-benchmarks',
+    'parachain-staking/runtime-benchmarks',
     'polkadot-runtime-common/runtime-benchmarks',
     'sp-runtime/runtime-benchmarks',
     'xcm-builder/runtime-benchmarks',
@@ -232,4 +235,5 @@ try-runtime = [
     'pallet-tips/try-runtime',
     'pallet-treasury/try-runtime',
     'pallet-utility/try-runtime',
+    'parachain-staking/try-runtime',
 ]

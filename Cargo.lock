@@ -2063,6 +2063,7 @@ dependencies = [
  "pallet-utility",
  "pallet-xcm",
  "parachain-info",
+ "parachain-staking",
  "parity-scale-codec",
  "polkadot-parachain",
  "polkadot-runtime-common",
@@ -6197,6 +6198,30 @@ dependencies = [
  "parity-scale-codec",
  "scale-info",
  "serde",
+]
+
+[[package]]
+name = "parachain-staking"
+version = "1.7.1"
+dependencies = [
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "log",
+ "pallet-aura",
+ "pallet-authorship",
+ "pallet-balances",
+ "pallet-session",
+ "pallet-timestamp",
+ "parity-scale-codec",
+ "scale-info",
+ "serde",
+ "sp-consensus-aura",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-staking",
+ "sp-std",
 ]
 
 [[package]]

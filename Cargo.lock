@@ -4764,6 +4764,7 @@ dependencies = [
  "frame-benchmarking",
  "frame-support",
  "frame-system",
+ "parachain-staking",
  "parity-scale-codec",
  "scale-info",
  "serde",

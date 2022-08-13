@@ -47,6 +47,7 @@ pub mod time {
     pub const MINUTES: BlockNumber = 60_000 / (MILLISECS_PER_BLOCK as BlockNumber);
     pub const HOURS: BlockNumber = MINUTES * 60;
     pub const DAYS: BlockNumber = HOURS * 24;
+    pub const YEAR: BlockNumber = DAYS * 365;
 
     // 1 in 4 blocks (on average, not counting collisions) will be primary BABE blocks.
     pub const PRIMARY_PROBABILITY: (u64, u64) = (1, 4);
@@ -64,17 +65,17 @@ pub mod staking {
 
 	parameter_types! {
 		/// Minimum round length is 1 hour
-		pub const MinBlocksPerRound: BlockNumber = 1 * time::HOURS;
+		pub const MinBlocksPerRound: BlockNumber = 1 * time::MINUTES;
 		/// Default length of a round/session is 2 hours
-		pub const DefaultBlocksPerRound: BlockNumber = 2 * time::HOURS;
+		pub const DefaultBlocksPerRound: BlockNumber = 1 * time::MINUTES;
 		/// Unstaked balance can be unlocked after 7 days
-		pub const StakeDuration: BlockNumber = 7 * time::DAYS;
+		pub const StakeDuration: BlockNumber = 1 * time::MINUTES;
 		/// Collator exit requests are delayed by 4 hours (2 rounds/sessions)
 		pub const ExitQueueDelay: u32 = 2;
 		/// Minimum 5 collators selected per round, default at genesis and minimum forever after
-		pub const MinCollators: u32 = 5;
+		pub const MinCollators: u32 = 1;
 		/// At least 4 candidates which cannot leave the network if there are no other candidates.
-		pub const MinRequiredCollators: u32 = 2;
+		pub const MinRequiredCollators: u32 = 1;
 		/// We only allow one delegation per round.
 		pub const MaxDelegationsPerRound: u32 = 1;
 		/// Maximum 35 delegators per collator at launch, might be increased later
@@ -84,18 +85,32 @@ pub mod staking {
 		#[derive(Debug, Eq, PartialEq)]
 		pub const MaxCollatorsPerDelegator: u32 = 1;
 		/// Minimum stake required to be reserved to be a collator is 10_000
-		pub const MinCollatorStake: Balance = 10_000 * currency::DOLLARS;
+		pub const MinCollatorStake: Balance = 5 * currency::DOLLARS;
 		/// Minimum stake required to be reserved to be a delegator is 100
-		pub const MinDelegatorStake: Balance = 100;
+		pub const MinDelegatorStake: Balance = 5 * currency::DOLLARS;
 		/// Maximum number of collator candidates
 		#[derive(Debug, Eq, PartialEq)]
 		pub const MaxCollatorCandidates: u32 = aura::MAX_AUTHORITIES;
 		/// Maximum number of concurrent requests to unlock unstaked balance
 		pub const MaxUnstakeRequests: u32 = 10;
 		/// The starting block number for the network rewards
-		pub const NetworkRewardStart: BlockNumber = 300_000; // somewhere is august 2022
+		pub const NetworkRewardStart: BlockNumber = 1; // somewhere is august 2022
 		/// The rate in percent for the network rewards
-		pub const NetworkRewardRate: Perquintill = Perquintill::from_percent(20);
+		pub const NetworkRewardRate: Perquintill = Perquintill::from_percent(50);
 	}
+
+    pub fn dhx_inflation() -> parachain_staking::InflationInfo {
+        parachain_staking::InflationInfo::new(
+            time::YEAR as u64,
+            // max collator staking rate
+            Perquintill::from_percent(40),
+            // collator reward rate
+            Perquintill::from_percent(20),
+            // max delegator staking rate
+            Perquintill::from_percent(10),
+            // delegator reward rate
+            Perquintill::from_percent(20),
+        )
+    }
 }
 

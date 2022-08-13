@@ -17,7 +17,7 @@ use datahighway_parachain_runtime::{
     TechnicalCommitteeConfig,
     TechnicalMembershipConfig,
     TransactionPaymentConfig,
-    TreasuryConfig,
+    TreasuryConfig, ParachainStakingConfig, Perquintill, RewardRate,
 };
 use module_primitives::{
     constants::currency::{
@@ -1321,7 +1321,11 @@ fn testnet_genesis(
 		polkadot_xcm: datahighway_parachain_runtime::PolkadotXcmConfig {
 			safe_xcm_version: Some(SAFE_XCM_VERSION),
 		},
-        parachain_staking: Default::default()
+        parachain_staking: ParachainStakingConfig {
+            stakers: [].into(),
+            max_candidate_stake: 100_000_000_000_000_000_000_u128,
+            inflation_config: datahighway_parachain_runtime::constants::staking::dhx_inflation(),
+        },
     }
 }
 
@@ -1396,7 +1400,7 @@ fn dev_genesis(
 		polkadot_xcm: datahighway_parachain_runtime::PolkadotXcmConfig {
 			safe_xcm_version: Some(SAFE_XCM_VERSION),
 		},
-        parachain_staking: Default::default()
+        parachain_staking: todo!()
     }
 }
 

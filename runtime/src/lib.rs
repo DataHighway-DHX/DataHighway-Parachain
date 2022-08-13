@@ -51,6 +51,7 @@ use frame_system::{
     limits::{BlockLength, BlockWeights},
     EnsureRoot,
 };
+pub use parachain_staking::{InflationInfo, StakingInfo, RewardRate};
 use pallet_session::historical as pallet_session_historical;
 pub use pallet_transaction_payment::{
     CurrencyAdapter,

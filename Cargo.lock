@@ -1934,7 +1934,7 @@ dependencies = [
 
 [[package]]
 name = "datahighway-collator"
-version = "3.6.1"
+version = "3.7.0"
 dependencies = [
  "clap",
  "cumulus-client-cli",
@@ -2008,7 +2008,7 @@ dependencies = [
 
 [[package]]
 name = "datahighway-parachain-runtime"
-version = "3.6.1"
+version = "3.7.0"
 dependencies = [
  "chrono",
  "cumulus-pallet-aura-ext",

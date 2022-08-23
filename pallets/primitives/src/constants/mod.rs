@@ -99,6 +99,8 @@ pub mod staking {
 		pub const NetworkRewardRate: Perquintill = Perquintill::from_percent(50);
 	}
 
+    pub const MAX_CANDIDATE_STAKE: Balance = 100 * currency::DOLLARS;
+
     pub fn dhx_inflation() -> parachain_staking::InflationInfo {
         parachain_staking::InflationInfo::new(
             time::YEAR as u64,

@@ -1323,7 +1323,7 @@ fn testnet_genesis(
 		},
         parachain_staking: ParachainStakingConfig {
             stakers: [].into(),
-            max_candidate_stake: 100_000_000_000_000_000_000_u128,
+            max_candidate_stake: datahighway_parachain_runtime::constants::staking::MAX_CANDIDATE_STAKE,
             inflation_config: datahighway_parachain_runtime::constants::staking::dhx_inflation(),
         },
     }

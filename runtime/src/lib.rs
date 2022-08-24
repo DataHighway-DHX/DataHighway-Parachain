@@ -619,13 +619,6 @@ where
     type OverarchingCall = Call;
 }
 
-parameter_types! {
-    // matches Kusama
-    pub const Period: BlockNumber = 10 * MINUTES;
-    pub const Offset: BlockNumber = 0;
-    pub const MaxAuthorities: u32 = MAX_AUTHORITIES_AS_CONST;
-}
-
 impl pallet_session::Config for Runtime {
     type Event = Event;
     type ValidatorId = <Self as frame_system::Config>::AccountId;
@@ -1058,15 +1051,6 @@ impl cumulus_pallet_dmp_queue::Config for Runtime {
     type ExecuteOverweightOrigin = EnsureRoot<AccountId>;
 }
 
-parameter_types! {
-    pub const PotId: PalletId = PalletId(*b"PotStake");
-    pub const MaxCandidates: u32 = 1000;
-    pub const MinCandidates: u32 = 5;
-    pub const SessionLength: BlockNumber = 6 * HOURS;
-    pub const MaxInvulnerables: u32 = 100;
-    pub const ExecutiveBody: BodyId = BodyId::Executive;
-}
-
 impl parachain_staking::Config for Runtime {
 	type Event = Event;
 	type Currency = Balances;
@@ -1125,8 +1109,8 @@ construct_runtime!(
         // Authorship must be before session in order to note author in the correct session and era
         // for im-online and staking.
         Authorship: pallet_authorship::{Pallet, Call, Storage} = 20,
-        ParachainStaking: parachain_staking::{Pallet, Call, Storage, Event<T>, Config<T>} = 21,
-        Session: pallet_session::{Pallet, Call, Storage, Event, Config<T>} = 22,
+        Session: pallet_session::{Pallet, Call, Storage, Event, Config<T>} = 21,
+        ParachainStaking: parachain_staking::{Pallet, Call, Storage, Event<T>, Config<T>} = 22,
         Democracy: pallet_democracy = 23,
         Aura: pallet_aura::{Pallet, Storage, Config<T>} = 24,
         AuraExt: cumulus_pallet_aura_ext::{Pallet, Storage, Config} = 25,

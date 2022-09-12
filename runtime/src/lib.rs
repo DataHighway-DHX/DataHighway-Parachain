@@ -1051,6 +1051,14 @@ impl cumulus_pallet_dmp_queue::Config for Runtime {
     type ExecuteOverweightOrigin = EnsureRoot<AccountId>;
 }
 
+impl pallet_inflation::Config for Runtime {
+	type Currency = Balances;
+	type InitialPeriodLength = constants::treasury::InitialPeriodLength;
+	type InitialPeriodReward = constants::treasury::InitialPeriodReward;
+	type Beneficiary = Treasury;
+	type WeightInfo = pallet_inflation::default_weights::SubstrateWeight<Runtime>;
+}
+
 impl parachain_staking::Config for Runtime {
 	type Event = Event;
 	type Currency = Balances;
@@ -1121,6 +1129,7 @@ construct_runtime!(
         CumulusXcm: cumulus_pallet_xcm::{Pallet, Event<T>, Origin} = 32,
         DmpQueue: cumulus_pallet_dmp_queue::{Pallet, Call, Storage, Event<T>} = 33,
 
+        Inflation: pallet_inflation,
         Council: pallet_collective::<Instance1>,
         TechnicalCommittee: pallet_collective::<Instance2>,
         Elections: pallet_elections_phragmen,

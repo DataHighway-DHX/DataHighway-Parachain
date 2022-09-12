@@ -2045,6 +2045,7 @@ dependencies = [
  "pallet-elections-phragmen",
  "pallet-identity",
  "pallet-indices",
+ "pallet-inflation",
  "pallet-membership",
  "pallet-multisig",
  "pallet-preimage",
@@ -5667,6 +5668,23 @@ dependencies = [
  "sp-core",
  "sp-io",
  "sp-keyring",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
+name = "pallet-inflation"
+version = "1.7.2"
+dependencies = [
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "pallet-balances",
+ "parity-scale-codec",
+ "scale-info",
+ "serde",
+ "sp-core",
+ "sp-io",
  "sp-runtime",
  "sp-std",
 ]

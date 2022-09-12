@@ -7,4 +7,5 @@ members = [
     'runtime',
     'pallets/primitives',
     'pallets/parachain-staking',
+    'pallets/pallet-inflation',
 ]

@@ -60,6 +60,20 @@ pub mod time {
     };
 }
 
+pub mod treasury {
+	use super::*;
+
+    // Inflate for first five years
+	const INITIAL_PERIOD_LENGTH: BlockNumber = time::YEAR.saturating_mul(5);
+    // We give 2000 DHX to treasury per day
+    const INITIAL_PERIOD_REWARD_PER_BLOCK: Balance = (2000 * currency::DOLLARS) / time::DAYS as crate::types::Balance;
+
+	parameter_types! {
+		pub const InitialPeriodLength: BlockNumber = INITIAL_PERIOD_LENGTH;
+		pub const InitialPeriodReward: Balance = INITIAL_PERIOD_REWARD_PER_BLOCK;
+	}
+}
+
 pub mod staking {
 	use super::*;
 

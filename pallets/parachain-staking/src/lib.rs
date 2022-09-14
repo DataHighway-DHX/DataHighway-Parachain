@@ -2805,28 +2805,26 @@ pub mod pallet {
 	{
         fn note_author(author: T::AccountId) {
             use sp_runtime::traits::CheckedDiv;
-
             let mut reads = Weight::one();
             let mut writes = Weight::zero();
 
             if let Some(state) = CandidatePool::<T>::get(author.clone()) {
-                let reward_pool = <RewardPerBlock<T>>::get();
-                let collator_reward_ratio = reward_pool.checked_div(&state.total).unwrap_or_default();
+                let reward_per_block = Self::reward_per_block();
 
-                let collator_only_stake = state.stake;
-                let collator_due_amount = collator_reward_ratio.saturating_mul(collator_only_stake);
+                let collator_reward_ratio = reward_per_block.checked_div(&state.total).unwrap_or_default();
+                let collator_due_amount = collator_reward_ratio.saturating_mul(state.stake);
                 Self::do_reward(&author, collator_due_amount);
-                writes = writes.saturating_add(Weight::one());
+                writes += Weight::one();
 
                 for Stake { owner, amount } in state.delegators {
                     if amount >= T::MinDelegatorStake::get() {
                         let due = collator_reward_ratio.saturating_mul(amount);
                         Self::do_reward(&owner, due);
                     }
-                    writes = writes.saturating_add(Weight::one());
+                    writes += Weight::one();
                 }
 
-                reads = reads.saturating_add(3);
+                reads += Weight::one();
             }
 
             frame_system::Pallet::<T>::register_extra_weight_unchecked(

@@ -1312,6 +1312,69 @@ fn collators_bond() {
 }
 
 #[test]
+fn author_notarization() {
+    ExtBuilder::default()
+        .with_balances(vec![
+                       (1, 50),
+                       (2, 50),
+                       (3, 50),
+                       (4, 50),
+                       (5, 50)
+        ])
+        .with_collators(vec![(1, 10), (2, 20)])
+        .with_delegators(vec![
+                         (3, 1, 10),
+                         (4, 1, 10),
+                         (5, 2, 30),
+        ])
+        .build()
+        .execute_with(|| {
+            let collator_one_state = StakePallet::candidate_pool(&1).expect("`1` have not joined the collators");
+            let collator_two_state = StakePallet::candidate_pool(&2).expect("`2` have not joined the collators");
+
+            roll_to(1, vec![]);
+
+            assert_eq!(collator_one_state.total, 30);
+            assert_eq!(collator_one_state.stake, 10);
+            assert_eq!(collator_two_state.total, 50);
+            assert_eq!(collator_two_state.stake, 20);
+
+            let mut collator_one = Balances::usable_balance(&1);
+            let mut collator_two = Balances::usable_balance(&2);
+            let mut delegator_three = Balances::usable_balance(&3);
+            let mut delegator_four = Balances::usable_balance(&4);
+            let mut delegator_five = Balances::usable_balance(&5);
+
+            <crate::RewardPerBlock<Test>>::put(300);
+            roll_to(2, vec![None, Some(1)]);
+
+            assert_eq!(Balances::usable_balance(&1), collator_one + 100);
+            assert_eq!(Balances::usable_balance(&2), collator_two);
+            assert_eq!(Balances::usable_balance(&3), delegator_three + 100);
+            assert_eq!(Balances::usable_balance(&4), delegator_four + 100);
+            assert_eq!(Balances::usable_balance(&5), delegator_five);
+
+            collator_one = Balances::usable_balance(&1);
+            collator_two = Balances::usable_balance(&2);
+            delegator_three = Balances::usable_balance(&3);
+            delegator_four = Balances::usable_balance(&4);
+            delegator_five = Balances::usable_balance(&5);
+
+            <crate::RewardPerBlock<Test>>::put(600);
+            roll_to(3, vec![None, None, Some(2)]);
+
+            assert_eq!(Balances::usable_balance(&1), collator_one);
+            assert_eq!(Balances::usable_balance(&2), collator_two + 240);
+            assert_eq!(Balances::usable_balance(&3), delegator_three);
+            assert_eq!(Balances::usable_balance(&4), delegator_four);
+            assert_eq!(Balances::usable_balance(&5), delegator_five + 360);
+
+        });
+}
+
+
+
+#[test]
 fn delegators_bond() {
 	ExtBuilder::default()
 		.with_balances(vec![

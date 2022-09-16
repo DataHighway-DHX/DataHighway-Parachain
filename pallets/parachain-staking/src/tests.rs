@@ -1345,13 +1345,13 @@ fn author_notarization() {
             let mut delegator_four = Balances::usable_balance(&4);
             let mut delegator_five = Balances::usable_balance(&5);
 
-            <crate::RewardPerBlock<Test>>::put(300);
+            <crate::RewardPerBlock<Test>>::put(20);
             roll_to(2, vec![None, Some(1)]);
 
-            assert_eq!(Balances::usable_balance(&1), collator_one + 100);
+            assert_eq!(Balances::usable_balance(&1), collator_one + 7);
             assert_eq!(Balances::usable_balance(&2), collator_two);
-            assert_eq!(Balances::usable_balance(&3), delegator_three + 100);
-            assert_eq!(Balances::usable_balance(&4), delegator_four + 100);
+            assert_eq!(Balances::usable_balance(&3), delegator_three + 7);
+            assert_eq!(Balances::usable_balance(&4), delegator_four + 7);
             assert_eq!(Balances::usable_balance(&5), delegator_five);
 
             collator_one = Balances::usable_balance(&1);
@@ -1360,14 +1360,14 @@ fn author_notarization() {
             delegator_four = Balances::usable_balance(&4);
             delegator_five = Balances::usable_balance(&5);
 
-            <crate::RewardPerBlock<Test>>::put(600);
+            <crate::RewardPerBlock<Test>>::put(40);
             roll_to(3, vec![None, None, Some(2)]);
 
             assert_eq!(Balances::usable_balance(&1), collator_one);
-            assert_eq!(Balances::usable_balance(&2), collator_two + 240);
+            assert_eq!(Balances::usable_balance(&2), collator_two + 16);
             assert_eq!(Balances::usable_balance(&3), delegator_three);
             assert_eq!(Balances::usable_balance(&4), delegator_four);
-            assert_eq!(Balances::usable_balance(&5), delegator_five + 360);
+            assert_eq!(Balances::usable_balance(&5), delegator_five + 24);
 
         });
 }
@@ -1641,6 +1641,7 @@ fn round_transitions() {
 
 #[test]
 fn coinbase_rewards_few_blocks_detailed_check() {
+    const DAY: u64 = <Test as Config>::BLOCKS_PER_YEAR / 365;
 	ExtBuilder::default()
 		.with_balances(vec![
 			(1, 40_000_000 * DECIMALS),
@@ -1661,6 +1662,9 @@ fn coinbase_rewards_few_blocks_detailed_check() {
 			let inflation = StakePallet::inflation_config();
 			let total_issuance = <Test as Config>::Currency::total_issuance();
 			assert_eq!(total_issuance, 160_000_000 * DECIMALS);
+
+            let reward_per_block = 500 * DECIMALS / DAY as u128;
+            <crate::RewardPerBlock<Test>>::put(reward_per_block);
 
 			// compute rewards
 			let c_staking_rate = Perquintill::from_rational(16_000_000 * DECIMALS, total_issuance);
@@ -1684,6 +1688,12 @@ fn coinbase_rewards_few_blocks_detailed_check() {
 			let user_4 = Balances::usable_balance(&4);
 			let user_5 = Balances::usable_balance(&5);
 
+            let reward_1 = 9915126512000;
+            let reward_2 = 23135295200000;
+            let reward_3 = 39660506048000;
+            let reward_4 = 19830253024000;
+            let reward_5 = 46270590400000;
+
 			assert_eq!(Balances::usable_balance(&1), user_1);
 			assert_eq!(Balances::usable_balance(&2), user_2);
 			assert_eq!(Balances::usable_balance(&3), user_3);
@@ -1692,45 +1702,50 @@ fn coinbase_rewards_few_blocks_detailed_check() {
 
 			// 1 is block author for 1st block
 			roll_to(2, authors.clone());
-			assert_eq!(Balances::usable_balance(&1), user_1 + c_rewards);
+			assert_eq!(Balances::usable_balance(&1), user_1 + reward_1);
 			assert_eq!(Balances::usable_balance(&2), user_2);
-			assert_eq!(Balances::usable_balance(&3), user_3 + d_rewards / 2);
-			assert_eq!(Balances::usable_balance(&4), user_4 + d_rewards / 4);
+			assert_eq!(Balances::usable_balance(&3), user_3 + reward_3);
+			assert_eq!(Balances::usable_balance(&4), user_4 + reward_4);
 			assert_eq!(Balances::usable_balance(&5), user_5);
 
 			// 1 is block author for 2nd block
 			roll_to(3, authors.clone());
-			assert_eq!(Balances::usable_balance(&1), user_1 + 2 * c_rewards);
+			assert_eq!(Balances::usable_balance(&1), user_1 + reward_1 * 2);
 			assert_eq!(Balances::usable_balance(&2), user_2);
-			assert_eq!(Balances::usable_balance(&3), user_3 + d_rewards);
-			assert_eq!(Balances::usable_balance(&4), user_4 + d_rewards / 2);
+			assert_eq!(Balances::usable_balance(&3), user_3 + reward_3 * 2);
+			assert_eq!(Balances::usable_balance(&4), user_4 + reward_4 * 2);
 			assert_eq!(Balances::usable_balance(&5), user_5);
 
 			// 1 is block author for 3rd block
 			roll_to(4, authors.clone());
-			assert_eq!(Balances::usable_balance(&1), user_1 + 3 * c_rewards);
-			assert_eq!(Balances::usable_balance(&2), user_2);
-			assert_eq!(Balances::usable_balance(&3), user_3 + d_rewards / 2 * 3);
-			assert_eq!(Balances::usable_balance(&4), user_4 + d_rewards / 4 * 3);
+			assert_eq!(Balances::usable_balance(&1), user_1 + reward_1 * 3);
+			assert_eq!(Balances::usable_balance(&2), user_2 );
+			assert_eq!(Balances::usable_balance(&3), user_3 + reward_3 * 3);
+			assert_eq!(Balances::usable_balance(&4), user_4 + reward_4 * 3);
 			assert_eq!(Balances::usable_balance(&5), user_5);
 
 			// 2 is block author for 4th block
 			roll_to(5, authors.clone());
-			assert_eq!(Balances::usable_balance(&1), user_1 + 3 * c_rewards);
-			assert_eq!(Balances::usable_balance(&2), user_2 + c_rewards);
-			assert_eq!(Balances::usable_balance(&3), user_3 + d_rewards / 2 * 3);
-			assert_eq!(Balances::usable_balance(&4), user_4 + d_rewards / 4 * 3);
-			assert_eq!(Balances::usable_balance(&5), user_5 + d_rewards / 4);
+			assert_eq!(Balances::usable_balance(&1), user_1 + reward_1 * 3);
+			assert_eq!(Balances::usable_balance(&2), user_2 + reward_2);
+			assert_eq!(Balances::usable_balance(&3), user_3 + reward_3 * 3);
+			assert_eq!(Balances::usable_balance(&4), user_4 + reward_4 * 3);
+			assert_eq!(Balances::usable_balance(&5), user_5 + reward_5);
 			assert_ok!(StakePallet::revoke_delegation(Origin::signed(5), 2));
+
+            // since it is removed from delegation
+            let new_reward_5 = 0;
+            // since collator is only left
+            let new_reward_2 = 69405885616000; // not exact as reward_per_block. Some precision lost
 
 			// 2 is block author for 5th block
 			roll_to(6, authors);
-			assert_eq!(Balances::usable_balance(&1), user_1 + 3 * c_rewards);
-			assert_eq!(Balances::usable_balance(&2), user_2 + 2 * c_rewards);
-			assert_eq!(Balances::usable_balance(&3), user_3 + d_rewards / 2 * 3);
-			assert_eq!(Balances::usable_balance(&4), user_4 + d_rewards / 4 * 3);
+			assert_eq!(Balances::usable_balance(&1), user_1 + reward_1 * 3);
+			assert_eq!(Balances::usable_balance(&2), user_2 + reward_2 + new_reward_2);
+			assert_eq!(Balances::usable_balance(&3), user_3 + reward_3 * 3);
+			assert_eq!(Balances::usable_balance(&4), user_4 + reward_4 * 3);
 			// should not receive rewards due to revoked delegation
-			assert_eq!(Balances::usable_balance(&5), user_5 + d_rewards / 4);
+			assert_eq!(Balances::usable_balance(&5), user_5 + reward_5 + new_reward_5);
 		});
 }
 
@@ -1744,6 +1759,8 @@ fn delegator_should_not_receive_rewards_after_revoking() {
 		.with_inflation(10, 15, 40, 15, 5)
 		.build()
 		.execute_with(|| {
+            <crate::RewardPerBlock<Test>>::put(3_000_000 * DECIMALS);
+
 			assert_ok!(StakePallet::revoke_delegation(Origin::signed(2), 1));
 			let authors: Vec<Option<AccountId>> = (1u64..100u64).map(|_| Some(1u64)).collect();
 			assert_eq!(Balances::usable_balance(&1), Balance::zero());
@@ -1765,6 +1782,8 @@ fn delegator_should_not_receive_rewards_after_revoking() {
 		.with_inflation(10, 15, 40, 15, 5)
 		.build()
 		.execute_with(|| {
+            <crate::RewardPerBlock<Test>>::put(3_000_000 * DECIMALS);
+
 			assert_ok!(StakePallet::revoke_delegation(Origin::signed(3), 1));
 			let authors: Vec<Option<AccountId>> = (1u64..100u64).map(|_| Some(1u64)).collect();
 			assert_eq!(Balances::usable_balance(&1), Balance::zero());
@@ -1775,108 +1794,6 @@ fn delegator_should_not_receive_rewards_after_revoking() {
 			assert!(Balances::usable_balance(&2) > Balance::zero());
 			assert_ok!(StakePallet::unlock_unstaked(Origin::signed(3), 3));
 			assert_eq!(Balances::usable_balance(&3), 10_000_000 * DECIMALS);
-		});
-}
-#[test]
-fn coinbase_rewards_many_blocks_simple_check() {
-	let num_of_years: Perquintill = Perquintill::from_perthousand(2);
-	ExtBuilder::default()
-		.with_balances(vec![
-			(1, 40_000_000 * DECIMALS),
-			(2, 40_000_000 * DECIMALS),
-			(3, 40_000_000 * DECIMALS),
-			(4, 20_000_000 * DECIMALS),
-			(5, 20_000_000 * DECIMALS),
-		])
-		.with_collators(vec![(1, 8_000_000 * DECIMALS), (2, 8_000_000 * DECIMALS)])
-		.with_delegators(vec![
-			(3, 1, 32_000_000 * DECIMALS),
-			(4, 1, 16_000_000 * DECIMALS),
-			(5, 2, 16_000_000 * DECIMALS),
-		])
-		.with_inflation(10, 15, 40, 15, 5)
-		.build()
-		.execute_with(|| {
-			let inflation = StakePallet::inflation_config();
-			let total_issuance = <Test as Config>::Currency::total_issuance();
-			assert_eq!(total_issuance, 160_000_000 * DECIMALS);
-			let end_block: BlockNumber = num_of_years * Test::BLOCKS_PER_YEAR as BlockNumber;
-			// set round robin authoring
-			let authors: Vec<Option<AccountId>> = (0u64..=end_block).map(|i| Some(i % 2 + 1)).collect();
-			roll_to(end_block, authors);
-
-			let rewards_1 = Balances::free_balance(&1).saturating_sub(40_000_000 * DECIMALS);
-			let rewards_2 = Balances::free_balance(&2).saturating_sub(40_000_000 * DECIMALS);
-			let rewards_3 = Balances::free_balance(&3).saturating_sub(40_000_000 * DECIMALS);
-			let rewards_4 = Balances::free_balance(&4).saturating_sub(20_000_000 * DECIMALS);
-			let rewards_5 = Balances::free_balance(&5).saturating_sub(20_000_000 * DECIMALS);
-			let expected_collator_rewards =
-				num_of_years * inflation.collator.reward_rate.annual * 16_000_000 * DECIMALS;
-			let expected_delegator_rewards =
-				num_of_years * inflation.delegator.reward_rate.annual * 64_000_000 * DECIMALS;
-
-			// 1200000000000000000000
-			// 2399074074058720000
-
-			// collator rewards should be about the same
-			assert!(almost_equal(rewards_1, rewards_2, Perbill::from_perthousand(1)));
-			assert!(
-				almost_equal(
-					rewards_1,
-					num_of_years * inflation.collator.reward_rate.annual * 8_000_000 * DECIMALS,
-					Perbill::from_perthousand(1)
-				),
-				"left {:?}, right {:?}",
-				rewards_1,
-				inflation.collator.reward_rate.annual * 8_000_000 * DECIMALS,
-			);
-
-			// delegator rewards should be about the same
-			assert!(
-				almost_equal(rewards_3, rewards_4 + rewards_5, Perbill::from_perthousand(1)),
-				"left {:?}, right {:?}",
-				rewards_3,
-				rewards_4 + rewards_5
-			);
-			assert!(almost_equal(
-				rewards_3,
-				num_of_years * inflation.delegator.reward_rate.annual * 32_000_000 * DECIMALS,
-				Perbill::from_perthousand(1)
-			));
-
-			// check rewards in total
-			assert!(
-				almost_equal(
-					rewards_1 + rewards_2,
-					expected_collator_rewards,
-					Perbill::from_perthousand(1),
-				),
-				"left {:?}, right {:?}",
-				rewards_1 + rewards_2,
-				expected_collator_rewards,
-			);
-			assert!(
-				almost_equal(
-					rewards_3 + rewards_4 + rewards_5,
-					expected_delegator_rewards,
-					Perbill::from_perthousand(1),
-				),
-				"left {:?}, right {:?}",
-				rewards_3 + rewards_4 + rewards_5,
-				expected_delegator_rewards,
-			);
-
-			// old issuance + rewards should equal new issuance
-			assert!(
-				almost_equal(
-					total_issuance + expected_collator_rewards + expected_delegator_rewards,
-					<Test as Config>::Currency::total_issuance(),
-					Perbill::from_perthousand(1),
-				),
-				"left {:?}, right {:?}",
-				total_issuance + expected_collator_rewards + expected_delegator_rewards,
-				<Test as Config>::Currency::total_issuance(),
-			);
 		});
 }
 
@@ -2868,8 +2785,13 @@ fn adjust_reward_rates() {
 			// 1 authors every block
 			let authors: Vec<Option<AccountId>> = (0u64..=num_of_years).map(|_| Some(1u64)).collect();
 
+            // put some rewards per block
+            <crate::RewardPerBlock<Test>>::put(100 * DECIMALS);
+
 			// reward once in first year
 			roll_to(2, authors.clone());
+            assert_eq!(Balances::free_balance(&1), 10_000_000 * DECIMALS + (20 * DECIMALS));
+            assert_eq!(Balances::free_balance(&2), 90_000_000 * DECIMALS + (80 * DECIMALS));
 			let c_rewards_0 = Balances::free_balance(&1).saturating_sub(10_000_000 * DECIMALS);
 			let d_rewards_0 = Balances::free_balance(&2).saturating_sub(90_000_000 * DECIMALS);
 			assert!(!c_rewards_0.is_zero());
@@ -2894,14 +2816,14 @@ fn adjust_reward_rates() {
 				.saturating_sub(c_rewards_0);
 			let d_rewards_1 = Balances::free_balance(&2)
 				.saturating_sub(90_000_000 * DECIMALS)
-				.saturating_sub(d_rewards_0);
-			assert!(
-				c_rewards_0 > c_rewards_1,
-				"left {:?}, right {:?}",
+                .saturating_sub(d_rewards_0);
+            assert!(
+				c_rewards_0 == c_rewards_1,
+				"Reward rate must be same every year.left {:?}, right {:?}",
 				c_rewards_0,
 				c_rewards_1
 			);
-			assert!(d_rewards_0 > d_rewards_1);
+			assert!(d_rewards_0 == d_rewards_1);
 
 			// finish 2nd year
 			System::set_block_number(2 * <Test as Config>::BLOCKS_PER_YEAR);
@@ -2925,8 +2847,8 @@ fn adjust_reward_rates() {
 				.saturating_sub(90_000_000 * DECIMALS)
 				.saturating_sub(d_rewards_0)
 				.saturating_sub(d_rewards_1);
-			assert!(c_rewards_1 > c_rewards_2);
-			assert!(d_rewards_2.is_zero());
+			assert!(c_rewards_1 == c_rewards_2);
+			assert!(d_rewards_1 == d_rewards_2);
 		});
 }
 
@@ -3473,41 +3395,32 @@ fn authorities_per_round() {
 		.with_collators(vec![(1, stake), (2, stake), (3, stake), (4, stake)])
 		.build()
 		.execute_with(|| {
+            let reward = 50 * DECIMALS;
+            <crate::RewardPerBlock<Test>>::put(reward);
+
 			assert_eq!(StakePallet::selected_candidates().into_inner(), vec![1, 2]);
 			// reward 1 once per round
 			let authors: Vec<Option<AccountId>> = (0u64..=100)
 				.map(|i| if i % 5 == 2 { Some(1u64) } else { None })
 				.collect();
-			let inflation = StakePallet::inflation_config();
 
 			// roll to last block of round 0
 			roll_to(4, authors.clone());
-			let reward_0 = inflation.collator.reward_rate.per_block * stake * 2;
-			assert_eq!(Balances::free_balance(1), stake + reward_0);
+			assert_eq!(Balances::free_balance(1), stake + reward);
 			// increase max selected candidates which will become effective in round 2
 			assert_ok!(StakePallet::set_max_selected_candidates(Origin::root(), 10));
 
 			// roll to last block of round 1
-			// should still multiply with 2 because the Authority set was chosen at start of
-			// round 1
 			roll_to(9, authors.clone());
-			let reward_1 = inflation.collator.reward_rate.per_block * stake * 2;
-			assert_eq!(Balances::free_balance(1), stake + reward_0 + reward_1);
+			assert_eq!(Balances::free_balance(1), stake + reward * 2);
 
 			// roll to last block of round 2
-			// should multiply with 4 because there are only 4 candidates
 			roll_to(14, authors.clone());
-			let reward_2 = inflation.collator.reward_rate.per_block * stake * 4;
-			assert_eq!(Balances::free_balance(1), stake + reward_0 + reward_1 + reward_2);
+			assert_eq!(Balances::free_balance(1), stake + reward * 3);
 
 			// roll to last block of round 3
-			// should multiply with 4 because there are only 4 candidates
 			roll_to(19, authors);
-			let reward_3 = inflation.collator.reward_rate.per_block * stake * 4;
-			assert_eq!(
-				Balances::free_balance(1),
-				stake + reward_0 + reward_1 + reward_2 + reward_3
-			);
+			assert_eq!(Balances::free_balance(1), stake + reward * 4);
 		});
 }
 

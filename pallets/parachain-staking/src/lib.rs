@@ -528,6 +528,9 @@ pub mod pallet {
 		/// \[round number, first block in the current round, old value, new
 		/// value\]
 		BlocksPerRoundSet(SessionIndex, T::BlockNumber, T::BlockNumber, T::BlockNumber),
+        /// Value of reward to be distributed per block had been changed
+        /// \[previous_reward, new_reward\]
+        RewardPerBlockUpdated(BalanceOf<T>, BalanceOf<T>),
 	}
 
 	#[pallet::hooks]
@@ -771,6 +774,17 @@ pub mod pallet {
 
 			Ok(())
 		}
+
+        #[pallet::weight(1000)]
+        pub fn set_rewards_per_block(origin: OriginFor<T>, reward_per_block: BalanceOf<T>) -> DispatchResult {
+            ensure_root(origin)?;
+
+            let old_rate = Self::reward_per_block();
+            <RewardPerBlock<T>>::put(reward_per_block);
+
+            Self::deposit_event(Event::<T>::RewardPerBlockUpdated(old_rate, reward_per_block));
+            Ok(())
+        }
 
 		/// Set the annual inflation rate to derive per-round inflation.
 		///

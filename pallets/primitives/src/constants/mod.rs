@@ -110,7 +110,7 @@ pub mod staking {
 		/// The starting block number for the network rewards
 		pub const NetworkRewardStart: BlockNumber = 1; // somewhere is august 2022
 		/// The rate in percent for the network rewards
-		pub const NetworkRewardRate: Perquintill = Perquintill::from_percent(50);
+		pub const NetworkRewardRate: Balance = (2500 * currency::DOLLARS) / time::DAYS as crate::types::Balance;
 	}
 
     pub const MAX_CANDIDATE_STAKE: Balance = 100 * currency::DOLLARS;

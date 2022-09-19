@@ -649,15 +649,6 @@ pub mod pallet {
 	#[pallet::getter(fn max_candidate_stake)]
 	pub(crate) type MaxCollatorCandidateStake<T: Config> = StorageValue<_, BalanceOf<T>, ValueQuery>;
 
-	/// The year in which the last automatic reduction of the reward rates
-	/// occurred.
-	///
-	/// It starts at zero at genesis and increments by one every BLOCKS_PER_YEAR
-	/// many blocks.
-	#[pallet::storage]
-	#[pallet::getter(fn last_reward_reduction)]
-	pub(crate) type LastRewardReduction<T: Config> = StorageValue<_, T::BlockNumber, ValueQuery>;
-
 	pub type GenesisStaker<T> = Vec<(
 		<T as frame_system::Config>::AccountId,
 		Option<<T as frame_system::Config>::AccountId>,

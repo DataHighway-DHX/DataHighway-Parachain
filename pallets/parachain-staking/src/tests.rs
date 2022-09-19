@@ -1537,7 +1537,6 @@ fn round_transitions() {
 		.with_inflation(col_max, col_rewards, d_max, d_rewards, 5)
 		.build()
 		.execute_with(|| {
-			assert_eq!(inflation, StakePallet::inflation_config());
 			roll_to(5, vec![]);
 			let init = vec![Event::NewRound(5, 1)];
 			assert_eq!(events(), init);
@@ -1550,9 +1549,6 @@ fn round_transitions() {
 				last_event(),
 				MetaEvent::StakePallet(Event::BlocksPerRoundSet(1, 5, 5, 3))
 			);
-
-			// inflation config should be untouched after per_block update
-			assert_eq!(inflation, StakePallet::inflation_config());
 
 			// last round startet at 5 but we are already at 9, so we expect 9 to be the new
 			// round
@@ -1570,7 +1566,6 @@ fn round_transitions() {
 		.with_inflation(col_max, col_rewards, d_max, d_rewards, 5)
 		.build()
 		.execute_with(|| {
-			assert_eq!(inflation, StakePallet::inflation_config());
 			// Default round every 5 blocks, but MinBlocksPerRound is 3 and we set it to min
 			// 3 blocks
 			roll_to(6, vec![]);
@@ -1582,9 +1577,6 @@ fn round_transitions() {
 				last_event(),
 				MetaEvent::StakePallet(Event::BlocksPerRoundSet(1, 5, 5, 3))
 			);
-
-			// inflation config should be untouched after per_block update
-			assert_eq!(inflation, StakePallet::inflation_config());
 
 			// there should not be a new event
 			roll_to(7, vec![]);
@@ -1606,28 +1598,12 @@ fn round_transitions() {
 		.with_inflation(col_max, col_rewards, d_max, d_rewards, 5)
 		.build()
 		.execute_with(|| {
-			// Default round every 5 blocks, but MinBlocksPerRound is 3 and we set it to min
-			// 3 blocks
-			assert_eq!(inflation, StakePallet::inflation_config());
 			roll_to(7, vec![]);
 			// chooses top MaxSelectedCandidates (5), in order
 			let init = vec![Event::NewRound(5, 1)];
 			assert_eq!(events(), init);
 			assert_ok!(StakePallet::set_blocks_per_round(Origin::root(), 3));
 
-			// inflation config should be untouched after per_block update
-			assert_eq!(inflation, StakePallet::inflation_config());
-
-			assert_eq!(
-				StakePallet::inflation_config(),
-				InflationInfo::new(
-					<Test as Config>::BLOCKS_PER_YEAR,
-					Perquintill::from_percent(col_max),
-					Perquintill::from_percent(col_rewards),
-					Perquintill::from_percent(d_max),
-					Perquintill::from_percent(d_rewards)
-				)
-			);
 			assert_eq!(
 				last_event(),
 				MetaEvent::StakePallet(Event::BlocksPerRoundSet(1, 5, 5, 3))
@@ -1659,7 +1635,6 @@ fn coinbase_rewards_few_blocks_detailed_check() {
 		.with_inflation(10, 15, 40, 15, 5)
 		.build()
 		.execute_with(|| {
-			let inflation = StakePallet::inflation_config();
 			let total_issuance = <Test as Config>::Currency::total_issuance();
 			assert_eq!(total_issuance, 160_000_000 * DECIMALS);
 
@@ -1668,15 +1643,7 @@ fn coinbase_rewards_few_blocks_detailed_check() {
 
 			// compute rewards
 			let c_staking_rate = Perquintill::from_rational(16_000_000 * DECIMALS, total_issuance);
-			let c_rewards: BalanceOf<Test> =
-				inflation
-					.collator
-					.compute_reward::<Test>(16_000_000 * DECIMALS, c_staking_rate, 1u128);
-			let d_staking_rate = Perquintill::from_rational(64_000_000 * DECIMALS, total_issuance);
-			let d_rewards: BalanceOf<Test> =
-				inflation
-					.delegator
-					.compute_reward::<Test>(64_000_000 * DECIMALS, d_staking_rate, 2u128);
+            let d_staking_rate = Perquintill::from_rational(64_000_000 * DECIMALS, total_issuance);
 
 			// set 1 to be author for blocks 1-3, then 2 for blocks 4-5
 			let authors: Vec<Option<AccountId>> =
@@ -2161,64 +2128,6 @@ fn set_max_selected_candidates_total_stake() {
 					delegators: 55,
 				}
 			);
-		});
-}
-
-#[test]
-fn update_inflation() {
-	ExtBuilder::default()
-		.with_balances(vec![(1, 10)])
-		.with_collators(vec![(1, 10)])
-		.build()
-		.execute_with(|| {
-			let mut invalid_inflation = InflationInfo {
-				collator: StakingInfo {
-					max_rate: Perquintill::one(),
-					reward_rate: RewardRate {
-						annual: Perquintill::from_percent(99),
-						per_block: Perquintill::from_percent(1),
-					},
-				},
-				delegator: StakingInfo {
-					max_rate: Perquintill::one(),
-					reward_rate: RewardRate {
-						annual: Perquintill::from_percent(99),
-						per_block: Perquintill::from_percent(1),
-					},
-				},
-			};
-			assert!(!invalid_inflation.is_valid(<Test as Config>::BLOCKS_PER_YEAR));
-			invalid_inflation.collator.reward_rate.per_block = Perquintill::zero();
-			assert!(!invalid_inflation.is_valid(<Test as Config>::BLOCKS_PER_YEAR));
-
-			assert_ok!(StakePallet::set_inflation(
-				Origin::root(),
-				Perquintill::from_percent(0),
-				Perquintill::from_percent(100),
-				Perquintill::from_percent(100),
-				Perquintill::from_percent(100),
-			));
-			assert_ok!(StakePallet::set_inflation(
-				Origin::root(),
-				Perquintill::from_percent(100),
-				Perquintill::from_percent(0),
-				Perquintill::from_percent(100),
-				Perquintill::from_percent(100),
-			));
-			assert_ok!(StakePallet::set_inflation(
-				Origin::root(),
-				Perquintill::from_percent(100),
-				Perquintill::from_percent(100),
-				Perquintill::from_percent(0),
-				Perquintill::from_percent(100),
-			));
-			assert_ok!(StakePallet::set_inflation(
-				Origin::root(),
-				Perquintill::from_percent(100),
-				Perquintill::from_percent(100),
-				Perquintill::from_percent(100),
-				Perquintill::from_percent(0),
-			));
 		});
 }
 
@@ -2780,7 +2689,6 @@ fn adjust_reward_rates() {
 		.with_inflation(10, 10, 40, 8, 5)
 		.build()
 		.execute_with(|| {
-			let inflation_0 = StakePallet::inflation_config();
 			let num_of_years = 3 * <Test as Config>::BLOCKS_PER_YEAR;
 			// 1 authors every block
 			let authors: Vec<Option<AccountId>> = (0u64..=num_of_years).map(|_| Some(1u64)).collect();
@@ -2801,14 +2709,6 @@ fn adjust_reward_rates() {
 			System::set_block_number(<Test as Config>::BLOCKS_PER_YEAR);
 			roll_to(<Test as Config>::BLOCKS_PER_YEAR + 1, vec![]);
 			assert_eq!(StakePallet::last_reward_reduction(), 1u64);
-			let inflation_1 = InflationInfo::new(
-				<Test as Config>::BLOCKS_PER_YEAR,
-				inflation_0.collator.max_rate,
-				Perquintill::from_parts(98000000000000000),
-				inflation_0.delegator.max_rate,
-				Perquintill::from_percent(6),
-			);
-			assert_eq!(StakePallet::inflation_config(), inflation_1);
 			// reward once in 2nd year
 			roll_to(<Test as Config>::BLOCKS_PER_YEAR + 2, authors.clone());
 			let c_rewards_1 = Balances::free_balance(&1)
@@ -2829,14 +2729,6 @@ fn adjust_reward_rates() {
 			System::set_block_number(2 * <Test as Config>::BLOCKS_PER_YEAR);
 			roll_to(2 * <Test as Config>::BLOCKS_PER_YEAR + 1, vec![]);
 			assert_eq!(StakePallet::last_reward_reduction(), 2u64);
-			let inflation_2 = InflationInfo::new(
-				<Test as Config>::BLOCKS_PER_YEAR,
-				inflation_0.collator.max_rate,
-				Perquintill::from_parts(96040000000000000),
-				inflation_0.delegator.max_rate,
-				Perquintill::zero(),
-			);
-			assert_eq!(StakePallet::inflation_config(), inflation_2);
 			// reward once in 3rd year
 			roll_to(2 * <Test as Config>::BLOCKS_PER_YEAR + 2, authors);
 			let c_rewards_2 = Balances::free_balance(&1)
@@ -3582,9 +3474,9 @@ fn network_reward_multiple_blocks() {
 				total_issuance + network_reward,
 				<Test as Config>::Currency::total_issuance()
 			);
-			let inflation_config = StakePallet::inflation_config();
-			let col_rewards = inflation_config.collator.reward_rate.per_block * total_collator_stake;
-			assert_eq!(network_reward, <Test as Config>::NetworkRewardRate::get() * col_rewards);
+			//let col_rewards = inflation_config.collator.reward_rate.per_block * total_collator_stake;
+			let col_rewards = {todo!(); 0u128 };
+            assert_eq!(network_reward, <Test as Config>::NetworkRewardRate::get() * col_rewards);
 
 			// should mint exactly the same amount
 			roll_to(network_reward_start + 2, vec![None]);

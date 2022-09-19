@@ -634,11 +634,6 @@ pub mod pallet {
 	pub(crate) type TopCandidates<T: Config> =
 		StorageValue<_, OrderedSet<Stake<T::AccountId, BalanceOf<T>>, T::MaxTopCandidates>, ValueQuery>;
 
-	/// Inflation configuration.
-	#[pallet::storage]
-	#[pallet::getter(fn inflation_config)]
-	pub(crate) type InflationConfig<T: Config> = StorageValue<_, InflationInfo, ValueQuery>;
-
 	/// The funds waiting to be unstaked.
 	///
 	/// It maps from accounts to all the funds addressed to them in the future
@@ -716,7 +711,6 @@ pub mod pallet {
 
             // TODO: get this from genesis config
             <RewardPerBlock<T>>::put(BalanceOf::<T>::from(500u32));
-			<InflationConfig<T>>::put(self.inflation_config.clone());
 			MaxCollatorCandidateStake::<T>::put(self.max_candidate_stake);
 
 			// Setup delegate & collators
@@ -785,55 +779,6 @@ pub mod pallet {
             Self::deposit_event(Event::<T>::RewardPerBlockUpdated(old_rate, reward_per_block));
             Ok(())
         }
-
-		/// Set the annual inflation rate to derive per-round inflation.
-		///
-		/// The inflation details are considered valid if the annual reward rate
-		/// is approximately the per-block reward rate multiplied by the
-		/// estimated* total number of blocks per year.
-		///
-		/// The estimated average block time is twelve seconds.
-		///
-		/// The dispatch origin must be Root.
-		///
-		/// Emits `RoundInflationSet`.
-		///
-		/// # <weight>
-		/// Weight: O(1)
-		/// - Reads: [Origin Account]
-		/// - Writes: InflationConfig
-		/// # </weight>
-		#[pallet::weight(<T as pallet::Config>::WeightInfo::set_inflation())]
-		pub fn set_inflation(
-			origin: OriginFor<T>,
-			collator_max_rate_percentage: Perquintill,
-			collator_annual_reward_rate_percentage: Perquintill,
-			delegator_max_rate_percentage: Perquintill,
-			delegator_annual_reward_rate_percentage: Perquintill,
-		) -> DispatchResult {
-			ensure_root(origin)?;
-
-			let inflation = InflationInfo::new(
-				T::BLOCKS_PER_YEAR.saturated_into(),
-				collator_max_rate_percentage,
-				collator_annual_reward_rate_percentage,
-				delegator_max_rate_percentage,
-				delegator_annual_reward_rate_percentage,
-			);
-
-			ensure!(
-				inflation.is_valid(T::BLOCKS_PER_YEAR.saturated_into()),
-				Error::<T>::InvalidSchedule
-			);
-			Self::deposit_event(Event::RoundInflationSet(
-				inflation.collator.max_rate,
-				inflation.collator.reward_rate.per_block,
-				inflation.delegator.max_rate,
-				inflation.delegator.reward_rate.per_block,
-			));
-			<InflationConfig<T>>::put(inflation);
-			Ok(())
-		}
 
 		/// Set the maximum number of collator candidates that can be selected
 		/// at the beginning of each validation round.
@@ -2711,36 +2656,7 @@ pub mod pallet {
 		/// - Writes: LastRewardReduction, InflationConfig
 		/// # </weight>
 		fn adjust_reward_rates(now: T::BlockNumber) -> Weight {
-			let year = now / T::BLOCKS_PER_YEAR;
-			let last_update = <LastRewardReduction<T>>::get();
-			if year > last_update {
-				let inflation = <InflationConfig<T>>::get();
-				// collator reward rate decreases by 2% of the previous one per year
-				let c_reward_rate = inflation.collator.reward_rate.annual * Perquintill::from_percent(98);
-				// delegator reward rate should be 6% in 2nd year and 0% afterwards
-				let d_reward_rate = if year == T::BlockNumber::one() {
-					Perquintill::from_percent(6)
-				} else {
-					Perquintill::zero()
-				};
-
-				let new_inflation = InflationInfo::new(
-					T::BLOCKS_PER_YEAR.saturated_into(),
-					inflation.collator.max_rate,
-					c_reward_rate,
-					inflation.delegator.max_rate,
-					d_reward_rate,
-				);
-				<InflationConfig<T>>::put(new_inflation.clone());
-				<LastRewardReduction<T>>::put(year);
-				Self::deposit_event(Event::RoundInflationSet(
-					new_inflation.collator.max_rate,
-					new_inflation.collator.reward_rate.per_block,
-					new_inflation.delegator.max_rate,
-					new_inflation.delegator.reward_rate.per_block,
-				));
-				<T as Config>::WeightInfo::on_initialize_new_year();
-			}
+			panic!("No need to adjust reward rates");
 			T::DbWeight::get().reads(1)
 		}
 
@@ -2791,12 +2707,7 @@ pub mod pallet {
 		///   MaxSelectedCandidates
 		/// # </weight>
 		fn get_network_reward() -> NegativeImbalanceOf<T> {
-			// Multiplication with Perquintill cannot overflow
-			let max_col_rewards = InflationConfig::<T>::get().collator.reward_rate.per_block
-				* MaxCollatorCandidateStake::<T>::get()
-				* MaxSelectedCandidates::<T>::get().into();
-			let network_reward = T::NetworkRewardRate::get() * max_col_rewards;
-
+			let network_reward = T::NetworkRewardRate::get() * BalanceOf::<T>::from(1u32);
 			T::Currency::issue(network_reward)
 		}
 

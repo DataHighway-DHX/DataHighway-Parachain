@@ -37,7 +37,7 @@ use crate::{
 	types::{
 		BalanceOf, Candidate, CandidateStatus, DelegationCounter, Delegator, RoundInfo, Stake, StakeOf, TotalStake,
 	},
-	CandidatePool, Config, Error, Event, InflationInfo, RewardRate, StakingInfo, STAKING_ID,
+	CandidatePool, Config, Error, Event, STAKING_ID,
 };
 
 #[test]
@@ -1520,13 +1520,6 @@ fn round_transitions() {
 	let col_rewards = 15;
 	let d_max = 40;
 	let d_rewards = 10;
-	let inflation = InflationInfo::new(
-		<Test as Config>::BLOCKS_PER_YEAR,
-		Perquintill::from_percent(col_max),
-		Perquintill::from_percent(col_rewards),
-		Perquintill::from_percent(d_max),
-		Perquintill::from_percent(d_rewards),
-	);
 
 	// round_immediately_jumps_if_current_duration_exceeds_new_blocks_per_round
 	// change from 5 bpr to 3 in block 5 -> 8 should be new round

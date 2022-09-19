@@ -164,7 +164,6 @@ pub(crate) mod mock;
 #[cfg(test)]
 pub(crate) mod tests;
 
-mod inflation;
 mod set;
 mod types;
 
@@ -176,7 +175,6 @@ use types::ReplacedDelegator;
 #[pallet]
 pub mod pallet {
 	use super::*;
-	pub use crate::inflation::{InflationInfo, RewardRate, StakingInfo};
 
 	use frame_support::{
 		assert_ok,
@@ -667,7 +665,6 @@ pub mod pallet {
 	#[pallet::genesis_config]
 	pub struct GenesisConfig<T: Config> {
 		pub stakers: GenesisStaker<T>,
-		pub inflation_config: InflationInfo,
 		pub max_candidate_stake: BalanceOf<T>,
         pub reward_per_block: BalanceOf<T>,
 	}
@@ -677,7 +674,6 @@ pub mod pallet {
 		fn default() -> Self {
 			Self {
 				stakers: Default::default(),
-				inflation_config: Default::default(),
 				max_candidate_stake: Default::default(),
                 reward_per_block: Default::default(),
 			}
@@ -687,10 +683,6 @@ pub mod pallet {
 	#[pallet::genesis_build]
 	impl<T: Config> GenesisBuild<T> for GenesisConfig<T> {
 		fn build(&self) {
-			assert!(
-				self.inflation_config.is_valid(T::BLOCKS_PER_YEAR.saturated_into()),
-				"Invalid inflation configuration"
-			);
             assert!(
                  self.reward_per_block > Zero::zero(),
                  "reward_per_block should be non zero"

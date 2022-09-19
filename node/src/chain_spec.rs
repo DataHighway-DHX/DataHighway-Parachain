@@ -17,7 +17,7 @@ use datahighway_parachain_runtime::{
     TechnicalCommitteeConfig,
     TechnicalMembershipConfig,
     TransactionPaymentConfig,
-    TreasuryConfig, ParachainStakingConfig, Perquintill, RewardRate,
+    TreasuryConfig, ParachainStakingConfig, Perquintill,
 };
 use module_primitives::{
     constants::currency::{
@@ -1324,7 +1324,6 @@ fn testnet_genesis(
         parachain_staking: ParachainStakingConfig {
             stakers: [].into(),
             max_candidate_stake: datahighway_parachain_runtime::constants::staking::MAX_CANDIDATE_STAKE,
-            inflation_config: datahighway_parachain_runtime::constants::staking::dhx_inflation(),
             reward_per_block: datahighway_parachain_runtime::constants::staking::REWARD_PER_BLOCK,
         },
     }

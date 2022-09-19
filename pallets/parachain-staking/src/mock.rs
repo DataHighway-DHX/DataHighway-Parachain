@@ -144,7 +144,7 @@ parameter_types! {
 	pub const MinDelegatorStake: Balance = 5;
 	pub const MinDelegation: Balance = 3;
 	pub const MaxUnstakeRequests: u32 = 6;
-	pub const NetworkRewardRate: Balance = 2 * DECIMALS;
+	pub const NetworkRewardRate: Balance = 20 * DECIMALS;
 	pub const NetworkRewardStart: BlockNumber = 5 * 5 * 60 * 24 * 36525 / 100;
 }
 
@@ -222,10 +222,10 @@ pub(crate) struct ExtBuilder {
 	collators: Vec<(AccountId, Balance)>,
 	// [delegator, collator, delegation_amount]
 	delegators: Vec<(AccountId, AccountId, Balance)>,
-	// inflation config
-	inflation_config: InflationInfo,
 	// blocks per round
 	blocks_per_round: BlockNumber,
+    // reward per block
+    reward_per_block: Balance,
 }
 
 impl Default for ExtBuilder {
@@ -234,14 +234,8 @@ impl Default for ExtBuilder {
 			balances: vec![],
 			delegators: vec![],
 			collators: vec![],
+            reward_per_block: 20 * DECIMALS,
 			blocks_per_round: BLOCKS_PER_ROUND,
-			inflation_config: InflationInfo::new(
-				<Test as Config>::BLOCKS_PER_YEAR,
-				Perquintill::from_percent(10),
-				Perquintill::from_percent(15),
-				Perquintill::from_percent(40),
-				Perquintill::from_percent(10),
-			),
 		}
 	}
 }
@@ -274,13 +268,6 @@ impl ExtBuilder {
 		d_rewards: u64,
 		blocks_per_round: BlockNumber,
 	) -> Self {
-		self.inflation_config = InflationInfo::new(
-			<Test as Config>::BLOCKS_PER_YEAR,
-			Perquintill::from_percent(col_max),
-			Perquintill::from_percent(col_rewards),
-			Perquintill::from_percent(d_max),
-			Perquintill::from_percent(d_rewards),
-		);
 		self.blocks_per_round = blocks_per_round;
 
 		self
@@ -312,7 +299,6 @@ impl ExtBuilder {
 		}
 		stake::GenesisConfig::<Test> {
 			stakers,
-			inflation_config: self.inflation_config.clone(),
 			max_candidate_stake: 160_000_000 * DECIMALS,
             reward_per_block: 1 * DECIMALS,
 		}

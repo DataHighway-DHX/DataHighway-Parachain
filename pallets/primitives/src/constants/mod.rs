@@ -118,19 +118,5 @@ pub mod staking {
 
     pub const MAX_CANDIDATE_STAKE: Balance = 100 * currency::DOLLARS;
     pub const REWARD_PER_BLOCK: Balance = REWARD_PER_DAY / time::DAYS as crate::types::Balance;
-
-    pub fn dhx_inflation() -> parachain_staking::InflationInfo {
-        parachain_staking::InflationInfo::new(
-            time::YEAR as u64,
-            // max collator staking rate
-            Perquintill::from_percent(40),
-            // collator reward rate
-            Perquintill::from_percent(20),
-            // max delegator staking rate
-            Perquintill::from_percent(10),
-            // delegator reward rate
-            Perquintill::from_percent(20),
-        )
-    }
 }
 

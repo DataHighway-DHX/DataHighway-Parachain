@@ -28,7 +28,7 @@ use frame_support::{
 };
 use pallet_authorship::EventHandler;
 use sp_consensus_aura::sr25519::AuthorityId;
-use sp_core::H256;
+use sp_core::{H256, storage::well_known_keys::DEFAULT_CHILD_STORAGE_KEY_PREFIX};
 use sp_runtime::{
 	impl_opaque_keys,
 	testing::{Header, UintAuthorityId},
@@ -144,7 +144,7 @@ parameter_types! {
 	pub const MinDelegatorStake: Balance = 5;
 	pub const MinDelegation: Balance = 3;
 	pub const MaxUnstakeRequests: u32 = 6;
-	pub const NetworkRewardRate: Perquintill = Perquintill::from_percent(10);
+	pub const NetworkRewardRate: Balance = 2 * DECIMALS;
 	pub const NetworkRewardStart: BlockNumber = 5 * 5 * 60 * 24 * 36525 / 100;
 }
 

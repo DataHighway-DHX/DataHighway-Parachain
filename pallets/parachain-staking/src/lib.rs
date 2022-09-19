@@ -340,7 +340,7 @@ pub mod pallet {
 		/// maximum number of collators and the maximum amount a collator can
 		/// stake.
 		#[pallet::constant]
-		type NetworkRewardRate: Get<Perquintill>;
+		type NetworkRewardRate: Get<BalanceOf<Self>>;
 
 		/// The beneficiary to receive the network rewards.
 		type NetworkRewardBeneficiary: OnUnbalanced<NegativeImbalanceOf<Self>>;
@@ -549,10 +549,6 @@ pub mod pallet {
 
 				Self::deposit_event(Event::NewRound(round.first, round.current));
 				post_weight = <T as Config>::WeightInfo::on_initialize_round_update();
-			}
-			// check for InflationInfo update
-			if now > T::BLOCKS_PER_YEAR.saturated_into::<T::BlockNumber>() {
-				post_weight = post_weight.saturating_add(Self::adjust_reward_rates(now));
 			}
 			// check for network reward
 			if now > T::NetworkRewardStart::get() {
@@ -2646,18 +2642,6 @@ pub mod pallet {
 			if let Ok(imb) = T::Currency::deposit_into_existing(who, reward) {
 				Self::deposit_event(Event::Rewarded(who.clone(), imb.peek()));
 			}
-		}
-
-		/// Annually reduce the reward rates for collators and delegators.
-		///
-		/// # <weight>
-		/// Weight: O(1)
-		/// - Reads: LastRewardReduction, InflationConfig
-		/// - Writes: LastRewardReduction, InflationConfig
-		/// # </weight>
-		fn adjust_reward_rates(now: T::BlockNumber) -> Weight {
-			panic!("No need to adjust reward rates");
-			T::DbWeight::get().reads(1)
 		}
 
 		/// Checks whether a delegator can still delegate in this round, e.g.,

@@ -2708,7 +2708,6 @@ fn adjust_reward_rates() {
 			// finish first year
 			System::set_block_number(<Test as Config>::BLOCKS_PER_YEAR);
 			roll_to(<Test as Config>::BLOCKS_PER_YEAR + 1, vec![]);
-			assert_eq!(StakePallet::last_reward_reduction(), 1u64);
 			// reward once in 2nd year
 			roll_to(<Test as Config>::BLOCKS_PER_YEAR + 2, authors.clone());
 			let c_rewards_1 = Balances::free_balance(&1)
@@ -2728,7 +2727,6 @@ fn adjust_reward_rates() {
 			// finish 2nd year
 			System::set_block_number(2 * <Test as Config>::BLOCKS_PER_YEAR);
 			roll_to(2 * <Test as Config>::BLOCKS_PER_YEAR + 1, vec![]);
-			assert_eq!(StakePallet::last_reward_reduction(), 2u64);
 			// reward once in 3rd year
 			roll_to(2 * <Test as Config>::BLOCKS_PER_YEAR + 2, authors);
 			let c_rewards_2 = Balances::free_balance(&1)
@@ -3474,9 +3472,6 @@ fn network_reward_multiple_blocks() {
 				total_issuance + network_reward,
 				<Test as Config>::Currency::total_issuance()
 			);
-			//let col_rewards = inflation_config.collator.reward_rate.per_block * total_collator_stake;
-			let col_rewards = {todo!(); 0u128 };
-            assert_eq!(network_reward, <Test as Config>::NetworkRewardRate::get() * col_rewards);
 
 			// should mint exactly the same amount
 			roll_to(network_reward_start + 2, vec![None]);
@@ -3501,84 +3496,6 @@ fn network_reward_multiple_blocks() {
 			assert_eq!(101 * network_reward, Balances::free_balance(&TREASURY_ACC));
 			assert_eq!(
 				total_issuance + 101 * network_reward,
-				<Test as Config>::Currency::total_issuance()
-			);
-		});
-}
-
-#[test]
-fn network_reward_increase_max_candidate_stake() {
-	let max_stake: Balance = 160_000_000 * DECIMALS;
-	let collators: Vec<(AccountId, Balance)> = (1u64..=<Test as Config>::MinCollators::get().into())
-		.map(|acc_id| (acc_id, max_stake))
-		.collect();
-
-	ExtBuilder::default()
-		.with_balances(collators.clone())
-		.with_collators(collators)
-		.build()
-		.execute_with(|| {
-			let network_reward_start = <Test as Config>::NetworkRewardStart::get();
-			let total_issuance = <Test as Config>::Currency::total_issuance();
-			System::set_block_number(network_reward_start);
-
-			// should mint to treasury now
-			roll_to(network_reward_start + 1, vec![None]);
-			let reward_before = Balances::free_balance(&TREASURY_ACC);
-			assert!(!reward_before.is_zero());
-			assert_eq!(
-				total_issuance + reward_before,
-				<Test as Config>::Currency::total_issuance()
-			);
-
-			// double max stake
-			let max_stake_doubled = 320_000_000 * DECIMALS;
-			let reward_after = 2 * reward_before;
-			assert_ok!(StakePallet::set_max_candidate_stake(Origin::root(), max_stake_doubled));
-			roll_to(network_reward_start + 2, vec![None]);
-			assert_eq!(reward_before + reward_after, Balances::free_balance(&TREASURY_ACC));
-			assert_eq!(
-				reward_before + reward_after + total_issuance,
-				<Test as Config>::Currency::total_issuance()
-			);
-		});
-}
-
-#[test]
-fn network_reward_increase_max_collator_count() {
-	let max_stake: Balance = 160_000_000 * DECIMALS;
-	let collators: Vec<(AccountId, Balance)> = (1u64..=<Test as Config>::MinCollators::get().into())
-		.map(|acc_id| (acc_id, max_stake))
-		.collect();
-
-	ExtBuilder::default()
-		.with_balances(collators.clone())
-		.with_collators(collators)
-		.build()
-		.execute_with(|| {
-			let network_reward_start = <Test as Config>::NetworkRewardStart::get();
-			let total_issuance = <Test as Config>::Currency::total_issuance();
-			System::set_block_number(network_reward_start);
-
-			// should mint to treasury now
-			roll_to(network_reward_start + 1, vec![None]);
-			let reward_before = Balances::free_balance(&TREASURY_ACC);
-			assert!(!reward_before.is_zero());
-			assert_eq!(
-				total_issuance + reward_before,
-				<Test as Config>::Currency::total_issuance()
-			);
-
-			// tripple number of max collators
-			let reward_after = 3 * reward_before;
-			assert_ok!(StakePallet::set_max_selected_candidates(
-				Origin::root(),
-				<Test as Config>::MinCollators::get() * 3
-			));
-			roll_to(network_reward_start + 2, vec![None]);
-			assert_eq!(reward_before + reward_after, Balances::free_balance(&TREASURY_ACC));
-			assert_eq!(
-				reward_before + reward_after + total_issuance,
 				<Test as Config>::Currency::total_issuance()
 			);
 		});

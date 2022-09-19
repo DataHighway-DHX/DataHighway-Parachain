@@ -669,7 +669,7 @@ pub mod pallet {
 		pub stakers: GenesisStaker<T>,
 		pub inflation_config: InflationInfo,
 		pub max_candidate_stake: BalanceOf<T>,
-        // pub reward_per_block: BalanceOf<T>,
+        pub reward_per_block: BalanceOf<T>,
 	}
 
 	#[cfg(feature = "std")]
@@ -679,7 +679,7 @@ pub mod pallet {
 				stakers: Default::default(),
 				inflation_config: Default::default(),
 				max_candidate_stake: Default::default(),
-                // reward_per_block: Default::default(),
+                reward_per_block: Default::default(),
 			}
 		}
 	}
@@ -691,13 +691,13 @@ pub mod pallet {
 				self.inflation_config.is_valid(T::BLOCKS_PER_YEAR.saturated_into()),
 				"Invalid inflation configuration"
 			);
-            // assert!(
-            //     self.reward_per_block > Zero::zero(),
-            //     "reward_per_block should be non zero"
-            // );
+            assert!(
+                 self.reward_per_block > Zero::zero(),
+                 "reward_per_block should be non zero"
+             );
 
-            // TODO: get this from genesis config
-            <RewardPerBlock<T>>::put(BalanceOf::<T>::from(500u32));
+            let reward_per_block = self.reward_per_block;
+            <RewardPerBlock<T>>::put(BalanceOf::<T>::from(reward_per_block));
 			MaxCollatorCandidateStake::<T>::put(self.max_candidate_stake);
 
 			// Setup delegate & collators

@@ -63,10 +63,12 @@ pub mod time {
 pub mod treasury {
 	use super::*;
 
+    pub(super) const NETWORK_INFLATION_PER_DAY: Balance = 2000 * currency::DOLLARS;
+ 
     // Inflate for first five years
 	const INITIAL_PERIOD_LENGTH: BlockNumber = time::YEAR.saturating_mul(5);
     // We give 2000 DHX to treasury per day
-    const INITIAL_PERIOD_REWARD_PER_BLOCK: Balance = (2000 * currency::DOLLARS) / time::DAYS as crate::types::Balance;
+    const INITIAL_PERIOD_REWARD_PER_BLOCK: Balance = NETWORK_INFLATION_PER_DAY / time::DAYS as crate::types::Balance;
 
 	parameter_types! {
 		pub const InitialPeriodLength: BlockNumber = INITIAL_PERIOD_LENGTH;
@@ -76,6 +78,7 @@ pub mod treasury {
 
 pub mod staking {
 	use super::*;
+    const REWARD_PER_DAY: Balance = 500 * currency::DOLLARS;
 
 	parameter_types! {
 		/// Minimum round length is 1 hour
@@ -110,10 +113,11 @@ pub mod staking {
 		/// The starting block number for the network rewards
 		pub const NetworkRewardStart: BlockNumber = 1; // somewhere is august 2022
 		/// The rate in percent for the network rewards
-		pub const NetworkRewardRate: Balance = (2500 * currency::DOLLARS) / time::DAYS as crate::types::Balance;
+		pub const NetworkRewardRate: Balance = (REWARD_PER_DAY + treasury::NETWORK_INFLATION_PER_DAY) / time::DAYS as crate::types::Balance;
 	}
 
     pub const MAX_CANDIDATE_STAKE: Balance = 100 * currency::DOLLARS;
+    pub const REWARD_PER_BLOCK: Balance = REWARD_PER_DAY / time::DAYS as crate::types::Balance;
 
     pub fn dhx_inflation() -> parachain_staking::InflationInfo {
         parachain_staking::InflationInfo::new(

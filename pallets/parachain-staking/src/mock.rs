@@ -314,6 +314,7 @@ impl ExtBuilder {
 			stakers,
 			inflation_config: self.inflation_config.clone(),
 			max_candidate_stake: 160_000_000 * DECIMALS,
+            reward_per_block: 1 * DECIMALS,
 		}
 		.assimilate_storage(&mut t)
 		.expect("Parachain Staking's storage can be assimilated");

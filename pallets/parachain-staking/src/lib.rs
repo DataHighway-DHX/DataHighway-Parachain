@@ -748,7 +748,7 @@ pub mod pallet {
 			Ok(())
 		}
 
-        #[pallet::weight(1000)]
+        #[pallet::weight(1000 + T::DbWeight::get().reads_writes(1, 2))]
         pub fn set_rewards_per_block(origin: OriginFor<T>, reward_per_block: BalanceOf<T>) -> DispatchResult {
             ensure_root(origin)?;
 

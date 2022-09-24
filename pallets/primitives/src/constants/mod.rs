@@ -112,7 +112,7 @@ pub mod staking {
 		/// The starting block number for the network rewards
 		pub const NetworkRewardStart: BlockNumber = 1; // this is not really being used
 		/// The rate in percent for the network rewards
-		pub const NetworkRewardRate: Balance = (REWARD_PER_DAY + treasury::NETWORK_INFLATION_PER_DAY) / time::DAYS as Balance;
+		pub const NetworkRewardRate: Balance = 0 as Balance;
 	}
 
     pub const MAX_CANDIDATE_STAKE: Balance = 10_000 * currency::DOLLARS;

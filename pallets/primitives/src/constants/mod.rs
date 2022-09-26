@@ -80,8 +80,8 @@ pub mod staking {
     pub(super) const REWARD_PER_DAY: Balance = 500 * currency::DOLLARS;
 
 	parameter_types! {
-		/// Minimum round length is 1 hour
-		pub const MinBlocksPerRound: BlockNumber = 1 * time::HOURS;
+		/// Minimum round length is 10 minutes
+		pub const MinBlocksPerRound: BlockNumber = 10 * time::MINUTES;
 		/// Default length of a round/session is 2 hours
 		pub const DefaultBlocksPerRound: BlockNumber = 2 * time::HOURS;
 		/// Unstaked balance can be unlocked after 7 days

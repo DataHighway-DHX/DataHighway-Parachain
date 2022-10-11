@@ -4,7 +4,7 @@ use datahighway_parachain_runtime::{
     AuraId,
     AuraConfig,
     BalancesConfig,
-    ParachainStaking,
+    CollatorSelectionConfig,
     CouncilConfig,
     DemocracyConfig,
     ElectionsConfig,
@@ -17,7 +17,7 @@ use datahighway_parachain_runtime::{
     TechnicalCommitteeConfig,
     TechnicalMembershipConfig,
     TransactionPaymentConfig,
-    TreasuryConfig, ParachainStakingConfig, Perquintill,
+    TreasuryConfig,
 };
 use module_primitives::{
     constants::currency::{
@@ -1206,6 +1206,11 @@ fn spreehafen_testnet_genesis(
         parachain_info: datahighway_parachain_runtime::ParachainInfoConfig {
             parachain_id: id,
         },
+        collator_selection: CollatorSelectionConfig {
+            invulnerables: invulnerables.iter().cloned().map(|(acc, _)| acc).collect(),
+            candidacy_bond: EXISTENTIAL_DEPOSIT * 16,
+            ..Default::default()
+        },
         session: SessionConfig {
             keys: invulnerables
                 .into_iter()
@@ -1246,11 +1251,6 @@ fn spreehafen_testnet_genesis(
 		polkadot_xcm: datahighway_parachain_runtime::PolkadotXcmConfig {
 			safe_xcm_version: Some(SAFE_XCM_VERSION),
 		},
-        parachain_staking: ParachainStakingConfig {
-            stakers: [].into(),
-            max_candidate_stake: datahighway_parachain_runtime::constants::staking::MAX_CANDIDATE_STAKE,
-            reward_per_block: datahighway_parachain_runtime::constants::staking::REWARD_PER_BLOCK,
-        },
     }
 }
 
@@ -1285,6 +1285,11 @@ fn testnet_genesis(
         parachain_info: datahighway_parachain_runtime::ParachainInfoConfig {
             parachain_id: id,
         },
+        collator_selection: CollatorSelectionConfig {
+            invulnerables: invulnerables.iter().cloned().map(|(acc, _)| acc).collect(),
+            candidacy_bond: EXISTENTIAL_DEPOSIT * 16,
+            ..Default::default()
+        },
         session: SessionConfig {
             keys: invulnerables
                 .into_iter()
@@ -1325,11 +1330,6 @@ fn testnet_genesis(
 		polkadot_xcm: datahighway_parachain_runtime::PolkadotXcmConfig {
 			safe_xcm_version: Some(SAFE_XCM_VERSION),
 		},
-        parachain_staking: ParachainStakingConfig {
-            stakers: [].into(),
-            max_candidate_stake: datahighway_parachain_runtime::constants::staking::MAX_CANDIDATE_STAKE,
-            reward_per_block: datahighway_parachain_runtime::constants::staking::REWARD_PER_BLOCK,
-        },
     }
 }
 
@@ -1364,6 +1364,11 @@ fn dev_genesis(
         parachain_info: datahighway_parachain_runtime::ParachainInfoConfig {
             parachain_id: id,
         },
+        collator_selection: CollatorSelectionConfig {
+            invulnerables: invulnerables.iter().cloned().map(|(acc, _)| acc).collect(),
+            candidacy_bond: EXISTENTIAL_DEPOSIT * 16,
+            ..Default::default()
+        },
         session: SessionConfig {
             keys: invulnerables
                 .into_iter()
@@ -1404,11 +1409,6 @@ fn dev_genesis(
 		polkadot_xcm: datahighway_parachain_runtime::PolkadotXcmConfig {
 			safe_xcm_version: Some(SAFE_XCM_VERSION),
 		},
-        parachain_staking: ParachainStakingConfig {
-            stakers: [].into(),
-            max_candidate_stake: datahighway_parachain_runtime::constants::staking::MAX_CANDIDATE_STAKE,
-            reward_per_block: datahighway_parachain_runtime::constants::staking::REWARD_PER_BLOCK,
-        },
     }
 }
 
@@ -1454,6 +1454,11 @@ fn baikal_testnet_genesis(
         parachain_info: datahighway_parachain_runtime::ParachainInfoConfig {
             parachain_id: id,
         },
+        collator_selection: CollatorSelectionConfig {
+            invulnerables: invulnerables.iter().cloned().map(|(acc, _)| acc).collect(),
+            candidacy_bond: EXISTENTIAL_DEPOSIT * 16,
+            ..Default::default()
+        },
         session: SessionConfig {
             keys: invulnerables
                 .into_iter()
@@ -1494,11 +1499,6 @@ fn baikal_testnet_genesis(
 		polkadot_xcm: datahighway_parachain_runtime::PolkadotXcmConfig {
 			safe_xcm_version: Some(SAFE_XCM_VERSION),
 		},
-        parachain_staking: ParachainStakingConfig {
-            stakers: [].into(),
-            max_candidate_stake: datahighway_parachain_runtime::constants::staking::MAX_CANDIDATE_STAKE,
-            reward_per_block: datahighway_parachain_runtime::constants::staking::REWARD_PER_BLOCK,
-        },
     }
 }
 
@@ -1533,6 +1533,11 @@ fn tanganika_testnet_genesis(
         parachain_info: datahighway_parachain_runtime::ParachainInfoConfig {
             parachain_id: id,
         },
+        collator_selection: CollatorSelectionConfig {
+            invulnerables: invulnerables.iter().cloned().map(|(acc, _)| acc).collect(),
+            candidacy_bond: EXISTENTIAL_DEPOSIT * 16,
+            ..Default::default()
+        },
         session: SessionConfig {
             keys: invulnerables
                 .into_iter()
@@ -1573,10 +1578,5 @@ fn tanganika_testnet_genesis(
 		polkadot_xcm: datahighway_parachain_runtime::PolkadotXcmConfig {
 			safe_xcm_version: Some(SAFE_XCM_VERSION),
 		},
-        parachain_staking: ParachainStakingConfig {
-            stakers: [].into(),
-            max_candidate_stake: datahighway_parachain_runtime::constants::staking::MAX_CANDIDATE_STAKE,
-            reward_per_block: datahighway_parachain_runtime::constants::staking::REWARD_PER_BLOCK,
-        },
     }
 }

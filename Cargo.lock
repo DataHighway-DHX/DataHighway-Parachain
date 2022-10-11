@@ -1934,7 +1934,7 @@ dependencies = [
 
 [[package]]
 name = "datahighway-collator"
-version = "3.6.1"
+version = "3.7.0"
 dependencies = [
  "clap",
  "cumulus-client-cli",
@@ -2008,7 +2008,7 @@ dependencies = [
 
 [[package]]
 name = "datahighway-parachain-runtime"
-version = "3.6.1"
+version = "3.7.0"
 dependencies = [
  "chrono",
  "cumulus-pallet-aura-ext",
@@ -2045,6 +2045,7 @@ dependencies = [
  "pallet-elections-phragmen",
  "pallet-identity",
  "pallet-indices",
+ "pallet-inflation",
  "pallet-membership",
  "pallet-multisig",
  "pallet-preimage",
@@ -2063,6 +2064,7 @@ dependencies = [
  "pallet-utility",
  "pallet-xcm",
  "parachain-info",
+ "parachain-staking",
  "parity-scale-codec",
  "polkadot-parachain",
  "polkadot-runtime-common",
@@ -4763,6 +4765,7 @@ dependencies = [
  "frame-benchmarking",
  "frame-support",
  "frame-system",
+ "parachain-staking",
  "parity-scale-codec",
  "scale-info",
  "serde",
@@ -5670,6 +5673,23 @@ dependencies = [
 ]
 
 [[package]]
+name = "pallet-inflation"
+version = "1.7.2"
+dependencies = [
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "pallet-balances",
+ "parity-scale-codec",
+ "scale-info",
+ "serde",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
 name = "pallet-membership"
 version = "4.0.0-dev"
 source = "git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.24#814752f60ab8cce7e2ece3ce0c1b10799b4eab28"
@@ -6197,6 +6217,30 @@ dependencies = [
  "parity-scale-codec",
  "scale-info",
  "serde",
+]
+
+[[package]]
+name = "parachain-staking"
+version = "1.7.1"
+dependencies = [
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "log",
+ "pallet-aura",
+ "pallet-authorship",
+ "pallet-balances",
+ "pallet-session",
+ "pallet-timestamp",
+ "parity-scale-codec",
+ "scale-info",
+ "serde",
+ "sp-consensus-aura",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-staking",
+ "sp-std",
 ]
 
 [[package]]

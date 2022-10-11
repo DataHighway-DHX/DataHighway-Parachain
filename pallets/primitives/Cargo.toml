@@ -9,6 +9,9 @@ codec = { version = '3.1.2', package = 'parity-scale-codec', default-features = 
 scale-info = { version = '2.0.1', default-features = false, features = ['derive'] }
 bitmask = { version = '0.5.0', default-features = false }
 
+# Local
+parachain-staking = { path = "../parachain-staking/", default-features = false }
+
 # Substrate
 frame-benchmarking = { git = 'https://github.com/paritytech/substrate', branch = 'polkadot-v0.9.24', default-features = false, optional = true }
 frame-support = { git = 'https://github.com/paritytech/substrate', branch = 'polkadot-v0.9.24', default-features = false }
@@ -38,4 +41,5 @@ std = [
     'sp-io/std',
     'sp-runtime/std',
     'sp-std/std',
+    "parachain-staking/std",
 ]

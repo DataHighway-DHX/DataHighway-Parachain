@@ -1,26 +1,27 @@
-use crate::{
-    chain_spec,
-    cli::{Cli, RelayChainCli, Subcommand},
-    service::{new_partial, DataHighwayParachainRuntimeExecutor}
-};
 use codec::Encode;
-use cumulus_client_service::genesis::generate_genesis_block;
 use cumulus_primitives_core::ParaId;
+use std::net::SocketAddr;
+
+use cumulus_client_cli::generate_genesis_block;
+use frame_benchmarking_cli::{BenchmarkCmd, SUBSTRATE_REFERENCE_HARDWARE};
 use log::info;
-use datahighway_parachain_runtime::{AuraId, Block, RuntimeApi};
+use datahighway_parachain_runtime::{Block, RuntimeApi};
 use sc_cli::{
 	ChainSpec, CliConfiguration, DefaultConfigurationValues, ImportParams, KeystoreParams,
 	NetworkParams, Result, RuntimeVersion, SharedParams, SubstrateCli,
 };
-use frame_benchmarking_cli::{BenchmarkCmd, SUBSTRATE_REFERENCE_HARDWARE};
 use sc_service::{
-    config::{BasePath, PrometheusConfig},
-    PartialComponents,
-    TaskManager,
+	config::{BasePath, PrometheusConfig},
+	TaskManager,
 };
 use sp_core::hexdisplay::HexDisplay;
-use sp_runtime::traits::{Block as BlockT, AccountIdConversion};
-use std::{io::Write, net::SocketAddr};
+use sp_runtime::traits::{AccountIdConversion, Block as BlockT};
+
+use crate::{
+	chain_spec,
+	cli::{Cli, RelayChainCli, Subcommand},
+	service::{new_partial, DataHighwayParachainRuntimeExecutor},
+};
 
 fn load_spec(id: &str) -> std::result::Result<Box<dyn sc_service::ChainSpec>, String> {
     Ok(match id {
@@ -146,159 +147,132 @@ macro_rules! construct_async_run {
 
 /// Parse command line arguments into service configuration.
 pub fn run() -> Result<()> {
-    let cli = Cli::from_args();
+	let cli = Cli::from_args();
 
-    match &cli.subcommand {
-        Some(Subcommand::Key(cmd)) => cmd.run(&cli),
-        Some(Subcommand::BuildSpec(cmd)) => {
-            let runner = cli.create_runner(cmd)?;
-            runner.sync_run(|config| cmd.run(config.chain_spec, config.network))
-        }
-        Some(Subcommand::CheckBlock(cmd)) => {
-            construct_async_run!(|components, cli, cmd, config| {
-                Ok(cmd.run(components.client, components.import_queue))
+	match &cli.subcommand {
+		Some(Subcommand::BuildSpec(cmd)) => {
+			let runner = cli.create_runner(cmd)?;
+			runner.sync_run(|config| cmd.run(config.chain_spec, config.network))
+		},
+		Some(Subcommand::CheckBlock(cmd)) => {
+			construct_async_run!(|components, cli, cmd, config| {
+				Ok(cmd.run(components.client, components.import_queue))
 			})
-        }
-        Some(Subcommand::ExportBlocks(cmd)) => {
-            construct_async_run!(|components, cli, cmd, config| {
-                Ok(cmd.run(components.client, config.database))
+		},
+		Some(Subcommand::ExportBlocks(cmd)) => {
+			construct_async_run!(|components, cli, cmd, config| {
+				Ok(cmd.run(components.client, config.database))
 			})
-        }
-        Some(Subcommand::ExportState(cmd)) => {
-            construct_async_run!(|components, cli, cmd, config| {
-                Ok(cmd.run(components.client, config.chain_spec))
+		},
+		Some(Subcommand::ExportState(cmd)) => {
+			construct_async_run!(|components, cli, cmd, config| {
+				Ok(cmd.run(components.client, config.chain_spec))
 			})
-        }
-        Some(Subcommand::ImportBlocks(cmd)) => {
-            construct_async_run!(|components, cli, cmd, config| {
-                Ok(cmd.run(components.client, components.import_queue))
+		},
+		Some(Subcommand::ImportBlocks(cmd)) => {
+			construct_async_run!(|components, cli, cmd, config| {
+				Ok(cmd.run(components.client, components.import_queue))
 			})
-        }
-        Some(Subcommand::PurgeChain(cmd)) => {
-            let runner = cli.create_runner(cmd)?;
+		},
+		Some(Subcommand::Revert(cmd)) => {
+			construct_async_run!(|components, cli, cmd, config| {
+				Ok(cmd.run(components.client, components.backend, None))
+			})
+		},
+		Some(Subcommand::PurgeChain(cmd)) => {
+			let runner = cli.create_runner(cmd)?;
 
-            runner.sync_run(|config| {
-                let polkadot_cli = RelayChainCli::new(
-                    &config,
-                    [RelayChainCli::executable_name()].iter().chain(cli.relay_chain_args.iter()),
-                );
+			runner.sync_run(|config| {
+				let polkadot_cli = RelayChainCli::new(
+					&config,
+					[RelayChainCli::executable_name()].iter().chain(cli.relay_chain_args.iter()),
+				);
 
-                let polkadot_config = SubstrateCli::create_configuration(
-                    &polkadot_cli,
-                    &polkadot_cli,
-                    config.tokio_handle.clone(),
-                )
-                    .map_err(|err| format!("Relay chain argument error: {}", err))?;
+				let polkadot_config = SubstrateCli::create_configuration(
+					&polkadot_cli,
+					&polkadot_cli,
+					config.tokio_handle.clone(),
+				)
+				.map_err(|err| format!("Relay chain argument error: {}", err))?;
 
-                cmd.run(config, polkadot_config)
-            })
-        }
-        Some(Subcommand::Revert(cmd)) => {
-            construct_async_run!(|components, cli, cmd, config| {
-                Ok(cmd.run(components.client, components.backend, None))
-            })
-        },
-        Some(Subcommand::ExportGenesisState(params)) => {
-			let mut builder = sc_cli::LoggerBuilder::new("");
-			builder.with_profiling(sc_tracing::TracingReceiver::Log, "");
-			let _ = builder.init();
-
-			let spec = load_spec(&params.chain.clone().unwrap_or_default())?;
-			let state_version = Cli::native_runtime_version(&spec).state_version();
-			let block: Block = generate_genesis_block(&spec, state_version)?;
-			let raw_header = block.header().encode();
-			let output_buf = if params.raw {
-				raw_header
-			} else {
-				format!("0x{:?}", HexDisplay::from(&block.header().encode())).into_bytes()
-			};
-
-			if let Some(output) = &params.output {
-				std::fs::write(output, output_buf)?;
-			} else {
-				std::io::stdout().write_all(&output_buf)?;
-			}
-
-			Ok(())
-        }
-        Some(Subcommand::ExportGenesisWasm(params)) => {
-            let mut builder = sc_cli::LoggerBuilder::new("");
-            builder.with_profiling(sc_tracing::TracingReceiver::Log, "");
-            let _ = builder.init();
-
-            let raw_wasm_blob = extract_genesis_wasm(&cli.load_spec(&params.chain.clone().unwrap_or_default())?)?;
-            let output_buf = if params.raw {
-                raw_wasm_blob
-            } else {
-                format!("0x{:?}", HexDisplay::from(&raw_wasm_blob)).into_bytes()
-            };
-
-            if let Some(output) = &params.output {
-                std::fs::write(output, output_buf)?;
-            } else {
-                std::io::stdout().write_all(&output_buf)?;
-            }
-
-            Ok(())
-        }
-        Some(Subcommand::Benchmark(cmd)) => {
-            let runner = cli.create_runner(cmd)?;
-
-            match cmd {
-                BenchmarkCmd::Pallet(cmd) =>
-                    if cfg!(feature = "runtime-benchmarks") {
-                        runner.sync_run(|config| cmd.run::<Block, DataHighwayParachainRuntimeExecutor>(config))
-                    } else {
-                        Err("Benchmarking wasn't enabled when building the node. \
-                            You can enable it with `--features runtime-benchmarks`."
-                            .into())
-                    },
-                BenchmarkCmd::Block(cmd) => runner.sync_run(|config| {
+				cmd.run(config, polkadot_config)
+			})
+		},
+		Some(Subcommand::ExportGenesisState(cmd)) => {
+			let runner = cli.create_runner(cmd)?;
+			runner.sync_run(|_config| {
+				let spec = cli.load_spec(&cmd.shared_params.chain.clone().unwrap_or_default())?;
+				let state_version = Cli::native_runtime_version(&spec).state_version();
+				cmd.run::<Block>(&*spec, state_version)
+			})
+		},
+		Some(Subcommand::ExportGenesisWasm(cmd)) => {
+			let runner = cli.create_runner(cmd)?;
+			runner.sync_run(|_config| {
+				let spec = cli.load_spec(&cmd.shared_params.chain.clone().unwrap_or_default())?;
+				cmd.run(&*spec)
+			})
+		},
+		Some(Subcommand::Benchmark(cmd)) => {
+			let runner = cli.create_runner(cmd)?;
+			// Switch on the concrete benchmark sub-command-
+			match cmd {
+				BenchmarkCmd::Pallet(cmd) =>
+					if cfg!(feature = "runtime-benchmarks") {
+						runner.sync_run(|config| cmd.run::<Block, DataHighwayParachainRuntimeExecutor>(config))
+					} else {
+						Err("Benchmarking wasn't enabled when building the node. \
+					You can enable it with `--features runtime-benchmarks`."
+							.into())
+					},
+				BenchmarkCmd::Block(cmd) => runner.sync_run(|config| {
 					let partials = new_partial::<RuntimeApi, DataHighwayParachainRuntimeExecutor, _>(
 						&config,
 						crate::service::parachain_build_import_queue,
 					)?;
 					cmd.run(partials.client)
 				}),
-                BenchmarkCmd::Storage(cmd) =>  runner.sync_run(|config| {
-                    let partials = new_partial(&config, crate::service::parachain_build_import_queue)?;
-                    let db = partials.backend.expose_db();
-                    let storage = partials.backend.expose_storage();
+				BenchmarkCmd::Storage(cmd) => runner.sync_run(|config| {
+					let partials = new_partial::<RuntimeApi, DataHighwayParachainRuntimeExecutor, _>(
+						&config,
+						crate::service::parachain_build_import_queue,
+					)?;
+					let db = partials.backend.expose_db();
+					let storage = partials.backend.expose_storage();
 
-                    cmd.run(config, partials.client, db, storage)
-                }),
-                BenchmarkCmd::Overhead(_) => Err("Unsupported benchmarking command".into()),
+					cmd.run(config, partials.client.clone(), db, storage)
+				}),
 				BenchmarkCmd::Machine(cmd) =>
 					runner.sync_run(|config| cmd.run(&config, SUBSTRATE_REFERENCE_HARDWARE.clone())),
-            }
-        }
+				// NOTE: this allows the Client to leniently implement
+				// new benchmark commands without requiring a companion MR.
+				#[allow(unreachable_patterns)]
+				_ => Err("Benchmarking sub-command unsupported".into()),
+			}
+		},
+		Some(Subcommand::TryRuntime(cmd)) => {
+			if cfg!(feature = "try-runtime") {
+				let runner = cli.create_runner(cmd)?;
 
-        // TODO: move to if cfg!() syntax
-        // cfg! syntax is preferred in `substrate-parachain-template`
-        // keeping compatible will make is easy to upgrade in future
-        #[cfg(feature = "try-runtime")]
-        Some(Subcommand::TryRuntime(cmd)) => {
-            let runner = cli.create_runner(cmd)?;
-            runner.async_run(|config| {
-                // we don't need any of the components of new_partial, just a runtime, or a task
-                // manager to do `async_run`.
-                let registry = config.prometheus_config.as_ref().map(|cfg| &cfg.registry);
-                let task_manager =
-                    sc_service::TaskManager::new(config.tokio_handle.clone(), registry)
-                        .map_err(|e| sc_cli::Error::Service(sc_service::Error::Prometheus(e)))?;
-                Ok((cmd.run::<Block, ExecutorDispatch>(config), task_manager))
-            })
-        },
-        #[cfg(not(feature = "try-runtime"))]
-        Some(Subcommand::TryRuntime) => Err("TryRuntime wasn't enabled when building the node. \
-                You can enable it with `--features try-runtime`."
-            .into()),
-        None => {
-            let runner = cli.create_runner(&cli.run.normalize())?;
-            let collator_options = cli.run.collator_options();
+				// grab the task manager.
+				let registry = &runner.config().prometheus_config.as_ref().map(|cfg| &cfg.registry);
+				let task_manager =
+					TaskManager::new(runner.config().tokio_handle.clone(), *registry)
+						.map_err(|e| format!("Error: {:?}", e))?;
 
-            runner.run_node_until_exit(|config| async move {
-                let hwbench = if !cli.no_hardware_benchmarks {
+				runner.async_run(|config| {
+					Ok((cmd.run::<Block, DataHighwayParachainRuntimeExecutor>(config), task_manager))
+				})
+			} else {
+				Err("Try-runtime must be enabled by `--features try-runtime`.".into())
+			}
+		},
+		None => {
+			let runner = cli.create_runner(&cli.run.normalize())?;
+			let collator_options = cli.run.collator_options();
+
+			runner.run_node_until_exit(|config| async move {
+				let hwbench = if !cli.no_hardware_benchmarks {
 					config.database.path().map(|database_path| {
 						let _ = std::fs::create_dir_all(&database_path);
 						sc_sysinfo::gather_hwbench(Some(database_path))
@@ -307,104 +281,103 @@ pub fn run() -> Result<()> {
 					None
 				};
 
-                let para_id = chain_spec::Extensions::try_get(&*config.chain_spec)
-                    .map(|e| e.para_id)
-                    .ok_or_else(|| "Could not find parachain ID in chain-spec.")?;
+				let para_id = chain_spec::Extensions::try_get(&*config.chain_spec)
+					.map(|e| e.para_id)
+					.ok_or_else(|| "Could not find parachain ID in chain-spec.")?;
 
-                let polkadot_cli = RelayChainCli::new(
-                    &config,
-                    [RelayChainCli::executable_name()].iter().chain(cli.relay_chain_args.iter()),
-                );
+				let polkadot_cli = RelayChainCli::new(
+					&config,
+					[RelayChainCli::executable_name()].iter().chain(cli.relay_chain_args.iter()),
+				);
 
 				let id = ParaId::from(para_id);
 
-                let parachain_account =
-                    AccountIdConversion::<polkadot_primitives::v2::AccountId>::into_account_truncating(&id);
+				let parachain_account =
+					AccountIdConversion::<polkadot_primitives::v2::AccountId>::into_account_truncating(&id);
 
-                let state_version =
-                    RelayChainCli::native_runtime_version(&config.chain_spec).state_version();
-                let block: Block = generate_genesis_block(&config.chain_spec, state_version)
-                    .map_err(|e| format!("{:?}", e))?;
-                let genesis_state = format!("0x{:?}", HexDisplay::from(&block.header().encode()));
+				let state_version = Cli::native_runtime_version(&config.chain_spec).state_version();
+				let block: Block = generate_genesis_block(&*config.chain_spec, state_version)
+					.map_err(|e| format!("{:?}", e))?;
+				let genesis_state = format!("0x{:?}", HexDisplay::from(&block.header().encode()));
 
-                let tokio_handle = config.tokio_handle.clone();
-                let polkadot_config =
-                    SubstrateCli::create_configuration(&polkadot_cli, &polkadot_cli, tokio_handle)
-                        .map_err(|err| format!("Relay chain argument error: {}", err))?;
+				let tokio_handle = config.tokio_handle.clone();
+				let polkadot_config =
+					SubstrateCli::create_configuration(&polkadot_cli, &polkadot_cli, tokio_handle)
+						.map_err(|err| format!("Relay chain argument error: {}", err))?;
 
-                info!("Parachain id: {:?}", id);
-                info!("Parachain Account: {}", parachain_account);
-                info!("Parachain genesis state: {}", genesis_state);
-                info!("Is collating: {}", if config.role.is_authority() { "yes" } else { "no" });
+				info!("Parachain id: {:?}", id);
+				info!("Parachain Account: {}", parachain_account);
+				info!("Parachain genesis state: {}", genesis_state);
+				info!("Is collating: {}", if config.role.is_authority() { "yes" } else { "no" });
 
-                crate::service::start_parachain_node(
-                    config,
-                    polkadot_config,
-                    collator_options,
-                    id,
-                    hwbench,
-                )
-                .await
-                .map(|r| r.0)
-                .map_err(Into::into)
-            })
-        }
-    }
+				crate::service::start_parachain_node(
+					config,
+					polkadot_config,
+					collator_options,
+					id,
+					hwbench,
+				)
+				.await
+				.map(|r| r.0)
+				.map_err(Into::into)
+			})
+		},
+	}
 }
 
 impl DefaultConfigurationValues for RelayChainCli {
-    fn p2p_listen_port() -> u16 {
-        30334
-    }
+	fn p2p_listen_port() -> u16 {
+		30334
+	}
 
-    fn rpc_ws_listen_port() -> u16 {
-        9945
-    }
+	fn rpc_ws_listen_port() -> u16 {
+		9945
+	}
 
-    fn rpc_http_listen_port() -> u16 {
-        9934
-    }
+	fn rpc_http_listen_port() -> u16 {
+		9934
+	}
 
-    fn prometheus_listen_port() -> u16 {
-        9616
-    }
+	fn prometheus_listen_port() -> u16 {
+		9616
+	}
 }
 
 impl CliConfiguration<Self> for RelayChainCli {
-    fn shared_params(&self) -> &SharedParams {
-        self.base.base.shared_params()
-    }
+	fn shared_params(&self) -> &SharedParams {
+		self.base.base.shared_params()
+	}
 
-    fn import_params(&self) -> Option<&ImportParams> {
-        self.base.base.import_params()
-    }
+	fn import_params(&self) -> Option<&ImportParams> {
+		self.base.base.import_params()
+	}
 
-    fn network_params(&self) -> Option<&NetworkParams> {
-        self.base.base.network_params()
-    }
+	fn network_params(&self) -> Option<&NetworkParams> {
+		self.base.base.network_params()
+	}
 
-    fn keystore_params(&self) -> Option<&KeystoreParams> {
-        self.base.base.keystore_params()
-    }
+	fn keystore_params(&self) -> Option<&KeystoreParams> {
+		self.base.base.keystore_params()
+	}
 
 	fn base_path(&self) -> Result<Option<BasePath>> {
 		Ok(self
 			.shared_params()
-			.base_path()
+			.base_path()?
 			.or_else(|| self.base_path.clone().map(Into::into)))
 	}
 
-    fn rpc_http(&self, default_listen_port: u16) -> Result<Option<SocketAddr>> {
-        self.base.base.rpc_http(default_listen_port)
-    }
+	fn rpc_http(&self, default_listen_port: u16) -> Result<Option<SocketAddr>> {
+		self.base.base.rpc_http(default_listen_port)
+	}
 
-    fn rpc_ipc(&self) -> Result<Option<String>> {
-        self.base.base.rpc_ipc()
-    }
+	fn rpc_ipc(&self) -> Result<Option<String>> {
+		self.base.base.rpc_ipc()
+	}
 
-    fn rpc_ws(&self, default_listen_port: u16) -> Result<Option<SocketAddr>> {
-        self.base.base.rpc_ws(default_listen_port)
-    }
+	fn rpc_ws(&self, default_listen_port: u16) -> Result<Option<SocketAddr>> {
+		self.base.base.rpc_ws(default_listen_port)
+	}
 
 	fn prometheus_config(
 		&self,
@@ -437,12 +410,12 @@ impl CliConfiguration<Self> for RelayChainCli {
 		self.base.base.role(is_dev)
 	}
 
-	fn transaction_pool(&self) -> Result<sc_service::config::TransactionPoolOptions> {
-		self.base.base.transaction_pool()
+	fn transaction_pool(&self, is_dev: bool) -> Result<sc_service::config::TransactionPoolOptions> {
+		self.base.base.transaction_pool(is_dev)
 	}
 
-	fn state_cache_child_ratio(&self) -> Result<Option<usize>> {
-		self.base.base.state_cache_child_ratio()
+	fn trie_cache_maximum_size(&self) -> Result<Option<usize>> {
+		self.base.base.trie_cache_maximum_size()
 	}
 
 	fn rpc_methods(&self) -> Result<sc_service::config::RpcMethods> {
@@ -484,7 +457,8 @@ impl CliConfiguration<Self> for RelayChainCli {
 		self.base.base.telemetry_endpoints(chain_spec)
 	}
 
-    fn node_name(&self) -> Result<String> {
-        self.base.base.node_name()
-    }
+	fn node_name(&self) -> Result<String> {
+		self.base.base.node_name()
+	}
 }
+

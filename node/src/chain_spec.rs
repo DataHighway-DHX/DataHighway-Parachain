@@ -17,7 +17,7 @@ use datahighway_parachain_runtime::{
     TechnicalCommitteeConfig,
     TechnicalMembershipConfig,
     TransactionPaymentConfig,
-    TreasuryConfig, ParachainStakingConfig, Perquintill,
+    TreasuryConfig, ParachainStakingConfig, Perquintill, TechnicalMaxMembers,
 };
 use module_primitives::{
     constants::currency::{
@@ -58,7 +58,7 @@ use sp_core::{
     Pair,
     Public,
 };
-use sp_runtime::{AccountId32};
+use sp_runtime::{AccountId32, BoundedVec};
 use sp_runtime::traits::{
     IdentifyAccount,
     Verify,
@@ -1236,7 +1236,11 @@ fn spreehafen_testnet_genesis(
         aura: Default::default(),
         // pallet_membership_Instance1
         technical_membership: TechnicalMembershipConfig {
-            members: vec![root_key.clone()],
+            members: {
+                let mut members = BoundedVec::with_bounded_capacity(TechnicalMaxMembers::get() as usize);
+                members.try_push(root_key.clone()).expect("Cannot insert root key in technical membership");
+                members
+            },
             phantom: Default::default(),
         },
         assets: Default::default(),
@@ -1315,7 +1319,11 @@ fn testnet_genesis(
         aura: Default::default(),
         // pallet_membership_Instance1
         technical_membership: TechnicalMembershipConfig {
-            members: vec![root_key.clone()],
+            members: {
+                let mut members = BoundedVec::with_bounded_capacity(TechnicalMaxMembers::get() as usize);
+                members.try_push(root_key.clone()).expect("Cannot insert root key in technical membership");
+                members
+            },
             phantom: Default::default(),
         },
         assets: Default::default(),
@@ -1394,7 +1402,11 @@ fn dev_genesis(
         aura: Default::default(),
         // pallet_membership_Instance1
         technical_membership: TechnicalMembershipConfig {
-            members: vec![root_key.clone()],
+            members: {
+                let mut members = BoundedVec::with_bounded_capacity(TechnicalMaxMembers::get() as usize);
+                members.try_push(root_key.clone()).expect("Cannot insert root key in technical membership");
+                members
+            },
             phantom: Default::default(),
         },
         assets: Default::default(),
@@ -1484,7 +1496,11 @@ fn baikal_testnet_genesis(
         aura: Default::default(),
         // pallet_membership_Instance1
         technical_membership: TechnicalMembershipConfig {
-            members: vec![root_key.clone()],
+            members: {
+                let mut members = BoundedVec::with_bounded_capacity(TechnicalMaxMembers::get() as usize);
+                members.try_push(root_key.clone()).expect("Cannot insert root key in technical membership");
+                members
+            },
             phantom: Default::default(),
         },
         assets: Default::default(),
@@ -1563,7 +1579,11 @@ fn tanganika_testnet_genesis(
         aura: Default::default(),
         // pallet_membership_Instance1
         technical_membership: TechnicalMembershipConfig {
-            members: vec![root_key.clone()],
+            members: {
+                let mut members = BoundedVec::with_bounded_capacity(TechnicalMaxMembers::get() as usize);
+                members.try_push(root_key.clone()).expect("Cannot insert root key in technical membership");
+                members
+            },
             phantom: Default::default(),
         },
         assets: Default::default(),

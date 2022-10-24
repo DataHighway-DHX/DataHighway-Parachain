@@ -76,7 +76,7 @@ pub type XcmOriginToTransactDispatchOrigin = (
 
 parameter_types! {
 	// One XCM operation is 1_000_000_000 weight - almost certainly a conservative estimate.
-	pub UnitWeightCost: Weight = 1_000_000_000;
+	pub UnitWeightCost: u64 = 1_000_000_000;
 	pub const MaxInstructions: u32 = 100;
 }
 
@@ -105,7 +105,7 @@ impl xcm_executor::Config for XcmConfig {
     type IsTeleporter = (); // Teleporting is disabled.
     type LocationInverter = LocationInverter<Ancestry>;
     type Barrier = Barrier;
-    type Weigher = FixedWeightBounds<UnitWeightCost, Call, MaxInstructions>;
+	type Weigher = FixedWeightBounds<UnitWeightCost, Call, MaxInstructions>;
     type Trader =
         UsingComponents<WeightToFee, RelayLocation, AccountId, Balances, ToAuthor<Runtime>>;
     type ResponseHandler = PolkadotXcm;

@@ -12,16 +12,11 @@ use frame_support::weights::ConstantMultiplier;
 use smallvec::smallvec;
 use sp_api::impl_runtime_apis;
 use sp_core::{crypto::KeyTypeId, OpaqueMetadata};
-use sp_inherents::{
-    CheckInherentsResult,
-    InherentData,
-};
 use sp_runtime::{
-    create_runtime_str, curve::PiecewiseLinear, generic, impl_opaque_keys, traits,
-    traits::{AccountIdLookup, BlakeTwo256, BlindCheckable, Block as BlockT, Convert, ConvertInto, Checkable, IdentifyAccount,
-        IdentityLookup, NumberFor, OpaqueKeys, Saturating, StaticLookup, SaturatedConversion, Verify},
-    transaction_validity::{TransactionPriority, TransactionSource, TransactionValidity},
-        ApplyExtrinsicResult, MultiSignature, FixedPointNumber,
+    create_runtime_str, generic, impl_opaque_keys, traits,
+    traits::{AccountIdLookup, BlakeTwo256, Block as BlockT, ConvertInto, StaticLookup, SaturatedConversion},
+    transaction_validity::{ TransactionSource, TransactionValidity},
+    ApplyExtrinsicResult, FixedPointNumber,
 };
 pub use sp_runtime::{MultiAddress, Perbill, Percent, Permill, Perquintill};
 use sp_std::prelude::*;
@@ -35,7 +30,7 @@ use codec::{Decode, Encode, MaxEncodedLen};
 pub use frame_support::{
     construct_runtime, parameter_types,
     traits::{
-        ConstU8, ConstU16, ConstU32, ConstU64, ConstU128, Currency, EnsureOneOf, EqualPrivilegeOnly,
+        ConstU8, ConstU16, ConstU32, ConstU64, ConstU128, Currency, EitherOfDiverse, EqualPrivilegeOnly,
         Everything, Imbalance, InstanceFilter, Contains, ContainsLengthBound, OnUnbalanced, KeyOwnerProofSystem,
         LockIdentifier, Randomness, OnRuntimeUpgrade, StorageInfo, U128CurrencyToVote,
     },
@@ -52,15 +47,10 @@ use frame_system::{
     limits::{BlockLength, BlockWeights},
     EnsureRoot,
 };
-use pallet_session::historical as pallet_session_historical;
 pub use pallet_transaction_payment::{
     CurrencyAdapter,
     Multiplier,
     TargetedFeeAdjustment,
-};
-use pallet_transaction_payment::{
-    FeeDetails,
-    RuntimeDispatchInfo,
 };
 pub use sp_consensus_aura::sr25519::AuthorityId as AuraId;
 use xcm_config::{XcmConfig, XcmOriginToTransactDispatchOrigin};
@@ -73,10 +63,9 @@ pub use pallet_balances::Call as BalancesCall;
 pub use frame_system::Call as SystemCall;
 
 // Polkadot Imports
-use polkadot_runtime_common::{BlockHashCount as BlockHashCountCommon, SlowAdjustingFeeUpdate};
+use polkadot_runtime_common::{BlockHashCount as BlockHashCountCommon};
 
 // XCM Imports
-use xcm::latest::prelude::BodyId;
 use xcm_executor::XcmExecutor;
 
 pub use module_primitives::{
@@ -483,7 +472,7 @@ impl pallet_collective::Config<TechnicalCollective> for Runtime {
     type WeightInfo = pallet_collective::weights::SubstrateWeight<Runtime>;
 }
 
-type EnsureRootOrHalfCouncil = EnsureOneOf<
+type EnsureRootOrHalfCouncil = EitherOfDiverse<
     EnsureRoot<AccountId>,
     pallet_collective::EnsureProportionMoreThan<AccountId, CouncilCollective, 1, 2>,
 >;
@@ -527,11 +516,11 @@ parameter_types! {
 impl pallet_treasury::Config for Runtime {
     type PalletId = TreasuryPalletId;
     type Currency = Balances;
-    type ApproveOrigin = EnsureOneOf<
+    type ApproveOrigin = EitherOfDiverse<
         EnsureRoot<AccountId>,
         pallet_collective::EnsureProportionAtLeast<AccountId, CouncilCollective, 3, 5>,
     >;
-    type RejectOrigin = EnsureOneOf<
+    type RejectOrigin = EitherOfDiverse<
         EnsureRoot<AccountId>,
         pallet_collective::EnsureProportionMoreThan<AccountId, CouncilCollective, 1, 2>,
     >;
@@ -988,7 +977,7 @@ impl pallet_democracy::Config for Runtime {
         pallet_collective::EnsureProportionAtLeast<AccountId, CouncilCollective, 2, 3>;
     // To cancel a proposal before it has been passed, the technical committee must be unanimous or
     // Root must agree.
-    type CancelProposalOrigin = EnsureOneOf<
+    type CancelProposalOrigin = EitherOfDiverse<
         EnsureRoot<AccountId>,
         pallet_collective::EnsureProportionAtLeast<AccountId, TechnicalCollective, 1, 1>,
     >;

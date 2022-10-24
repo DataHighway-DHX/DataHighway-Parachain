@@ -1,21 +1,10 @@
 use module_primitives::{
     types::{
-        AccountId,
         Balance,
     },
 };
-use codec::{
-    Decode, Encode,
-};
-use hex_literal::hex;
-use serde::{Deserialize, Serialize};
 use serde_json;
-use sp_core::{
-    crypto::{UncheckedFrom, UncheckedInto, Wraps},
-};
 use sp_runtime::{AccountId32};
-use std::fs::File;
-use std::io::Read;
 use std::str::FromStr;
 
 pub fn get_allocation(endowed_accounts_with_balances: Vec<(AccountId32, Balance)>)

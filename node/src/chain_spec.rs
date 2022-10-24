@@ -2,9 +2,7 @@ use crate::fixtures::get_allocation;
 use cumulus_primitives_core::ParaId;
 use datahighway_parachain_runtime::{
     AuraId,
-    AuraConfig,
     BalancesConfig,
-    ParachainStaking,
     CouncilConfig,
     DemocracyConfig,
     ElectionsConfig,
@@ -17,13 +15,9 @@ use datahighway_parachain_runtime::{
     TechnicalCommitteeConfig,
     TechnicalMembershipConfig,
     TransactionPaymentConfig,
-    TreasuryConfig, ParachainStakingConfig, Perquintill, TechnicalMaxMembers,
+    TreasuryConfig, ParachainStakingConfig, TechnicalMaxMembers,
 };
 use module_primitives::{
-    constants::currency::{
-        DOLLARS,
-        EXISTENTIAL_DEPOSIT,
-    },
     types::{
         AccountId,
         Balance,
@@ -32,8 +26,6 @@ use module_primitives::{
 };
 // required for AccountId::from_str
 use std::str::FromStr;
-use log::{error, info, debug, trace};
-use hex as hex_runtime; // for runtime string parsing use hex_runtime::encode("...");
 use hex_literal::{
     hex, // for parsing string literal at compile time use hex!("...");
 };
@@ -47,13 +39,8 @@ use serde::{
     Deserialize,
     Serialize,
 };
-use serde_json::map::Map;
 use sp_core::{
-    crypto::{
-        UncheckedFrom,
-        UncheckedInto,
-        Wraps,
-    },
+    crypto::{ UncheckedInto},
     sr25519,
     Pair,
     Public,

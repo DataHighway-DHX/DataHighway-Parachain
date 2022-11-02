@@ -748,7 +748,7 @@ pub mod pallet {
 			Ok(())
 		}
 
-        #[pallet::weight(1000 + T::DbWeight::get().reads_writes(1, 2))]
+        #[pallet::weight(T::DbWeight::get().reads_writes(1, 2))]
         pub fn set_rewards_per_block(origin: OriginFor<T>, reward_per_block: BalanceOf<T>) -> DispatchResult {
             ensure_root(origin)?;
 
@@ -2696,8 +2696,8 @@ pub mod pallet {
 		T: Config + pallet_authorship::Config + pallet_session::Config,
 	{
         fn note_author(author: T::AccountId) {
-            let mut reads = Weight::one();
-            let mut writes = Weight::zero();
+            let mut reads = 1u64;
+            let mut writes = 0u64;
 
             if let Some(state) = CandidatePool::<T>::get(author.clone()) {
                 let reward_per_block = Self::reward_per_block();
@@ -2705,18 +2705,18 @@ pub mod pallet {
                     let collator_reward_ratio = Perquintill::from_rational(reward_per_block, state.total);
                     let collator_due_amount = collator_reward_ratio * state.stake;
                     Self::do_reward(&author, collator_due_amount);
-                    writes += Weight::one();
+                    writes = writes.saturating_add(1);
 
                     for Stake { owner, amount } in state.delegators {
                         if amount >= T::MinDelegatorStake::get() {
                             let due = collator_reward_ratio * amount;
                             Self::do_reward(&owner, due);
                         }
-                        writes += Weight::one();
+                        writes = writes.saturating_add(1);
                     }
-                    reads += Weight::one();
+                    reads = reads.saturating_add(1);
                 }
-                reads += Weight::one();
+                reads = reads.saturating_add(1);
             }
 
             frame_system::Pallet::<T>::register_extra_weight_unchecked(

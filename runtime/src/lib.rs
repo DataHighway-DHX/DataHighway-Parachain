@@ -12,16 +12,11 @@ use frame_support::weights::ConstantMultiplier;
 use smallvec::smallvec;
 use sp_api::impl_runtime_apis;
 use sp_core::{crypto::KeyTypeId, OpaqueMetadata};
-use sp_inherents::{
-    CheckInherentsResult,
-    InherentData,
-};
 use sp_runtime::{
-    create_runtime_str, curve::PiecewiseLinear, generic, impl_opaque_keys, traits,
-    traits::{AccountIdLookup, BlakeTwo256, BlindCheckable, Block as BlockT, Convert, ConvertInto, Checkable, IdentifyAccount,
-        IdentityLookup, NumberFor, OpaqueKeys, Saturating, StaticLookup, SaturatedConversion, Verify},
-    transaction_validity::{TransactionPriority, TransactionSource, TransactionValidity},
-        ApplyExtrinsicResult, MultiSignature, FixedPointNumber,
+    create_runtime_str, generic, impl_opaque_keys, traits,
+    traits::{AccountIdLookup, BlakeTwo256, Block as BlockT, ConvertInto, StaticLookup, SaturatedConversion},
+    transaction_validity::{ TransactionSource, TransactionValidity},
+    ApplyExtrinsicResult, FixedPointNumber,
 };
 pub use sp_runtime::{MultiAddress, Perbill, Percent, Permill, Perquintill};
 use sp_std::prelude::*;
@@ -29,12 +24,13 @@ use sp_std::prelude::*;
 use sp_version::NativeVersion;
 use sp_version::RuntimeVersion;
 use static_assertions::const_assert;
+use cumulus_pallet_parachain_system::RelayNumberStrictlyIncreases;
 
 use codec::{Decode, Encode, MaxEncodedLen};
 pub use frame_support::{
     construct_runtime, parameter_types,
     traits::{
-        ConstU8, ConstU16, ConstU32, ConstU64, ConstU128, Currency, EnsureOneOf, EqualPrivilegeOnly,
+        ConstU8, ConstU16, ConstU32, ConstU64, ConstU128, Currency, EitherOfDiverse, EqualPrivilegeOnly,
         Everything, Imbalance, InstanceFilter, Contains, ContainsLengthBound, OnUnbalanced, KeyOwnerProofSystem,
         LockIdentifier, Randomness, OnRuntimeUpgrade, StorageInfo, U128CurrencyToVote,
     },
@@ -51,15 +47,10 @@ use frame_system::{
     limits::{BlockLength, BlockWeights},
     EnsureRoot,
 };
-use pallet_session::historical as pallet_session_historical;
 pub use pallet_transaction_payment::{
     CurrencyAdapter,
     Multiplier,
     TargetedFeeAdjustment,
-};
-use pallet_transaction_payment::{
-    FeeDetails,
-    RuntimeDispatchInfo,
 };
 pub use sp_consensus_aura::sr25519::AuthorityId as AuraId;
 use xcm_config::{XcmConfig, XcmOriginToTransactDispatchOrigin};
@@ -72,10 +63,9 @@ pub use pallet_balances::Call as BalancesCall;
 pub use frame_system::Call as SystemCall;
 
 // Polkadot Imports
-use polkadot_runtime_common::{BlockHashCount as BlockHashCountCommon, SlowAdjustingFeeUpdate};
+use polkadot_runtime_common::{BlockHashCount as BlockHashCountCommon};
 
 // XCM Imports
-use xcm::latest::prelude::BodyId;
 use xcm_executor::XcmExecutor;
 
 pub use module_primitives::{
@@ -124,7 +114,7 @@ pub const AVERAGE_ON_INITIALIZE_RATIO: Perbill = Perbill::from_percent(5);
 pub const NORMAL_DISPATCH_RATIO: Perbill = Perbill::from_percent(75);
 
 /// We allow for 0.5 of a second of compute with a 12 second average block time.
-pub const MAXIMUM_BLOCK_WEIGHT: Weight = WEIGHT_PER_SECOND / 2;
+pub const MAXIMUM_BLOCK_WEIGHT: Weight = WEIGHT_PER_SECOND.saturating_div(2);
 
 /// The address format for describing accounts.
 pub type Address = MultiAddress<AccountId, AccountIndex>;
@@ -174,7 +164,7 @@ impl WeightToFeePolynomial for WeightToFee {
         // in Rococo, extrinsic base weight (smallest non-zero weight) is mapped to 1 MILLIUNITS:
         // in our template, we map to 1/10 of that, or 1/10 MILLIUNITS
         let p = MILLIUNITS / 10;
-        let q = 100 * Balance::from(ExtrinsicBaseWeight::get());
+        let q = 100 * Balance::from(ExtrinsicBaseWeight::get().ref_time());
         smallvec![WeightToFeeCoefficient {
         	degree: 1,
         	negative: false,
@@ -236,7 +226,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
     spec_name: create_runtime_str!("datahighway-parachain"),
     impl_name: create_runtime_str!("datahighway-parachain"),
     authoring_version: 2,
-    spec_version: 5,
+    spec_version: 6,
     impl_version: 1,
     apis: RUNTIME_API_VERSIONS,
 	transaction_version: 1,
@@ -386,6 +376,7 @@ parameter_types! {
 }
 
 impl pallet_transaction_payment::Config for Runtime {
+    type Event = Event;
     type OnChargeTransaction = pallet_transaction_payment::CurrencyAdapter<Balances, DealWithFees>;
     type LengthToFee = ConstantMultiplier<Balance, TransactionByteFee>;
     type WeightToFee = IdentityFee<Balance>;
@@ -395,6 +386,7 @@ impl pallet_transaction_payment::Config for Runtime {
 }
 
 impl pallet_asset_tx_payment::Config for Runtime {
+    type Event = Event;
     type Fungibles = Assets;
     type OnChargeAssetTransaction = pallet_asset_tx_payment::FungiblesAdapter<
         pallet_assets::BalanceToAssetBalance<Balances, Runtime, ConvertInto>,
@@ -432,6 +424,8 @@ parameter_types! {
     // endowed accounts that are added to election_phragmen
     pub const DesiredMembers: u32 = 62; // validators 1-10 + sudo + treasury
     pub const DesiredRunnersUp: u32 = 7;
+    pub const MaxVoters: u32 = 10 * 1000;
+	pub const MaxCandidates: u32 = 1000;
     pub const ElectionsPhragmenPalletId: LockIdentifier = *b"phrelect";
 }
 
@@ -455,6 +449,8 @@ impl pallet_elections_phragmen::Config for Runtime {
     type DesiredMembers = DesiredMembers;
     type DesiredRunnersUp = DesiredRunnersUp;
     type TermDuration = TermDuration;
+    type MaxVoters = MaxVoters;
+    type MaxCandidates = MaxCandidates;
     type WeightInfo = pallet_elections_phragmen::weights::SubstrateWeight<Runtime>;
 }
 
@@ -476,7 +472,7 @@ impl pallet_collective::Config<TechnicalCollective> for Runtime {
     type WeightInfo = pallet_collective::weights::SubstrateWeight<Runtime>;
 }
 
-type EnsureRootOrHalfCouncil = EnsureOneOf<
+type EnsureRootOrHalfCouncil = EitherOfDiverse<
     EnsureRoot<AccountId>,
     pallet_collective::EnsureProportionMoreThan<AccountId, CouncilCollective, 1, 2>,
 >;
@@ -520,11 +516,11 @@ parameter_types! {
 impl pallet_treasury::Config for Runtime {
     type PalletId = TreasuryPalletId;
     type Currency = Balances;
-    type ApproveOrigin = EnsureOneOf<
+    type ApproveOrigin = EitherOfDiverse<
         EnsureRoot<AccountId>,
         pallet_collective::EnsureProportionAtLeast<AccountId, CouncilCollective, 3, 5>,
     >;
-    type RejectOrigin = EnsureOneOf<
+    type RejectOrigin = EitherOfDiverse<
         EnsureRoot<AccountId>,
         pallet_collective::EnsureProportionMoreThan<AccountId, CouncilCollective, 1, 2>,
     >;
@@ -537,6 +533,7 @@ impl pallet_treasury::Config for Runtime {
     type Burn = Burn;
     type BurnDestination = ();
     type SpendFunds = Bounties;
+    type SpendOrigin = frame_support::traits::NeverEnsureOrigin<Balance>;
     type WeightInfo = pallet_treasury::weights::SubstrateWeight<Runtime>;
     type MaxApprovals = MaxApprovals;
 }
@@ -890,12 +887,14 @@ impl pallet_referenda::TracksInfo<Balance, BlockNumber> for TracksInfo {
                 confirm_period: 2,
                 min_enactment_period: 4,
                 min_approval: pallet_referenda::Curve::LinearDecreasing {
-                    begin: Perbill::from_percent(100),
-                    delta: Perbill::from_percent(50),
+                    length: Perbill::from_percent(100),
+                    floor: Perbill::from_percent(50),
+                    ceil: Perbill::from_percent(100),
                 },
-                min_turnout: pallet_referenda::Curve::LinearDecreasing {
-                    begin: Perbill::from_percent(100),
-                    delta: Perbill::from_percent(100),
+                min_support: pallet_referenda::Curve::LinearDecreasing {
+                    length: Perbill::from_percent(100),
+                    floor: Perbill::from_percent(0),
+                    ceil: Perbill::from_percent(50),
                 },
             },
         )];
@@ -918,6 +917,7 @@ impl pallet_referenda::Config for Runtime {
     type Call = Call;
     type Event = Event;
     type Scheduler = Scheduler;
+    type SubmitOrigin = frame_system::EnsureSigned<AccountId>;
     type Currency = pallet_balances::Pallet<Self>;
     type CancelOrigin = EnsureRoot<AccountId>;
     type KillOrigin = EnsureRoot<AccountId>;
@@ -977,7 +977,7 @@ impl pallet_democracy::Config for Runtime {
         pallet_collective::EnsureProportionAtLeast<AccountId, CouncilCollective, 2, 3>;
     // To cancel a proposal before it has been passed, the technical committee must be unanimous or
     // Root must agree.
-    type CancelProposalOrigin = EnsureOneOf<
+    type CancelProposalOrigin = EitherOfDiverse<
         EnsureRoot<AccountId>,
         pallet_collective::EnsureProportionAtLeast<AccountId, TechnicalCollective, 1, 1>,
     >;
@@ -1014,8 +1014,8 @@ impl pallet_indices::Config for Runtime {
 }
 
 parameter_types! {
-    pub const ReservedXcmpWeight: Weight = MAXIMUM_BLOCK_WEIGHT / 4;
-    pub const ReservedDmpWeight: Weight = MAXIMUM_BLOCK_WEIGHT / 4;
+    pub const ReservedXcmpWeight: Weight = MAXIMUM_BLOCK_WEIGHT.saturating_div(4);
+    pub const ReservedDmpWeight: Weight = MAXIMUM_BLOCK_WEIGHT.saturating_div(4);
 }
 
 impl cumulus_pallet_parachain_system::Config for Runtime {
@@ -1027,6 +1027,7 @@ impl cumulus_pallet_parachain_system::Config for Runtime {
     type OutboundXcmpMessageSource = XcmpQueue;
     type XcmpMessageHandler = XcmpQueue;
     type ReservedXcmpWeight = ReservedXcmpWeight;
+    type CheckAssociatedRelayNumber = RelayNumberStrictlyIncreases;
 }
 
 impl parachain_info::Config for Runtime {}
@@ -1109,7 +1110,7 @@ construct_runtime!(
 
         // Monetary stuff.
         Balances: pallet_balances::{Pallet, Call, Storage, Config<T>, Event<T>} = 15,
-        TransactionPayment: pallet_transaction_payment::{Pallet, Storage, Config} = 16,
+        TransactionPayment: pallet_transaction_payment::{Pallet, Storage, Config, Event<T>} = 16,
         AssetTxPayment: pallet_asset_tx_payment = 17,
 
         // Collator support. The order of these 4 are important and shall not change.

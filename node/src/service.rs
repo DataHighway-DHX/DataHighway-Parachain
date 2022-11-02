@@ -1,21 +1,14 @@
-//! Service and ServiceFactory implementation. Specialized wrapper over substrate service.
-
 // std
 use std::{sync::Arc, time::Duration};
+
+// rpc
+use jsonrpsee::RpcModule;
+
 use cumulus_client_cli::CollatorOptions;
 // Local Runtime Types
 use datahighway_parachain_runtime::{
-    opaque::{Block, Header}, RuntimeApi,
+	opaque::Block, AccountId, Balance, Hash, Index as Nonce, RuntimeApi,
 };
-use module_primitives::{
-    types::{
-        AccountId,
-        Balance,
-        Hash,
-        Index as Nonce,
-    },
-};
-use jsonrpsee::RpcModule;
 
 // Cumulus Imports
 use cumulus_client_consensus_aura::{AuraConsensus, BuildAuraConsensusParams, SlotProportion};
@@ -24,26 +17,24 @@ use cumulus_client_network::BlockAnnounceValidator;
 use cumulus_client_service::{
 	prepare_node_config, start_collator, start_full_node, StartCollatorParams, StartFullNodeParams,
 };
-use cumulus_primitives_core::{
-    relay_chain::v2::{Hash as PHash, PersistedValidationData},
-    ParaId,
-};
+use cumulus_primitives_core::ParaId;
 use cumulus_relay_chain_inprocess_interface::build_inprocess_relay_chain;
 use cumulus_relay_chain_interface::{RelayChainError, RelayChainInterface, RelayChainResult};
-use cumulus_relay_chain_rpc_interface::RelayChainRPCInterface;
-use polkadot_service::{CollatorPair, NativeExecutionDispatch};
-use sp_core::Pair;
+use cumulus_relay_chain_rpc_interface::{create_client_and_start_worker, RelayChainRpcInterface};
 
 // Substrate Imports
 use sc_client_api::ExecutorProvider;
 use sc_executor::NativeElseWasmExecutor;
 use sc_network::NetworkService;
-use sc_service::{Configuration, PartialComponents, Role, TFullBackend, TFullClient, TaskManager};
+use sc_network_common::service::NetworkBlock;
+use sc_service::{Configuration, PartialComponents, TFullBackend, TFullClient, TaskManager};
 use sc_telemetry::{Telemetry, TelemetryHandle, TelemetryWorker, TelemetryWorkerHandle};
 use sp_api::ConstructRuntimeApi;
 use sp_keystore::SyncCryptoStorePtr;
 use sp_runtime::traits::BlakeTwo256;
 use substrate_prometheus_endpoint::Registry;
+
+use polkadot_service::CollatorPair;
 
 /// Native executor instance.
 pub struct DataHighwayParachainRuntimeExecutor;
@@ -184,16 +175,18 @@ async fn build_relay_chain_interface(
     hwbench: Option<sc_sysinfo::HwBench>,
 ) -> RelayChainResult<(Arc<(dyn RelayChainInterface + 'static)>, Option<CollatorPair>)> {
     match collator_options.relay_chain_rpc_url {
-        Some(relay_chain_url) =>
-            Ok((Arc::new(RelayChainRPCInterface::new(relay_chain_url).await?) as Arc<_>, None)),
-        None => build_inprocess_relay_chain(
-            polkadot_config,
-            parachain_config,
-            telemetry_worker_handle,
-            task_manager,
-            hwbench,
-        ),
-    }
+		Some(relay_chain_url) => {
+			let client = create_client_and_start_worker(relay_chain_url, task_manager).await?;
+			Ok((Arc::new(RelayChainRpcInterface::new(client)) as Arc<_>, None))
+		},
+		None => build_inprocess_relay_chain(
+			polkadot_config,
+			parachain_config,
+			telemetry_worker_handle,
+			task_manager,
+			hwbench,
+		),
+	}
 }
 
 /// Start a node with the given parachain `Configuration` and relay chain `Configuration`.
@@ -265,10 +258,6 @@ where
 		bool,
 	) -> Result<Box<dyn ParachainConsensus<Block>>, sc_service::Error>,
     {
-    if matches!(parachain_config.role, Role::Light) {
-        return Err("Light client not supported!".into());
-    }
-
     let parachain_config = prepare_node_config(parachain_config);
 
     let params = new_partial::<RuntimeApi, Executor, BIQ>(&parachain_config, build_import_queue)?;

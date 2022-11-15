@@ -67,6 +67,7 @@ pallet-transaction-payment-rpc-runtime-api = { git = 'https://github.com/parityt
 pallet-asset-tx-payment = { git = 'https://github.com/paritytech/substrate', branch = 'polkadot-v0.9.29', default-features = false }
 pallet-treasury = { git = 'https://github.com/paritytech/substrate', branch = 'polkadot-v0.9.29', default-features = false }
 pallet-utility = { git = 'https://github.com/paritytech/substrate', branch = 'polkadot-v0.9.29', default-features = false }
+pallet-uniques = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.29" }
 sp-api = { git = 'https://github.com/paritytech/substrate', branch = 'polkadot-v0.9.29', default-features = false }
 sp-block-builder = { git = 'https://github.com/paritytech/substrate', branch = 'polkadot-v0.9.29', default-features = false }
 sp-consensus-aura = { git = 'https://github.com/paritytech/substrate', branch = 'polkadot-v0.9.29', default-features = false }
@@ -79,6 +80,13 @@ sp-session = { git = 'https://github.com/paritytech/substrate', branch = 'polkad
 sp-std = { git = 'https://github.com/paritytech/substrate', branch = 'polkadot-v0.9.29', default-features = false }
 sp-transaction-pool = { git = 'https://github.com/paritytech/substrate', branch = 'polkadot-v0.9.29', default-features = false }
 sp-version = { git = 'https://github.com/paritytech/substrate', branch = 'polkadot-v0.9.29', default-features = false }
+
+# Rmrk
+pallet-rmrk-core = { version = "0.0.1", default-features = false, path = "../rmrk/pallets/rmrk-core" }
+pallet-rmrk-equip = { version = "0.0.1", default-features = false, path = "../rmrk/pallets/rmrk-equip" }
+pallet-rmrk-market = { version = "0.0.1", default-features = false, path = "../rmrk/pallets/rmrk-market" }
+rmrk-traits = { version = "0.0.1", default-features = false, path = "../rmrk/traits" }
+pallet-rmrk-rpc-runtime-api = { version = "0.0.1", default-features = false, path = "../rmrk/rpc-runtime-api" }
 
 # Polkadot
 pallet-xcm = { git = 'https://github.com/paritytech/polkadot', default-features = false, branch = 'release-v0.9.29' }
@@ -155,6 +163,14 @@ std = [
     'pallet-asset-tx-payment/std',
     'pallet-treasury/std',
     'pallet-utility/std',
+    'pallet-uniques/std',
+
+    'pallet-rmrk-core/std',
+	'pallet-rmrk-market/std',
+	'pallet-rmrk-equip/std',
+	'rmrk-traits/std',
+	'pallet-rmrk-rpc-runtime-api/std',
+
     'pallet-xcm/std',
     'parachain-info/std',
     'parachain-staking/std',
@@ -209,6 +225,7 @@ runtime-benchmarks = [
     'sp-runtime/runtime-benchmarks',
     'xcm-builder/runtime-benchmarks',
     'cumulus-pallet-session-benchmarking/runtime-benchmarks',
+    'pallet-rmrk-core/runtime-benchmarks'
 ]
 
 try-runtime = [

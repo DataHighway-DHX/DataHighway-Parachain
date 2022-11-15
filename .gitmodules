@@ -1,0 +1,3 @@
+[submodule "rmrk"]
+	path = rmrk
+	url = https://github.com/rmrk-team/rmrk-substrate

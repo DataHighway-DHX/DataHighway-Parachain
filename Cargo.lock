@@ -5723,7 +5723,7 @@ dependencies = [
 [[package]]
 name = "pallet-rmrk-core"
 version = "0.0.1"
-source = "git+https://github.com/DataHighway-DHX/rmrk-substrate#ab12d64afd8958b4d4e59b6e31663406dc30e020"
+source = "git+https://github.com/DataHighway-DHX/rmrk-substrate?branch=datahighway#ab12d64afd8958b4d4e59b6e31663406dc30e020"
 dependencies = [
  "frame-benchmarking",
  "frame-support",
@@ -5741,7 +5741,7 @@ dependencies = [
 [[package]]
 name = "pallet-rmrk-equip"
 version = "0.0.1"
-source = "git+https://github.com/DataHighway-DHX/rmrk-substrate#ab12d64afd8958b4d4e59b6e31663406dc30e020"
+source = "git+https://github.com/DataHighway-DHX/rmrk-substrate?branch=datahighway#ab12d64afd8958b4d4e59b6e31663406dc30e020"
 dependencies = [
  "frame-benchmarking",
  "frame-support",
@@ -5760,7 +5760,7 @@ dependencies = [
 [[package]]
 name = "pallet-rmrk-market"
 version = "0.0.1"
-source = "git+https://github.com/DataHighway-DHX/rmrk-substrate#ab12d64afd8958b4d4e59b6e31663406dc30e020"
+source = "git+https://github.com/DataHighway-DHX/rmrk-substrate?branch=datahighway#ab12d64afd8958b4d4e59b6e31663406dc30e020"
 dependencies = [
  "frame-benchmarking",
  "frame-support",
@@ -5779,7 +5779,7 @@ dependencies = [
 [[package]]
 name = "pallet-rmrk-rpc-runtime-api"
 version = "0.0.1"
-source = "git+https://github.com/DataHighway-DHX/rmrk-substrate#ab12d64afd8958b4d4e59b6e31663406dc30e020"
+source = "git+https://github.com/DataHighway-DHX/rmrk-substrate?branch=datahighway#ab12d64afd8958b4d4e59b6e31663406dc30e020"
 dependencies = [
  "parity-scale-codec",
  "rmrk-traits",
@@ -8105,7 +8105,7 @@ dependencies = [
 [[package]]
 name = "rmrk-traits"
 version = "0.0.1"
-source = "git+https://github.com/DataHighway-DHX/rmrk-substrate#ab12d64afd8958b4d4e59b6e31663406dc30e020"
+source = "git+https://github.com/DataHighway-DHX/rmrk-substrate?branch=datahighway#ab12d64afd8958b4d4e59b6e31663406dc30e020"
 dependencies = [
  "frame-benchmarking",
  "frame-support",

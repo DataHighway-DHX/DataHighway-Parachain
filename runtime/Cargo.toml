@@ -82,11 +82,11 @@ sp-transaction-pool = { git = 'https://github.com/paritytech/substrate', branch 
 sp-version = { git = 'https://github.com/paritytech/substrate', branch = 'polkadot-v0.9.29', default-features = false }
 
 # Rmrk
-pallet-rmrk-core = { default-features = false, branch = "datahighway", git = "https://github.com/DataHighway-DHX/rmrk-substrate" }
-pallet-rmrk-equip = { default-features = false, branch = "datahighway", git = "https://github.com/DataHighway-DHX/rmrk-substrate" }
-pallet-rmrk-market = { default-features = false, branch = "datahighway", git = "https://github.com/DataHighway-DHX/rmrk-substrate" }
-rmrk-traits = { default-features = false, branch = "datahighway", git = "https://github.com/DataHighway-DHX/rmrk-substrate" }
-pallet-rmrk-rpc-runtime-api = { default-features = false, branch = "datahighway", git = "https://github.com/DataHighway-DHX/rmrk-substrate" }
+pallet-rmrk-core = { default-features = false, rev = "8c5a737", git = "https://github.com/DataHighway-DHX/rmrk-substrate" }
+pallet-rmrk-equip = { default-features = false, rev = "8c5a737", git = "https://github.com/DataHighway-DHX/rmrk-substrate" }
+pallet-rmrk-market = { default-features = false, rev = "8c5a737", git = "https://github.com/DataHighway-DHX/rmrk-substrate" }
+rmrk-traits = { default-features = false, rev = "8c5a737", git = "https://github.com/DataHighway-DHX/rmrk-substrate" }
+pallet-rmrk-rpc-runtime-api = { default-features = false, rev = "8c5a737", git = "https://github.com/DataHighway-DHX/rmrk-substrate" }
 
 # Polkadot
 pallet-xcm = { git = 'https://github.com/paritytech/polkadot', default-features = false, branch = 'release-v0.9.29' }

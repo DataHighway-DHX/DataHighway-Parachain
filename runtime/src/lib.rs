@@ -18,6 +18,7 @@ use sp_runtime::{
     transaction_validity::{ TransactionSource, TransactionValidity},
     ApplyExtrinsicResult, FixedPointNumber,
 };
+use frame_support::traits::SortedMembers;
 pub use sp_runtime::{MultiAddress, Perbill, Percent, Permill, Perquintill};
 use sp_std::prelude::*;
 #[cfg(feature = "std")]
@@ -358,6 +359,17 @@ parameter_types! {
 	pub const NestingBudget: u32 = 20;
 }
 
+
+parameter_types! {
+	pub AllowedMinters: Vec<AccountId> = vec![todo!(),];
+}
+
+impl SortedMembers<AccountId> for AllowedMinters {
+	fn sorted_members() -> Vec<AccountId> {
+		AllowedMinters::get()
+	}
+}
+
 impl pallet_rmrk_core::Config for Runtime {
 	type Event = Event;
 	type ProtocolOrigin = frame_system::EnsureRoot<AccountId>;
@@ -368,6 +380,7 @@ impl pallet_rmrk_core::Config for Runtime {
 	type MaxResourcesOnMint = MaxResourcesOnMint;
 	type NestingBudget = NestingBudget;
 	type WeightInfo = pallet_rmrk_core::weights::SubstrateWeight<Runtime>;
+	type ProducerOrigin = frame_system::EnsureSignedBy<AllowedMinters, Self::AccountId>;
 	#[cfg(feature = "runtime-benchmarks")]
 	type Helper = RmrkBenchmark;
 }

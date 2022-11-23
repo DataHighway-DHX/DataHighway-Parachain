@@ -361,7 +361,13 @@ parameter_types! {
 
 
 parameter_types! {
-	pub AllowedMinters: Vec<AccountId> = vec![todo!(),];
+    // TODO:
+    // add actual list of allowed minters
+	pub AllowedMinters: Vec<AccountId> = vec![
+        // subkey inspect "//Alice"
+        sp_runtime::AccountId32::try_from("d43593c715fdd31c61141abd04a99fd6822c8558854ccde39a5684e7a56da27d".as_bytes())
+            .expect("Allowed minter have invalid account"),
+    ];
 }
 
 impl SortedMembers<AccountId> for AllowedMinters {

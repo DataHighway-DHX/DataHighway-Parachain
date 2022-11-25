@@ -22,7 +22,7 @@ jobs:
           target: wasm32-unknown-unknown
           override: true
 
-      - name: Initialize environment and build
+      - name: Build and zip
         run: |
           cargo build --release
           cp ./target/release/datahighway-collator .
@@ -43,6 +43,10 @@ jobs:
           body_path: CHANGELOG.md
         env:
           GITHUB_TOKEN: ${{ github.token }}
+      
+      - name: generate raw chainspec
+        run: ./target/release/datahighway-collator build-spec --disable-default-bootnode > plain-parachain-chainspec.json
+        run: ./target/release/datahighway-collator build-spec --chain plain-parachain-chainspec.json --disable-default-bootnode --raw > kusama-parachain-raw.json
 
       - name: upload linux artifact
         uses: actions/upload-release-asset@v1
@@ -51,5 +55,35 @@ jobs:
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: datahighway-collator.gz
-          asset_name: datahighway-collator-amd64.gz
+          asset_name: datahighway-collator.gz
           asset_content_type: application/gzip
+      
+      - name: upload compressed runtime wasm
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./target/release/wbuild/datahighway-parachain-runtime/datahighway_parachain_runtime.compact.compressed.wasm
+          asset_name: datahighway_parachain_runtime.compact.compressed.wasm
+          asset_content_type: application/octet-stream
+      
+      - name: upload kusama json spec
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: https://github.com/DataHighway-DHX/DataHighway-Parachain/releases/download/v3.7.1/kusama.json
+          asset_name: kusama.json
+          asset_content_type: application/json
+
+      - name: upload parachain spec
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: https://github.com/DataHighway-DHX/DataHighway-Parachain/releases/download/v3.7.1/kusama-parachain-raw.json
+          asset_name: kusama.json
+          asset_content_type: application/json

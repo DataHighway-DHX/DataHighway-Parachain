@@ -28,17 +28,13 @@ jobs:
           cp ./target/release/datahighway-collator .
           gzip datahighway-collator
 
-      - name: get version
-        run: echo "::set-output name=version::$(./target/release/datahighway-collator --version)"
-        id: version
-
       - name: create release
         uses: actions/create-release@v1
         id: create_release
         with:
           draft: false
           prerelease: false
-          release_name: ${{ steps.version.outputs.version }}
+          release_name: Datahighway-${{ github.ref }}
           tag_name: ${{ github.ref }}
           body_path: CHANGELOG.md
         env:

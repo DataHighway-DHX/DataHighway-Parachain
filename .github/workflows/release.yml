@@ -42,7 +42,7 @@ jobs:
       
       - name: generate raw chainspec
         run: |
-          ./target/release/datahighway-collator build-spec --disable-default-bootnode > plain-parachain-chainspec.json
+          ./target/release/datahighway-collator build-spec --chain kusama --disable-default-bootnode > plain-parachain-chainspec.json
           ./target/release/datahighway-collator build-spec --chain plain-parachain-chainspec.json --disable-default-bootnode --raw > kusama-parachain-raw.json
       
       - name: fetch kusama spec

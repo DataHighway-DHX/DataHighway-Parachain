@@ -90,3 +90,13 @@ jobs:
           asset_path: ./kusama-parachain-raw.json
           asset_name: kusama-parachain-raw.json
           asset_content_type: application/json
+      
+      - name: upload parachain spec (v3.6.0)
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./tanganika-parachain-raw.json
+          asset_name: tanganika-parachain-raw.json
+          asset_content_type: application/json

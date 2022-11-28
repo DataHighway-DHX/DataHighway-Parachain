@@ -49,7 +49,7 @@ jobs:
         run: wget https://github.com/DataHighway-DHX/DataHighway-Parachain/releases/download/v3.7.1/kusama.json
 
       - name: fetch tanganika spec
-        run: wget https://raw.githubusercontent.com/DataHighway-DHX/DataHighway-Parachain/v3.6.0/res/kusama/kusama-parachain-raw.json -O /opt/datahighway/tanganika-parachain-raw.json
+        run: wget https://raw.githubusercontent.com/DataHighway-DHX/DataHighway-Parachain/v3.6.0/res/kusama/kusama-parachain-raw.json -O ./tanganika-parachain-raw.json
 
       - name: upload linux artifact
         uses: actions/upload-release-asset@v1

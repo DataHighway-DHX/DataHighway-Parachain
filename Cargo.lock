@@ -1887,6 +1887,7 @@ dependencies = [
  "cumulus-primitives-core",
  "cumulus-primitives-timestamp",
  "cumulus-primitives-utility",
+ "dhx-rmrk-core",
  "frame-benchmarking",
  "frame-executive",
  "frame-support",
@@ -1995,6 +1996,23 @@ dependencies = [
  "quote",
  "rustc_version 0.4.0",
  "syn",
+]
+
+[[package]]
+name = "dhx-rmrk-core"
+version = "0.0.1"
+dependencies = [
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "pallet-rmrk-core",
+ "pallet-uniques",
+ "parity-scale-codec",
+ "rmrk-traits",
+ "scale-info",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
 ]
 
 [[package]]
@@ -5723,7 +5741,7 @@ dependencies = [
 [[package]]
 name = "pallet-rmrk-core"
 version = "0.0.1"
-source = "git+https://github.com/DataHighway-DHX/rmrk-substrate?rev=8c5a737#8c5a737f167c96a5679cdb9d46129d6110864aff"
+source = "git+https://github.com/rmrk-team/rmrk-substrate?rev=c65927c#c65927c8440c53f17e4bc55a5f28289d379f41aa"
 dependencies = [
  "frame-benchmarking",
  "frame-support",
@@ -5741,7 +5759,7 @@ dependencies = [
 [[package]]
 name = "pallet-rmrk-equip"
 version = "0.0.1"
-source = "git+https://github.com/DataHighway-DHX/rmrk-substrate?rev=8c5a737#8c5a737f167c96a5679cdb9d46129d6110864aff"
+source = "git+https://github.com/rmrk-team/rmrk-substrate?rev=c65927c#c65927c8440c53f17e4bc55a5f28289d379f41aa"
 dependencies = [
  "frame-benchmarking",
  "frame-support",
@@ -5760,7 +5778,7 @@ dependencies = [
 [[package]]
 name = "pallet-rmrk-market"
 version = "0.0.1"
-source = "git+https://github.com/DataHighway-DHX/rmrk-substrate?rev=8c5a737#8c5a737f167c96a5679cdb9d46129d6110864aff"
+source = "git+https://github.com/rmrk-team/rmrk-substrate?rev=c65927c#c65927c8440c53f17e4bc55a5f28289d379f41aa"
 dependencies = [
  "frame-benchmarking",
  "frame-support",
@@ -5779,7 +5797,7 @@ dependencies = [
 [[package]]
 name = "pallet-rmrk-rpc-runtime-api"
 version = "0.0.1"
-source = "git+https://github.com/DataHighway-DHX/rmrk-substrate?rev=8c5a737#8c5a737f167c96a5679cdb9d46129d6110864aff"
+source = "git+https://github.com/rmrk-team/rmrk-substrate?rev=c65927c#c65927c8440c53f17e4bc55a5f28289d379f41aa"
 dependencies = [
  "parity-scale-codec",
  "rmrk-traits",
@@ -8105,7 +8123,7 @@ dependencies = [
 [[package]]
 name = "rmrk-traits"
 version = "0.0.1"
-source = "git+https://github.com/DataHighway-DHX/rmrk-substrate?rev=8c5a737#8c5a737f167c96a5679cdb9d46129d6110864aff"
+source = "git+https://github.com/rmrk-team/rmrk-substrate?rev=c65927c#c65927c8440c53f17e4bc55a5f28289d379f41aa"
 dependencies = [
  "frame-benchmarking",
  "frame-support",

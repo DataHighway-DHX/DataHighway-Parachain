@@ -350,6 +350,12 @@ impl pallet_authorship::Config for Runtime {
     type EventHandler = ParachainStaking;
 }
 
+impl SortedMembers<AccountId> for AllowedMinters {
+	fn sorted_members() -> Vec<AccountId> {
+		AllowedMinters::get()
+	}
+}
+
 parameter_types! {
 	pub const ResourceSymbolLimit: u32 = 10;
 	pub const PartsLimit: u32 = 25;
@@ -357,10 +363,7 @@ parameter_types! {
 	pub const CollectionSymbolLimit: u32 = 100;
 	pub const MaxResourcesOnMint: u32 = 100;
 	pub const NestingBudget: u32 = 20;
-}
 
-
-parameter_types! {
     // TODO:
     // add actual list of allowed minters
 	pub AllowedMinters: Vec<AccountId> = vec![
@@ -368,12 +371,6 @@ parameter_types! {
         sp_runtime::AccountId32::try_from("d43593c715fdd31c61141abd04a99fd6822c8558854ccde39a5684e7a56da27d".as_bytes())
             .expect("Allowed minter have invalid account"),
     ];
-}
-
-impl SortedMembers<AccountId> for AllowedMinters {
-	fn sorted_members() -> Vec<AccountId> {
-		AllowedMinters::get()
-	}
 }
 
 impl pallet_rmrk_core::Config for Runtime {
@@ -386,9 +383,13 @@ impl pallet_rmrk_core::Config for Runtime {
 	type MaxResourcesOnMint = MaxResourcesOnMint;
 	type NestingBudget = NestingBudget;
 	type WeightInfo = pallet_rmrk_core::weights::SubstrateWeight<Runtime>;
-	type ProducerOrigin = frame_system::EnsureSignedBy<AllowedMinters, Self::AccountId>;
 	#[cfg(feature = "runtime-benchmarks")]
 	type Helper = RmrkBenchmark;
+}
+
+impl dhx_rmrk_core::Config for Runtime {
+    type Event = Event;
+	type ProducerOrigin = frame_system::EnsureSignedBy<AllowedMinters, Self::AccountId>;
 }
 
 parameter_types! {
@@ -1243,10 +1244,12 @@ construct_runtime!(
         Multisig: pallet_multisig,
         Referenda: pallet_referenda,
         ConvictionVoting: pallet_conviction_voting,
-        RmrkEquip: pallet_rmrk_equip::{Pallet, Call, Event<T>, Storage},
-		RmrkCore: pallet_rmrk_core::{Pallet, Call, Event<T>, Storage},
-		RmrkMarket: pallet_rmrk_market::{Pallet, Call, Storage, Event<T>},
+
         Uniques: pallet_uniques::{Pallet, Call, Storage, Event<T>},
+		BlockedRmrkCore: pallet_rmrk_core::{Pallet, Call, Event<T>, Storage},
+        DHxRmrkCore: dhx_rmrk_core::{Pallet, Call, Event<T>, Storage}, 
+        RmrkEquip: pallet_rmrk_equip::{Pallet, Call, Event<T>, Storage},
+		RmrkMarket: pallet_rmrk_market::{Pallet, Call, Storage, Event<T>},
     }
 );
 

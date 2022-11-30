@@ -19,16 +19,21 @@ frame_support::construct_runtime!(
 		UncheckedExtrinsic = UncheckedExtrinsic,
 	{
 		System: frame_system::{Pallet, Call, Config, Storage, Event<T>},
-		TemplateModule: pallet_template::{Pallet, Call, Storage, Event<T>},
+        Uniques: pallet_uniques::{Pallet, Call, Event<T>},
+        RmrkCore: pallet_rmrk_core::{Pallet, Call, Event<T>},
+        DhxRMrkCore: dhx_rmrk_core::{Pallet, Call},
+        Balances: pallet_balances::{Pallet, Call, Event<T>},
 	}
 );
 
 parameter_types! {
 	pub const BlockHashCount: u64 = 250;
 	pub const SS58Prefix: u8 = 42;
+    pub const ExistentialDeposit: Balance = 1;
 }
 
 type AccountId = u64;
+type Balance = u64;
 impl system::Config for Test {
 	type BaseCallFilter = frame_support::traits::Everything;
 	type BlockWeights = ();
@@ -47,7 +52,7 @@ impl system::Config for Test {
 	type BlockHashCount = BlockHashCount;
 	type Version = ();
 	type PalletInfo = PalletInfo;
-	type AccountData = ();
+	type AccountData = pallet_balances::AccountData<Balance>;
 	type OnNewAccount = ();
 	type OnKilledAccount = ();
 	type SystemWeightInfo = ();
@@ -56,7 +61,48 @@ impl system::Config for Test {
 	type MaxConsumers = ConstU32<2>;
 }
 
+impl pallet_balances::Config for Test {
+    type Balance = Balance;
+    type Event = Event;
+    type DustRemoval = ();
+    type ExistentialDeposit = ExistentialDeposit;
+    type AccountStore = frame_system::Pallet<Test>;
+    type MaxLocks = ();
+    type WeightInfo = ();
+    type MaxReserves = ();
+    type ReserveIdentifier = ();
+}
+
+parameter_types! {
+	pub const CollectionDeposit: Balance = 10 ;
+	pub const ItemDeposit: Balance = 100;
+	pub const KeyLimit: u32 = 32;
+	pub const ValueLimit: u32 = 256;
+	pub const UniquesMetadataDepositBase: Balance = 10;
+	pub const AttributeDepositBase: Balance = 10;
+	pub const DepositPerByte: Balance = 1;
+	pub const UniquesStringLimit: u32 = 128;
+	pub const MaxPropertiesPerTheme: u32 = 100;
+	pub const MaxCollectionsEquippablePerPart: u32 = 100;
+}
+
 impl pallet_uniques::Config for Test {
+    type Event = Event;
+	type CollectionId = u32;
+	type ItemId = u32;
+	type Currency = Balances;
+	type ForceOrigin = frame_system::EnsureRoot<AccountId>;
+	type CreateOrigin = frame_support::traits::AsEnsureOriginWithArg<system::EnsureSigned<AccountId>>;
+	type Locker = pallet_rmrk_core::Pallet<Test>;
+	type CollectionDeposit = CollectionDeposit;
+	type ItemDeposit = ItemDeposit;
+	type MetadataDepositBase = UniquesMetadataDepositBase;
+	type AttributeDepositBase = AttributeDepositBase;
+	type DepositPerByte = DepositPerByte;
+	type StringLimit = UniquesStringLimit;
+	type KeyLimit = KeyLimit;
+	type ValueLimit = ValueLimit;
+	type WeightInfo = ();
 
 }
 
@@ -94,7 +140,6 @@ impl SortedMembers<AccountId> for AllowedMinters {
 }
 
 impl dhx_rmrk_core::Config for Test {
-	type Event = Event;
     type ProducerOrigin = EnsureSignedBy<AllowedMinters, AccountId>;
 }
 

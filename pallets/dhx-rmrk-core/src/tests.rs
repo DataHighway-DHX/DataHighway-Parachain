@@ -1,20 +1,26 @@
 use crate::{mock::*, Error};
 use frame_support::{assert_noop, assert_ok};
+use sp_runtime::AccountId32;
+use hex_literal::hex;
 
 #[test]
-fn it_works_for_default_value() {
-	new_test_ext().execute_with(|| {
-		// Dispatch a signed extrinsic.
-		assert_ok!(TemplateModule::do_something(Origin::signed(1), 42));
-		// Read pallet storage and assert an expected result.
-		assert_eq!(TemplateModule::something(), Some(42));
-	});
-}
+fn invalid_minter() {
+    let alice: AccountId32 = hex!["d43593c715fdd31c61141abd04a99fd6822c8558854ccde39a5684e7a56da27d"].into();
+    println!("Alice: {alice:?}");
 
-#[test]
-fn correct_error_for_none_value() {
-	new_test_ext().execute_with(|| {
-		// Ensure the expected error is thrown when no value is present.
-		assert_noop!(TemplateModule::cause_error(Origin::signed(1)), Error::<Test>::NoneValue);
-	});
+    new_test_ext().execute_with(|| {
+        assert_ok!(
+            DhxRMrkCore::mint_nft(
+                Origin::signed(2),
+                None,
+                1,
+                2,
+                None,
+                None,
+                Default::default(),
+                false,
+                None,
+            )
+        );
+    })
 }

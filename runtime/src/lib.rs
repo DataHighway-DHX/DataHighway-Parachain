@@ -8,6 +8,8 @@ include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 
 pub mod xcm_config;
 
+use core::str::FromStr;
+
 use frame_support::weights::ConstantMultiplier;
 use smallvec::smallvec;
 use sp_api::impl_runtime_apis;
@@ -396,8 +398,7 @@ parameter_types! {
     // add actual list of allowed minters
 	pub AllowedMinters: Vec<AccountId> = vec![
         // subkey inspect "//Alice"
-        sp_runtime::AccountId32::try_from("d43593c715fdd31c61141abd04a99fd6822c8558854ccde39a5684e7a56da27d".as_bytes())
-            .expect("Allowed minter have invalid account"),
+        hex_literal::hex!["d43593c715fdd31c61141abd04a99fd6822c8558854ccde39a5684e7a56da27d"].into(),
     ];
 }
 
@@ -416,7 +417,6 @@ impl pallet_rmrk_core::Config for Runtime {
 }
 
 impl dhx_rmrk_core::Config for Runtime {
-    type Event = Event;
 	type ProducerOrigin = frame_system::EnsureSignedBy<AllowedMinters, Self::AccountId>;
 }
 
@@ -1275,7 +1275,7 @@ construct_runtime!(
 
         Uniques: pallet_uniques::{Pallet, Call, Storage, Event<T>},
 		RmrkCore: pallet_rmrk_core::{Pallet, Call, Event<T>, Storage},
-        DHxRmrkCore: dhx_rmrk_core::{Pallet, Call, Event<T>, Storage}, 
+        DHxRmrkCore: dhx_rmrk_core::{Pallet, Call, Storage},
         RmrkEquip: pallet_rmrk_equip::{Pallet, Call, Event<T>, Storage},
 		RmrkMarket: pallet_rmrk_market::{Pallet, Call, Storage, Event<T>},
     }

@@ -14,7 +14,7 @@ mod benchmarking;
 #[frame_support::pallet]
 pub mod pallet {
 	use frame_support::{pallet_prelude::*, traits::EnsureOrigin};
-	use frame_system::pallet_prelude::*;
+    use frame_system::pallet_prelude::*;
     use frame_support::{transactional, sp_runtime::Permill};
     use pallet_rmrk_core::BoundedResourceInfoTypeOf;
     use pallet_rmrk_core::WeightInfo;
@@ -31,14 +31,12 @@ pub mod pallet {
 	pub trait Config: frame_system::Config + pallet_rmrk_core::Config {
 	    /// Who can mint nft
 		type ProducerOrigin: EnsureOrigin<Self::Origin, Success = Self::AccountId>;
-
-        /// EVent
-		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
     }
 
-    #[pallet::event]
-	#[pallet::generate_deposit(pub(super) fn deposit_event)]
-	pub enum Event<T: Config> {
+    #[pallet::error]
+    pub enum Error<T> {
+        /// Insufficient permission
+        InsufficientPermission,
     }
 
 
@@ -71,7 +69,8 @@ pub mod pallet {
 			transferable: bool,
 			resources: Option<BoundedResourceInfoTypeOf<T>>,
 		) -> DispatchResult {
-            let _minter: T::AccountId = T::ProducerOrigin::ensure_origin(origin.clone())?;
+            let _allowed_minter: T::AccountId = T::ProducerOrigin::ensure_origin(origin.clone())
+                .map_err(|_| Error::<T>::InsufficientPermission)?;
             pallet_rmrk_core::Pallet::<T>::mint_nft(
                 origin,
                 owner,

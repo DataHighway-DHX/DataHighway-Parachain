@@ -81,6 +81,16 @@ jobs:
           asset_name: kusama.json
           asset_content_type: application/json
 
+      - name: upload rococo json spec
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./res/rococo/rococo.json
+          asset_name: rococo.json
+          asset_content_type: application/json
+
       - name: upload parachain spec
         uses: actions/upload-release-asset@v1
         env:

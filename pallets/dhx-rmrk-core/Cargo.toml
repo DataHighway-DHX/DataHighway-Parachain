@@ -1,13 +1,13 @@
 [package]
 name = "dhx-rmrk-core"
 version = "0.0.1"
-description = "FRAME pallet template for defining custom runtime logic."
-authors = ["Substrate DevHub <https://github.com/substrate-developer-hub>"]
-homepage = "https://substrate.io/"
+description = "Wrapper for rmr-core pallets for custom pre-condition check"
+authors = ["MXC Foundation GmbH <mxc.org>", "Sudip Ghimire <sudipghimire533@gmail.com>"]
+homepage = "https://datahighway.com"
+repository = "https://github.com/DataHighway-DHX/DataHighway-Parachain"
 edition = "2021"
-license = "Unlicense"
+license = "GPL-3"
 publish = false
-repository = "https://github.com/rmrk-team/rmrk-substrate"
 
 [package.metadata.docs.rs]
 targets = ["x86_64-unknown-linux-gnu"]

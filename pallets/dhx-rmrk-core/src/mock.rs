@@ -21,7 +21,7 @@ frame_support::construct_runtime!(
 		System: frame_system::{Pallet, Call, Config, Storage, Event<T>},
         Uniques: pallet_uniques::{Pallet, Call, Event<T>},
         RmrkCore: pallet_rmrk_core::{Pallet, Call, Event<T>},
-        DhxRMrkCore: dhx_rmrk_core::{Pallet, Call},
+        DhxRmrkCore: dhx_rmrk_core::{Pallet, Call},
         Balances: pallet_balances::{Pallet, Call, Event<T>},
 	}
 );
@@ -120,6 +120,8 @@ impl pallet_rmrk_core::Config for Test {
 	type Helper = RmrkBenchmark;
 }
 
+pub const ALLOWED_MINTERS: &[AccountId] = &[1, 2, 3];
+
 parameter_types! {
 	pub const ResourceSymbolLimit: u32 = 10;
 	pub const PartsLimit: u32 = 25;
@@ -127,10 +129,7 @@ parameter_types! {
 	pub const CollectionSymbolLimit: u32 = 100;
 	pub const MaxResourcesOnMint: u32 = 100;
 	pub const NestingBudget: u32 = 20;
-
-    // TODO:
-    // add actual list of allowed minters
-	pub AllowedMinters: Vec<AccountId> = vec![1, 2, 3];
+	pub AllowedMinters: Vec<AccountId> = ALLOWED_MINTERS.to_vec();
 }
 
 impl SortedMembers<AccountId> for AllowedMinters {

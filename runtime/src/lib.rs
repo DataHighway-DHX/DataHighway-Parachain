@@ -321,7 +321,9 @@ impl Contains<Call> for BaseFilter {
 				Call::Uniques(pallet_uniques::Call::transfer_ownership { .. }) |
 
                 // Blocks permissioned calls to pallet-rmrk-core
-                Call::RmrkCore(pallet_rmrk_core::Call::mint_nft { .. })
+                Call::RmrkCore(pallet_rmrk_core::Call::mint_nft { .. }) |
+                Call::RmrkCore(pallet_rmrk_core::Call::create_collection { .. }) |
+                Call::RmrkCore(pallet_rmrk_core::Call::mint_nft_directly_to_nft { .. })
         )
     }
 }

@@ -1,0 +1,56 @@
+[package]
+name = "dhx-rmrk-core"
+version = "0.0.1"
+description = "Wrapper for rmr-core pallets for custom pre-condition check"
+authors = ["MXC Foundation GmbH <mxc.org>", "Sudip Ghimire <sudipghimire533@gmail.com>"]
+homepage = "https://datahighway.com"
+repository = "https://github.com/DataHighway-DHX/DataHighway-Parachain"
+edition = "2021"
+license = "GPL-3"
+publish = false
+
+[package.metadata.docs.rs]
+targets = ["x86_64-unknown-linux-gnu"]
+
+[dependencies]
+log = { version = "0.4.17", default-features = false }
+hex-literal = "0.3.4"
+codec = { package = "parity-scale-codec", version = "3.0.0", default-features = false, features = [
+	"derive",
+] }
+scale-info = { version = "2.0.1", default-features = false, features = ["derive"] }
+frame-support = { default-features = false, version = "4.0.0-dev", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.29" }
+frame-system = { default-features = false, version = "4.0.0-dev", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.29" }
+frame-benchmarking = { default-features = false, version = "4.0.0-dev", git = "https://github.com/paritytech/substrate.git", optional = true, branch = "polkadot-v0.9.29" }
+pallet-uniques = { default-features = false, version = "4.0.0-dev", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.29" }
+
+# Rmrk dependency
+# TODO:
+# Rmrk dependency from concrete branch `polkadot-v0.9.29` will be hard to wrap due to some trait bounds
+# So using latest commit which still uses 0.9.29 dependency of substrate
+# This will be neat once rmrk update to higher substrate dependency
+rmrk-traits = { default-features = false, version = "0.0.1", git = "https://github.com/rmrk-team/rmrk-substrate", rev = "c65927c" }
+pallet-rmrk-core = { default-features = false, version = "0.0.1", git = "https://github.com/rmrk-team/rmrk-substrate", rev = "c65927c" }
+
+[dev-dependencies]
+sp-core = { default-features = false, version = "6.0.0", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.29" }
+sp-io = { default-features = false, version = "6.0.0", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.29" }
+sp-runtime = { default-features = false, version = "6.0.0", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.29" }
+pallet-balances = { default-features = false, version = "4.0.0-dev", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.29"}
+
+[features]
+default = ["std"]
+std = [
+	"codec/std",
+	"scale-info/std",
+	"frame-support/std",
+	"frame-system/std",
+	"frame-benchmarking/std",
+  "log/std",
+]
+
+runtime-benchmarks = [
+  "frame-benchmarking/runtime-benchmarks",
+  "pallet-rmrk-core/runtime-benchmarks",
+]
+try-runtime = ["frame-support/try-runtime"]

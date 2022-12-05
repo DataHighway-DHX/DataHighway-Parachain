@@ -18,6 +18,7 @@ use sp_runtime::{
     transaction_validity::{ TransactionSource, TransactionValidity},
     ApplyExtrinsicResult, FixedPointNumber,
 };
+use frame_support::traits::SortedMembers;
 pub use sp_runtime::{MultiAddress, Perbill, Percent, Permill, Perquintill};
 use sp_std::prelude::*;
 #[cfg(feature = "std")]
@@ -296,10 +297,40 @@ parameter_types! {
     pub const MaxConsumers: u32 = MAX_CONSUMERS_AS_CONST;
 }
 
-// Configure FRAME pallets to include in runtime.
+pub struct BaseFilter;
+impl Contains<Call> for BaseFilter {
+    fn contains(call: &Call) -> bool {
+        !matches!(
+            call,
+            // Block all direct calls to unique
+            Call::Uniques(pallet_uniques::Call::approve_transfer { .. }) |
+				Call::Uniques(pallet_uniques::Call::burn { .. }) |
+				Call::Uniques(pallet_uniques::Call::cancel_approval { .. }) |
+				Call::Uniques(pallet_uniques::Call::clear_collection_metadata { .. }) |
+				Call::Uniques(pallet_uniques::Call::clear_metadata { .. }) |
+				Call::Uniques(pallet_uniques::Call::create { .. }) |
+				Call::Uniques(pallet_uniques::Call::destroy { .. }) |
+				Call::Uniques(pallet_uniques::Call::force_item_status { .. }) |
+				Call::Uniques(pallet_uniques::Call::force_create { .. }) |
+				Call::Uniques(pallet_uniques::Call::freeze_collection { .. }) |
+				Call::Uniques(pallet_uniques::Call::mint { .. }) |
+				Call::Uniques(pallet_uniques::Call::redeposit { .. }) |
+				Call::Uniques(pallet_uniques::Call::set_collection_metadata { .. }) |
+				Call::Uniques(pallet_uniques::Call::thaw_collection { .. }) |
+				Call::Uniques(pallet_uniques::Call::transfer { .. }) |
+				Call::Uniques(pallet_uniques::Call::transfer_ownership { .. }) |
 
+                // Blocks permissioned calls to pallet-rmrk-core
+                Call::RmrkCore(pallet_rmrk_core::Call::mint_nft { .. }) |
+                Call::RmrkCore(pallet_rmrk_core::Call::create_collection { .. }) |
+                Call::RmrkCore(pallet_rmrk_core::Call::mint_nft_directly_to_nft { .. })
+        )
+    }
+}
+
+// Configure FRAME pallets to include in runtime.
 impl frame_system::Config for Runtime {
-    type BaseCallFilter = Everything;
+    type BaseCallFilter = BaseFilter;
     type BlockWeights = RuntimeBlockWeights;
     type BlockLength = RuntimeBlockLength;
     type DbWeight = RocksDbWeight;
@@ -349,6 +380,12 @@ impl pallet_authorship::Config for Runtime {
     type EventHandler = ParachainStaking;
 }
 
+impl SortedMembers<AccountId> for AllowedMinters {
+	fn sorted_members() -> Vec<AccountId> {
+		AllowedMinters::get()
+	}
+}
+
 parameter_types! {
 	pub const ResourceSymbolLimit: u32 = 10;
 	pub const PartsLimit: u32 = 25;
@@ -356,6 +393,13 @@ parameter_types! {
 	pub const CollectionSymbolLimit: u32 = 100;
 	pub const MaxResourcesOnMint: u32 = 100;
 	pub const NestingBudget: u32 = 20;
+
+    // TODO:
+    // add actual list of allowed minters
+	pub AllowedMinters: Vec<AccountId> = vec![
+        // subkey inspect "//Alice"
+        hex_literal::hex!["d43593c715fdd31c61141abd04a99fd6822c8558854ccde39a5684e7a56da27d"].into(),
+    ];
 }
 
 impl pallet_rmrk_core::Config for Runtime {
@@ -370,6 +414,10 @@ impl pallet_rmrk_core::Config for Runtime {
 	type WeightInfo = pallet_rmrk_core::weights::SubstrateWeight<Runtime>;
 	#[cfg(feature = "runtime-benchmarks")]
 	type Helper = RmrkBenchmark;
+}
+
+impl dhx_rmrk_core::Config for Runtime {
+	type ProducerOrigin = frame_system::EnsureSignedBy<AllowedMinters, Self::AccountId>;
 }
 
 parameter_types! {
@@ -1224,10 +1272,12 @@ construct_runtime!(
         Multisig: pallet_multisig,
         Referenda: pallet_referenda,
         ConvictionVoting: pallet_conviction_voting,
-        RmrkEquip: pallet_rmrk_equip::{Pallet, Call, Event<T>, Storage},
-		RmrkCore: pallet_rmrk_core::{Pallet, Call, Event<T>, Storage},
-		RmrkMarket: pallet_rmrk_market::{Pallet, Call, Storage, Event<T>},
+
         Uniques: pallet_uniques::{Pallet, Call, Storage, Event<T>},
+		RmrkCore: pallet_rmrk_core::{Pallet, Call, Event<T>, Storage},
+        DHxRmrkCore: dhx_rmrk_core::{Pallet, Call, Storage},
+        RmrkEquip: pallet_rmrk_equip::{Pallet, Call, Event<T>, Storage},
+		RmrkMarket: pallet_rmrk_market::{Pallet, Call, Storage, Event<T>},
     }
 );
 

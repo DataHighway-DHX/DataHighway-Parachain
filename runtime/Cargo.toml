@@ -16,7 +16,7 @@ substrate-wasm-builder = { git = 'https://github.com/paritytech/substrate', bran
 [dependencies]
 chrono = { version = '0.4.19', default-features = false }
 funty = { default-features = false, version = '=1.1.0' }
-hex-literal = { version = '0.3.4', optional = true }
+hex-literal = { version = '0.3.4'}
 codec = { version = '3.1.2', package = 'parity-scale-codec', default-features = false, features = ['derive', 'max-encoded-len'] }
 log = { version = '0.4.14', default-features = false }
 scale-info = { version = '2.0.1', default-features = false, features = ['derive'] }
@@ -82,11 +82,14 @@ sp-transaction-pool = { git = 'https://github.com/paritytech/substrate', branch 
 sp-version = { git = 'https://github.com/paritytech/substrate', branch = 'polkadot-v0.9.29', default-features = false }
 
 # Rmrk
-pallet-rmrk-core = { default-features = false, branch = "datahighway", git = "https://github.com/DataHighway-DHX/rmrk-substrate" }
-pallet-rmrk-equip = { default-features = false, branch = "datahighway", git = "https://github.com/DataHighway-DHX/rmrk-substrate" }
-pallet-rmrk-market = { default-features = false, branch = "datahighway", git = "https://github.com/DataHighway-DHX/rmrk-substrate" }
-rmrk-traits = { default-features = false, branch = "datahighway", git = "https://github.com/DataHighway-DHX/rmrk-substrate" }
-pallet-rmrk-rpc-runtime-api = { default-features = false, branch = "datahighway", git = "https://github.com/DataHighway-DHX/rmrk-substrate" }
+pallet-rmrk-core = { default-features = false, rev = "c65927c", git = "https://github.com/rmrk-team/rmrk-substrate" }
+pallet-rmrk-equip = { default-features = false, rev = "c65927c", git = "https://github.com/rmrk-team/rmrk-substrate" }
+pallet-rmrk-market = { default-features = false, rev = "c65927c", git = "https://github.com/rmrk-team/rmrk-substrate" }
+rmrk-traits = { default-features = false, rev = "c65927c", git = "https://github.com/rmrk-team/rmrk-substrate" }
+pallet-rmrk-rpc-runtime-api = { default-features = false, rev = "c65927c", git = "https://github.com/rmrk-team/rmrk-substrate" }
+
+# Local rmrk forks
+dhx-rmrk-core = { default-features = false,  path = "../pallets/dhx-rmrk-core" }
 
 # Polkadot
 pallet-xcm = { git = 'https://github.com/paritytech/polkadot', default-features = false, branch = 'release-v0.9.29' }
@@ -170,6 +173,7 @@ std = [
     'pallet-rmrk-equip/std',
     'rmrk-traits/std',
     'pallet-rmrk-rpc-runtime-api/std',
+    'dhx-rmrk-core/std',
 
     'pallet-xcm/std',
     'parachain-info/std',
@@ -194,7 +198,6 @@ std = [
 ]
 
 runtime-benchmarks = [
-    'hex-literal',
     'frame-benchmarking/runtime-benchmarks', # must be provided
     'frame-system-benchmarking',
     'frame-support/runtime-benchmarks',

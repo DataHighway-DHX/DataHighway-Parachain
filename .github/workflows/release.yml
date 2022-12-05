@@ -51,6 +51,9 @@ jobs:
       - name: fetch tanganika spec
         run: wget https://raw.githubusercontent.com/DataHighway-DHX/DataHighway-Parachain/v3.6.0/res/kusama/kusama-parachain-raw.json -O ./tanganika-parachain-raw.json
 
+      - name: fetch spreehafen spec
+        run: wget https://raw.githubusercontent.com/DataHighway-DHX/DataHighway-Parachain/v3.7.0/res/rococo/rococo-parachain-raw.json -O ./spreehafen-parachain-raw.json
+
       - name: upload linux artifact
         uses: actions/upload-release-asset@v1
         env:
@@ -109,4 +112,14 @@ jobs:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ./tanganika-parachain-raw.json
           asset_name: tanganika-parachain-raw.json
+          asset_content_type: application/json
+
+      - name: upload spreehafen spec
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./spreehafen-parachain-raw.json
+          asset_name: spreehafen-parachain-raw.json
           asset_content_type: application/json

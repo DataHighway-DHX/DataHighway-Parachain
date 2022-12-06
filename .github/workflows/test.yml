@@ -26,12 +26,12 @@ jobs:
       - name: Initialize WASM build environment
         run: |
           rustup update stable
-          rustup toolchain install nightly-2021-12-15
-          rustup default nightly-2021-12-15
-          rustup target add wasm32-unknown-unknown --toolchain nightly-2021-12-15
+          rustup toolchain install nightly-2022-08-10
+          rustup default nightly-2022-08-10
+          rustup target add wasm32-unknown-unknown --toolchain nightly-2022-08-10
 
       - name: Run cargo check
-        run: cargo +nightly-2021-12-15 check
+        run: cargo +nightly-2022-08-10 check
 
   test:
     name: Test Suite
@@ -56,16 +56,16 @@ jobs:
       - name: Initialize WASM build environment
         run: |
           rustup update stable
-          rustup toolchain install nightly-2021-12-15
-          rustup default nightly-2021-12-15
-          rustup target add wasm32-unknown-unknown --toolchain nightly-2021-12-15
+          rustup toolchain install nightly-2022-08-10
+          rustup default nightly-2022-08-10
+          rustup target add wasm32-unknown-unknown --toolchain nightly-2022-08-10
 
       # Runs integration tests in the runtime/tests folder
       # To run tests in a specific package run
-      # `cargo +nightly-2021-12-15 test -p <package name> (i.e. datahighway-runtime)
+      # `cargo +nightly-2022-08-10 test -p <package name> (i.e. datahighway-runtime)
       - name: Run All Tests
         run: |
-          cargo +nightly-2021-12-15 test
+          cargo +nightly-2022-08-10 test
 
   lints:
     name: Lints
@@ -90,19 +90,19 @@ jobs:
           override: true
           components: rustfmt, clippy
 
-      # nightly-2021-12-15-x86_64-unknown-linux-gnu
+      # nightly-2022-08-10-x86_64-unknown-linux-gnu
       - name: Initialize WASM build environment
         run: |
           rustup update stable
-          rustup toolchain install nightly-2021-12-15
-          rustup default nightly-2021-12-15
-          rustup target add wasm32-unknown-unknown --toolchain nightly-2021-12-15
+          rustup toolchain install nightly-2022-08-10
+          rustup default nightly-2022-08-10
+          rustup target add wasm32-unknown-unknown --toolchain nightly-2022-08-10
 
       # Ignore use of Rust Linting since rearranging makes it challenging to update to latest Substrate
       # - name: Run cargo fmt
       # run: |
-      #   rustup component add rustfmt --toolchain nightly-2021-12-15-x86_64-unknown-linux-gnu
-      #   cargo +nightly-2021-12-15 fmt --all -- --check
+      #   rustup component add rustfmt --toolchain nightly-2022-08-10-x86_64-unknown-linux-gnu
+      #   cargo +nightly-2022-08-10 fmt --all -- --check
 
       # Ignore use of Clippy until a clippy.toml file may be used. See README.md
       # - name: Run cargo clippy
@@ -112,6 +112,6 @@ jobs:
       #   #   args:  --release -- -D warnings
       #   # FIXME - temporary fix below. See https://github.com/rust-lang/rust-clippy/issues/5094#issuecomment-579116431
       #   run: |
-      #     rustup component add clippy --toolchain nightly-2021-12-15-x86_64-unknown-linux-gnu
-      #     rustup component add clippy-preview --toolchain nightly-2021-12-15-x86_64-unknown-linux-gnu
-      #     cargo +nightly-2021-12-15 clippy-preview -Zunstable-options
+      #     rustup component add clippy --toolchain nightly-2022-08-10-x86_64-unknown-linux-gnu
+      #     rustup component add clippy-preview --toolchain nightly-2022-08-10-x86_64-unknown-linux-gnu
+      #     cargo +nightly-2022-08-10 clippy-preview -Zunstable-options

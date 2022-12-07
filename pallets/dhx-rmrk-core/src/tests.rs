@@ -105,12 +105,6 @@ fn permissionned_origin() {
     })
 }
 
-// Make sure that the #[transactional] property of exrtrinsic is preserved
-#[test]
-fn preserve_transactional() {
-    todo!()
-}
-
 #[test]
 pub fn allowed_producers_genesis() {
     new_test_ext().execute_with(|| {

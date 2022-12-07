@@ -1,13 +1,14 @@
 use crate::{mock::*, Error};
 use frame_support::{assert_noop, assert_ok};
 use frame_system::ensure_signed;
+use sp_runtime::DispatchError;
 
 #[test]
 fn permissionned_origin() {
     let denied_caller = 6;
     let denied_origin = Origin::signed(denied_caller);
     let allowed_origins = ALLOWED_MINTERS.iter().map(|id| Origin::signed(id.clone())).collect::<Vec<_>>();
-    assert!(!AllowedMinters::get().contains(&denied_caller), "this caller is in alloed minter list. Change test value");
+    assert!(!ALLOWED_MINTERS.contains(&denied_caller), "this caller is in allowed minter list. Change test value");
 
     // These calls should fail with insufficient permission
     new_test_ext().execute_with(|| {
@@ -102,4 +103,54 @@ fn permissionned_origin() {
             );
         }
     })
+}
+
+// Make sure that the #[transactional] property of exrtrinsic is preserved
+#[test]
+fn preserve_transactional() {
+    todo!()
+}
+
+#[test]
+pub fn allowed_producers_genesis() {
+    new_test_ext().execute_with(|| {
+        let mut expected_producers = ALLOWED_MINTERS.to_vec();
+        expected_producers.sort();
+        let mut stored_producers = crate::AuthorisedProducers::<Test>::iter_keys().collect::<Vec<_>>();
+        stored_producers.sort();
+
+        assert_eq!(expected_producers, stored_producers);
+    });
+}
+
+#[test]
+pub fn allowed_procuer_removal() {
+    new_test_ext().execute_with(|| {
+        matches!(DhxRmrkCore::get_authorised_producer(&1), Some(_));
+        assert_noop!(
+            DhxRmrkCore::remove_producer(Origin::signed(10), 1),
+            DispatchError::BadOrigin
+        );
+
+        assert_ok!(
+            DhxRmrkCore::remove_producer(Origin::root(), 1),
+        );
+        matches!(DhxRmrkCore::get_authorised_producer(&1), None);
+    })
+}
+
+#[test]
+pub fn allowed_producer_insertion() {
+    new_test_ext().execute_with(|| {
+        matches!(DhxRmrkCore::get_authorised_producer(&10), None);
+        assert_noop!(
+            DhxRmrkCore::add_producer(Origin::signed(1), 10),
+            DispatchError::BadOrigin,
+        );
+
+        assert_ok!(
+            DhxRmrkCore::add_producer(Origin::root(), 10)
+        );
+        matches!(DhxRmrkCore::get_authorised_producer(&10), Some(_));
+    });
 }

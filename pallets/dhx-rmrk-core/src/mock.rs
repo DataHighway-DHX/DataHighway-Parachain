@@ -1,12 +1,11 @@
 use crate as dhx_rmrk_core;
-use frame_support::{parameter_types, traits::{ConstU32, SortedMembers}};
+use frame_support::{parameter_types, traits::{ConstU32, GenesisBuild}};
 use frame_system as system;
 use sp_core::H256;
 use sp_runtime::{
 	testing::Header,
 	traits::{BlakeTwo256, IdentityLookup},
 };
-use system::EnsureSignedBy;
 
 type UncheckedExtrinsic = frame_system::mocking::MockUncheckedExtrinsic<Test>;
 type Block = frame_system::mocking::MockBlock<Test>;
@@ -21,7 +20,7 @@ frame_support::construct_runtime!(
 		System: frame_system::{Pallet, Call, Config, Storage, Event<T>},
         Uniques: pallet_uniques::{Pallet, Call, Event<T>},
         RmrkCore: pallet_rmrk_core::{Pallet, Call, Event<T>},
-        DhxRmrkCore: dhx_rmrk_core::{Pallet, Call},
+        DhxRmrkCore: dhx_rmrk_core::{Pallet, Call, Event<T>, Config<T>},
         Balances: pallet_balances::{Pallet, Call, Event<T>},
 	}
 );
@@ -118,8 +117,6 @@ impl pallet_rmrk_core::Config for Test {
 	type WeightInfo = pallet_rmrk_core::weights::SubstrateWeight<Test>;
 }
 
-pub const ALLOWED_MINTERS: &[AccountId] = &[1, 2, 3];
-
 parameter_types! {
 	pub const ResourceSymbolLimit: u32 = 10;
 	pub const PartsLimit: u32 = 25;
@@ -127,20 +124,21 @@ parameter_types! {
 	pub const CollectionSymbolLimit: u32 = 100;
 	pub const MaxResourcesOnMint: u32 = 100;
 	pub const NestingBudget: u32 = 20;
-	pub AllowedMinters: Vec<AccountId> = ALLOWED_MINTERS.to_vec();
-}
-
-impl SortedMembers<AccountId> for AllowedMinters {
-	fn sorted_members() -> Vec<AccountId> {
-		AllowedMinters::get()
-	}
 }
 
 impl dhx_rmrk_core::Config for Test {
-    type ProducerOrigin = EnsureSignedBy<AllowedMinters, AccountId>;
+    type Event = Event;
 }
+
+pub const ALLOWED_MINTERS: &[AccountId] = &[1, 2, 3];
 
 // Build genesis storage according to the mock runtime.
 pub fn new_test_ext() -> sp_io::TestExternalities {
-	system::GenesisConfig::default().build_storage::<Test>().unwrap().into()
+	let mut t = frame_system::GenesisConfig::default().build_storage::<Test>().unwrap();
+	crate::GenesisConfig::<Test> {
+        allowed_producers: ALLOWED_MINTERS.to_vec(),
+    }
+    .assimilate_storage(&mut t)
+	.unwrap();
+	t.into()
 }

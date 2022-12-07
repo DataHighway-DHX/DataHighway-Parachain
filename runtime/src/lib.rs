@@ -18,7 +18,6 @@ use sp_runtime::{
     transaction_validity::{ TransactionSource, TransactionValidity},
     ApplyExtrinsicResult, FixedPointNumber,
 };
-use frame_support::traits::SortedMembers;
 pub use sp_runtime::{MultiAddress, Perbill, Percent, Permill, Perquintill};
 use sp_std::prelude::*;
 #[cfg(feature = "std")]
@@ -380,12 +379,6 @@ impl pallet_authorship::Config for Runtime {
     type EventHandler = ParachainStaking;
 }
 
-impl SortedMembers<AccountId> for AllowedMinters {
-	fn sorted_members() -> Vec<AccountId> {
-		AllowedMinters::get()
-	}
-}
-
 parameter_types! {
 	pub const ResourceSymbolLimit: u32 = 10;
 	pub const PartsLimit: u32 = 25;
@@ -393,13 +386,6 @@ parameter_types! {
 	pub const CollectionSymbolLimit: u32 = 100;
 	pub const MaxResourcesOnMint: u32 = 100;
 	pub const NestingBudget: u32 = 20;
-
-    // TODO:
-    // add actual list of allowed minters
-	pub AllowedMinters: Vec<AccountId> = vec![
-        // subkey inspect "//Alice"
-        hex_literal::hex!["d43593c715fdd31c61141abd04a99fd6822c8558854ccde39a5684e7a56da27d"].into(),
-    ];
 }
 
 impl pallet_rmrk_core::Config for Runtime {
@@ -417,7 +403,7 @@ impl pallet_rmrk_core::Config for Runtime {
 }
 
 impl dhx_rmrk_core::Config for Runtime {
-	type ProducerOrigin = frame_system::EnsureSignedBy<AllowedMinters, Self::AccountId>;
+    type Event = Event;
 }
 
 parameter_types! {
@@ -1275,7 +1261,7 @@ construct_runtime!(
 
         Uniques: pallet_uniques::{Pallet, Call, Storage, Event<T>},
 		RmrkCore: pallet_rmrk_core::{Pallet, Call, Event<T>, Storage},
-        DHxRmrkCore: dhx_rmrk_core::{Pallet, Call, Storage},
+        DHxRmrkCore: dhx_rmrk_core::{Pallet, Call, Event<T>, Storage},
         RmrkEquip: pallet_rmrk_equip::{Pallet, Call, Event<T>, Storage},
 		RmrkMarket: pallet_rmrk_market::{Pallet, Call, Storage, Event<T>},
     }

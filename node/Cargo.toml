@@ -1,6 +1,6 @@
 [package]
 name = 'datahighway-collator'
-version = '3.7.1'
+version = '3.8.0'
 authors = ['Anonymous']
 description = 'DataHighway parachain collator FRAME-based Substrate Node based upon the Cumulus.'
 license = 'Unlicense'

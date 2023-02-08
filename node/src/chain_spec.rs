@@ -1242,6 +1242,7 @@ fn spreehafen_testnet_genesis(
             max_candidate_stake: datahighway_parachain_runtime::constants::staking::MAX_CANDIDATE_STAKE,
             reward_per_block: datahighway_parachain_runtime::constants::staking::REWARD_PER_BLOCK,
         },
+        vesting: Default::default(),
     }
 }
 
@@ -1325,6 +1326,7 @@ fn testnet_genesis(
             max_candidate_stake: datahighway_parachain_runtime::constants::staking::MAX_CANDIDATE_STAKE,
             reward_per_block: datahighway_parachain_runtime::constants::staking::REWARD_PER_BLOCK,
         },
+        vesting: Default::default(),
     }
 }
 
@@ -1408,6 +1410,7 @@ fn dev_genesis(
             max_candidate_stake: datahighway_parachain_runtime::constants::staking::MAX_CANDIDATE_STAKE,
             reward_per_block: datahighway_parachain_runtime::constants::staking::REWARD_PER_BLOCK,
         },
+        vesting: Default::default(),
     }
 }
 
@@ -1502,6 +1505,7 @@ fn baikal_testnet_genesis(
             max_candidate_stake: datahighway_parachain_runtime::constants::staking::MAX_CANDIDATE_STAKE,
             reward_per_block: datahighway_parachain_runtime::constants::staking::REWARD_PER_BLOCK,
         },
+        vesting: Default::default(),
     }
 }
 
@@ -1585,5 +1589,6 @@ fn tanganika_testnet_genesis(
             max_candidate_stake: datahighway_parachain_runtime::constants::staking::MAX_CANDIDATE_STAKE,
             reward_per_block: datahighway_parachain_runtime::constants::staking::REWARD_PER_BLOCK,
         },
+        vesting: Default::default(),
     }
 }

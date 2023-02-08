@@ -32,7 +32,7 @@ pub use frame_support::{
     traits::{
         ConstU8, ConstU16, ConstU32, ConstU64, ConstU128, Currency, EitherOfDiverse, EqualPrivilegeOnly,
         Everything, Imbalance, InstanceFilter, Contains, ContainsLengthBound, OnUnbalanced, KeyOwnerProofSystem,
-        LockIdentifier, Randomness, OnRuntimeUpgrade, StorageInfo, U128CurrencyToVote,
+        LockIdentifier, Randomness, OnRuntimeUpgrade, StorageInfo, U128CurrencyToVote, WithdrawReasons,
     },
     weights::{
         constants::{BlockExecutionWeight, ExtrinsicBaseWeight, RocksDbWeight, WEIGHT_PER_SECOND},
@@ -226,8 +226,8 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
     spec_name: create_runtime_str!("datahighway-parachain"),
     impl_name: create_runtime_str!("datahighway-parachain"),
     authoring_version: 2,
-    spec_version: 6,
-    impl_version: 1,
+    spec_version: 7,
+    impl_version: 0,
     apis: RUNTIME_API_VERSIONS,
 	transaction_version: 1,
 	state_version: 1,
@@ -360,6 +360,19 @@ impl pallet_balances::Config for Runtime {
     type MaxReserves = MaxReserves;
     type WeightInfo = pallet_balances::weights::SubstrateWeight<Runtime>;
     type ReserveIdentifier = [u8; 8];
+}
+
+parameter_types! {
+	pub const MinVestedTransfer: Balance = 100 * CENTS;
+}
+
+impl pallet_vesting::Config for Runtime {
+	type Event = Event;
+	type Currency = Balances;
+	type BlockNumberToBalance = ConvertInto;
+	type MinVestedTransfer = MinVestedTransfer;
+	type WeightInfo = pallet_vesting::weights::SubstrateWeight<Runtime>;
+	const MAX_VESTING_SCHEDULES: u32 = 28;
 }
 
 pub const OPERATIONAL_FEE_MULTIPLIER_AS_CONST: u8 = 5;
@@ -1110,8 +1123,9 @@ construct_runtime!(
 
         // Monetary stuff.
         Balances: pallet_balances::{Pallet, Call, Storage, Config<T>, Event<T>} = 15,
-        TransactionPayment: pallet_transaction_payment::{Pallet, Storage, Config, Event<T>} = 16,
-        AssetTxPayment: pallet_asset_tx_payment = 17,
+        Vesting: pallet_vesting::{Pallet, Call, Storage, Config<T>, Event<T>} = 16,
+        TransactionPayment: pallet_transaction_payment::{Pallet, Storage, Config, Event<T>} = 17,
+        AssetTxPayment: pallet_asset_tx_payment = 18,
 
         // Collator support. The order of these 4 are important and shall not change.
         // Authorship must be before session in order to note author in the correct session and era

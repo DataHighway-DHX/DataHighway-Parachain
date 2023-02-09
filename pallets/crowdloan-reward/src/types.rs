@@ -1,5 +1,6 @@
 use codec::MaxEncodedLen;
 use frame_support::traits::Currency;
+use frame_support::traits::tokens::Balance;
 use scale_info::TypeInfo;
 use sp_runtime::Percent;
 use codec::Encode;
@@ -88,6 +89,17 @@ pub enum RewardCampaignStatus {
     Wiped,
 }
 
+pub struct InstantEnsuredResult<Balance> {
+	pub new_status: ClaimerStatus,
+	pub instant_amount: Balance,
+}
+
+pub struct VestedEnsuredResult<Balance> {
+	pub new_status: ClaimerStatus,
+	pub vesting_amount: Balance,
+	pub per_block: Balance,
+}
+
 pub type AccountIdOf<T> = <T as frame_system::Config>::AccountId;
 pub type CrowdloanRewardFor<T> = CrowdloanReward<AccountIdOf<T>, BlockNumberOf<T>, BalanceOf<T>>;
 pub type CrowdloanRewardParamFor<T> = CrowdloanRewardParam<AccountIdOf<T>, BlockNumberOf<T>, BalanceOf<T>>;
@@ -95,3 +107,5 @@ pub type BlockNumberOf<T> = <T as frame_system::Config>::BlockNumber;
 pub type BalanceOf<T> = <<T as crate::Config>::Currency as Currency<AccountIdOf<T>>>::Balance;
 pub type RewardUnitOf<T> = RewardUnit<BalanceOf<T>>;
 pub type CrowdloanIdOf<T> = <T as crate::Config>::CrowdloanId;
+pub type VestedEnsuredResultOf<T> = VestedEnsuredResult<BalanceOf<T>>;
+pub type InstantEnsuredResultOf<T> = InstantEnsuredResult<BalanceOf<T>>;

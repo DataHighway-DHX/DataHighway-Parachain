@@ -15,15 +15,18 @@ mod types;
 
 #[frame_support::pallet]
 pub mod pallet {
+	use crate::types::{VestedEnsuredResult, InstantEnsuredResult};
+
+use super::types;
 	use sp_std::fmt::Debug;
-	use frame_support::pallet_prelude::*;
+	use frame_support::pallet_prelude::{*, DispatchResult};
 	use frame_support::traits::{Currency, LockableCurrency, ReservableCurrency};
 	use frame_system::pallet_prelude::*;
 	pub use sp_runtime::Percent;
 	use sp_runtime::traits::{AtLeast32Bit, MaybeDisplay};
-	use super::types::{
+	use types::{
 		AccountIdOf, BalanceOf, BlockNumberOf, RewardUnitOf, CrowdloanRewardFor, CrowdloanRewardParamFor, CrowdloanIdOf,
-		RewardCampaignStatus,
+		RewardCampaignStatus, ClaimerStatus, InstantEnsuredResultOf, VestedEnsuredResultOf,
 	};
 
 	#[pallet::pallet]
@@ -52,6 +55,7 @@ pub mod pallet {
 	}
 
 	#[pallet::storage]
+	#[pallet::getter(fn get_contribution)]
 	pub type Contribution<T> = StorageDoubleMap<_, Blake2_128Concat, CrowdloanIdOf<T>, Blake2_128Concat, AccountIdOf<T>, RewardUnitOf<T>>;
 
 	#[pallet::storage]
@@ -87,13 +91,13 @@ pub mod pallet {
 			contributer: AccountIdOf<T>,
 		},
 		/// A contributer have been added as rewardee
-		ContributedAdded {
+		ContributerAdded {
 			crowdloan_id: CrowdloanIdOf<T>,
 			contributer: AccountIdOf<T>,
-			total_amount: BalanceOf<T>,
+			amount: BalanceOf<T>,
 		},
 		/// A contributer have been removed from campaign
-		ContributedKicked {
+		ContributerKicked {
 			crowdloan_id: CrowdloanIdOf<T>,
 			contributer: AccountIdOf<T>,
 		},
@@ -119,6 +123,16 @@ pub mod pallet {
 		CampaignWiped,
 		/// Not all required information was passed
 		InsufficientInfo,
+		/// This crowdloan is in one of read-only state
+		ReadOnlyCampaign,
+		/// This campaign is not yet in claimable state for contributers
+		CampaignNotLocked,
+		/// This campaign cannot be locked
+		NonLockableCampaign,
+		/// Instant reward have been taken by this contributer
+		InstantRewardTaken,
+		/// Vesting scheduled have been applied to this contributer's address
+		VestingRewardApplied,
 	}
 
 	#[pallet::call]
@@ -153,43 +167,55 @@ pub mod pallet {
 			<RewardInfo<T>>::insert(crowdloan_id, crowdloan_reward_info);
 
 			Self::deposit_event(Event::<T>::CampaignStarted(crowdloan_id));
-
 			Ok(())
 		}
 
 		#[pallet::weight(10_000)]
 		pub fn add_contributer(origin: OriginFor<T>, crowdloan_id: CrowdloanIdOf<T>, contributer: AccountIdOf<T>, amount: BalanceOf<T>) -> DispatchResult {
 			Self::ensure_hoster(origin, crowdloan_id)?;
+			Self::ensure_campaign_writable(&crowdloan_id)?;
+
+			ensure!(!<Contribution<T>>::contains_key(&crowdloan_id, &contributer), <Error<T>>::ContributerExists);
 
 			// TODO:
-			// - check state is writeable
-			// - check the contributer is not already there
 			// - calculate required fields from given amount
 			// - put vlaue
 
+			Self::deposit_event(Event::<T>::ContributerAdded {
+				crowdloan_id,
+				contributer,
+				amount
+			});
 			Ok(())
 		}
 
 		#[pallet::weight(10_000)]
 		pub fn remove_contributer(origin: OriginFor<T>, crowdloan_id: CrowdloanIdOf<T>, contributer: AccountIdOf<T>) -> DispatchResult {
 			Self::ensure_hoster(origin, crowdloan_id)?;
+			Self::ensure_campaign_writable(&crowdloan_id)?;
 
-			// TODO:
-			// - check state is writable
-			// - remove contributer
+			ensure!(<Contribution<T>>::contains_key(&crowdloan_id, &contributer), <Error<T>>::NoContribution);
 
+			<Contribution<T>>::remove(&crowdloan_id, &contributer);
+
+			Self::deposit_event(Event::<T>::ContributerKicked {
+				crowdloan_id,
+				contributer,
+			});
 			Ok(())
 		}
 
 		#[pallet::weight(10_000)]
 		pub fn lock_campaign(origin: OriginFor<T>, crowdloan_id: CrowdloanIdOf<T>) -> DispatchResult {
 			Self::ensure_hoster(origin, crowdloan_id)?;
+			Self::ensure_campaign_lockable(&crowdloan_id)?;
 
 			// TODO
-			// - check current state is lockable
 			// - check the source have enough locked balance ( the locked field ) to reward all contributers
-			// - change the status
 
+			<CampaignStatus<T>>::insert(crowdloan_id, RewardCampaignStatus::Locked);
+
+			Self::deposit_event(Event::<T>::CampaignLocked(crowdloan_id));
 			Ok(())
 		}
 
@@ -202,34 +228,40 @@ pub mod pallet {
 			// - check if all receiver have received the reward
 			// - kill Contribution storage mapped to this id
 			// - kill RewardInfo storage under this id
-			// - update the CampaignStatus to wiped
 
+			<CampaignStatus<T>>::insert(&crowdloan_id, RewardCampaignStatus::Wiped);
+			
+			Self::deposit_event(Event::<T>::CampaignWiped(crowdloan_id));
 			Ok(())
 		}
 
 		#[pallet::weight(10_0000)]
 		pub fn get_instant_reward(origin: OriginFor<T>, crowdloan_id: CrowdloanIdOf<T>) -> DispatchResult {
-			let rewardee = ensure_signed(origin)?;
+			let contributer = ensure_signed(origin)?;
+			Self::ensure_campaign_claimable(&crowdloan_id)?;
+			let InstantEnsuredResultOf::<T> {new_status, instant_amount} = Self::ensure_instant_claimable(&crowdloan_id, &contributer)?;
 
 			// TODO:
-			// - check this reward campaign is in locked stage
-			// - check this call not have been made already
 			// - Reward the instant amount of this rewardee
-			// - update the status
 
+			Self::update_contributer_status(&crowdloan_id, &contributer, new_status);
+			
+			Self::deposit_event(Event::<T>::InstantRewarded { crowdloan_id, contributer });
 			Ok(())
 		}
 
 		#[pallet::weight(10_000)]
 		pub fn get_vested_reward(origin: OriginFor<T>, crowdloan_id: CrowdloanIdOf<T>) -> DispatchResult {
-			let rewardee = ensure_signed(origin)?;
+			let contributer = ensure_signed(origin)?;
+			Self::ensure_campaign_claimable(&crowdloan_id)?;
+			let VestedEnsuredResultOf::<T> {new_status, vesting_amount, per_block} = Self::ensure_vested_claimable(&crowdloan_id, &contributer)?;
 
 			// TODO:
-			// - check this reward campaign is in locked stage
-			// - check this call have not been made already
-			// - make vesting schedule with locked amont = vesting reward
-			// - update status
+			// - Reward the instant amount of this rewardee
 
+			Self::update_contributer_status(&crowdloan_id, &contributer, new_status);
+
+			Self::deposit_event(Event::<T>::VestingScheduleApplied { crowdloan_id, contributer });
 			Ok(())
 		}
 	}
@@ -246,6 +278,61 @@ pub mod pallet {
 				.hoster == signer)
 				.then_some(())
 				.ok_or(<Error<T>>::PermissionDenied.into())
+		}
+
+		fn ensure_campaign_writable(crowdloan_id: &CrowdloanIdOf<T>) -> DispatchResult {
+			ensure!(Self::get_campaign_status(crowdloan_id).ok_or(<Error<T>>::NoRewardCampaign)? == RewardCampaignStatus::InProgress, <Error<T>>::ReadOnlyCampaign);
+			Ok(())
+		}
+
+		fn ensure_campaign_claimable(crowdloan_id: &CrowdloanIdOf<T>) -> DispatchResult {
+			ensure!(Self::get_campaign_status(crowdloan_id).ok_or(<Error<T>>::NoRewardCampaign)? == RewardCampaignStatus::Locked, <Error<T>>::CampaignNotLocked);
+			Ok(())
+		}
+
+		fn ensure_campaign_lockable(crowdloan_id: &CrowdloanIdOf<T>) -> DispatchResult {
+			ensure!(Self::get_campaign_status(crowdloan_id).ok_or(<Error<T>>::NoRewardCampaign)? == RewardCampaignStatus::InProgress, <Error<T>>::NonLockableCampaign);
+			Ok(())
+		} 
+
+		fn ensure_instant_claimable(crowdloan_id: &CrowdloanIdOf<T>, contributer: &AccountIdOf<T>) -> Result<InstantEnsuredResultOf<T>, DispatchError> {
+			let info = Self::get_contribution(crowdloan_id, contributer).ok_or(Error::<T>::NoContribution)?;
+
+			let new_status = match info.status {
+				ClaimerStatus::Unprocessed => Ok(ClaimerStatus::DoneInstant),
+				ClaimerStatus::DoneVesting => Ok(ClaimerStatus::DoneBoth),
+				ClaimerStatus::DoneInstant | ClaimerStatus::DoneBoth => Err(Error::<T>::InstantRewardTaken),
+			}?;
+			
+			Ok(InstantEnsuredResultOf::<T> {
+				new_status,
+				instant_amount: info.instant_amount,
+			})
+		}
+
+		fn ensure_vested_claimable(crowdloan_id: &CrowdloanIdOf<T>, contributer: &AccountIdOf<T>) -> Result<VestedEnsuredResultOf<T>, DispatchError> {
+			let info = Self::get_contribution(crowdloan_id, contributer).ok_or(Error::<T>::NoContribution)?;
+
+			let new_status = match info.status {
+				ClaimerStatus::Unprocessed => Ok(ClaimerStatus::DoneVesting),
+				ClaimerStatus::DoneInstant => Ok(ClaimerStatus::DoneBoth),
+				ClaimerStatus::DoneVesting | ClaimerStatus::DoneBoth => Err(Error::<T>::InstantRewardTaken),
+			}?;
+			
+			Ok(VestedEnsuredResultOf::<T> {
+				new_status,
+				vesting_amount: info.instant_amount,
+				per_block: info.per_block,
+			})
+		}
+
+		fn update_contributer_status(crowdloan_id: &CrowdloanIdOf<T>, contributer: &AccountIdOf<T>, new_status: ClaimerStatus) {
+			<Contribution<T>>::mutate(&crowdloan_id, &contributer, |state| {
+				state.as_mut().map(|state| {
+					state.status = new_status;
+					state
+				});
+			});
 		}
 
 		fn get_current_block_number() -> BlockNumberOf<T> {

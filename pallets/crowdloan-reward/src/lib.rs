@@ -41,14 +41,14 @@ pub mod pallet {
 		// TODO:
 		// do not restrict this to only u32
 		type CrowdloanId: Parameter
-		+ Member
-		+ MaybeSerializeDeserialize
-		+ Debug
-		+ Default
-		+ MaybeDisplay
-		+ AtLeast32Bit
-		+ Copy
-		+ MaxEncodedLen;
+			+ Member
+			+ MaybeSerializeDeserialize
+			+ Debug
+			+ Default
+			+ MaybeDisplay
+			+ AtLeast32Bit
+			+ Copy
+			+ MaxEncodedLen;
 	}
 
 	#[pallet::storage]
@@ -117,6 +117,8 @@ pub mod pallet {
 		CampaignInProgress,
 		/// Campaign wiped
 		CampaignWiped,
+		/// Not all required information was passed
+		InsufficientInfo,
 	}
 
 	#[pallet::call]
@@ -128,13 +130,29 @@ pub mod pallet {
 
 			ensure!(!<CampaignStatus<T>>::contains_key(&crowdloan_id), <Error<T>>::RewardCampaignExists);
 			ensure!(!<RewardInfo<T>>::contains_key(&crowdloan_id), <Error<T>>::RewardCampaignExists);
-			// TODO:
-			// Also ensre that no entries in <Contribution<T>> is inside first key crowdloan_id
+			ensure!(<Contribution<T>>::iter_key_prefix(&crowdloan_id).count() == 0, <Error<T>>::RewardCampaignExists);
 
-			// TODO:
-			// - check that `info` have all required field for initilization
-			// - create CrowdloanReward from `info`
-			// - insert
+			let reward_source = info.reward_source.ok_or(<Error<T>>::InsufficientInfo)?;
+			let total_pool = info.total_pool.ok_or(<Error<T>>::InsufficientInfo)?;
+			let end_target = info.end_target.ok_or(<Error<T>>::InsufficientInfo)?;
+			let starts_from = info.starts_from.ok_or(<Error<T>>::InsufficientInfo)?;
+			let instant_percentage = info.instant_percentage.ok_or(<Error<T>>::InsufficientInfo)?;
+			let vesting_percentage = info.vesting_percentage.ok_or(<Error<T>>::InsufficientInfo)?;
+
+			let crowdloan_reward_info = CrowdloanRewardFor::<T> {
+				hoster,
+				reward_source,
+				total_pool,
+				end_target,
+				starts_from,
+				instant_percentage,
+				vesting_percentage,
+			};
+
+			<CampaignStatus<T>>::insert(crowdloan_id, RewardCampaignStatus::InProgress);
+			<RewardInfo<T>>::insert(crowdloan_id, crowdloan_reward_info);
+
+			Self::deposit_event(Event::<T>::CampaignStarted(crowdloan_id));
 
 			Ok(())
 		}

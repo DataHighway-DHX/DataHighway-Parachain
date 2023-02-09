@@ -59,10 +59,10 @@ pub struct CrowdloanRewardParam<AccountId, BlockNumber, Balance> {
 	pub hoster: Option<AccountId>,
 	// If present change the reward source
 	// else: 0 (while creating) or previous (while updating)
-	pub reward_source: Option<Balance>,
+	pub reward_source: Option<AccountId>,
 	// if preset change the total pool
 	// else: throw error ( while creating) or previous (while updating)
-	pub total_pool: Option<Balance>,
+	pub total_pool: Option<Option<Balance>>,
 	// if present change the instant percentage
 	// else: throw error (while creating) or unchanged ( while updating )
 	pub instant_percentage: Option<Percent>,

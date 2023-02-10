@@ -28,19 +28,25 @@ pub mod pallet {
         },
         traits::{
             Currency,
-            ExistenceRequirement,
             LockableCurrency,
             ReservableCurrency,
         },
     };
     use frame_system::pallet_prelude::*;
-    use sp_runtime::traits::{
-        AtLeast32Bit,
-        Convert,
-        MaybeDisplay,
-        StaticLookup,
+    use functions::{
+        SplitableAmount,
+        SplittedAmount,
     };
     pub use sp_runtime::Percent;
+    use sp_runtime::{
+        traits::{
+            AtLeast32Bit,
+            CheckedAdd,
+            Convert,
+            MaybeDisplay,
+        },
+        ArithmeticError,
+    };
     use sp_std::fmt::Debug;
     use types::{
         AccountIdOf,
@@ -55,7 +61,6 @@ pub mod pallet {
         RewardUnitOf,
         VestedEnsuredResultOf,
         VestingBalanceOf,
-        VestingInfoOf,
     };
 
     #[pallet::pallet]
@@ -81,7 +86,9 @@ pub mod pallet {
             + Copy
             + MaxEncodedLen;
 
-        type CurrencyConvert: Convert<BalanceOf<Self>, VestingBalanceOf<Self>>;
+        type BlockNumberToBalance: Convert<BlockNumberOf<Self>, BalanceOf<Self>>;
+        type CurrencyConvert: Convert<BalanceOf<Self>, VestingBalanceOf<Self>>
+            + Convert<VestingBalanceOf<Self>, BalanceOf<Self>>;
     }
 
     #[pallet::storage]
@@ -164,6 +171,8 @@ pub mod pallet {
         InstantRewardTaken,
         /// Vesting scheduled have been applied to this contributer's address
         VestingRewardApplied,
+        /// Some error occured while splitting total amount
+        CanotSplitAmount,
     }
 
     #[pallet::call]
@@ -216,9 +225,15 @@ pub mod pallet {
 
             ensure!(!<Contribution<T>>::contains_key(&crowdloan_id, &contributer), <Error<T>>::ContributerExists);
 
-            // TODO:
-            // - calculate required fields from given amount
-            // - put vlaue
+            let campaign_info = Self::get_reward_info(&crowdloan_id).ok_or(<Error<T>>::NoRewardCampaign)?;
+            let reward_unit = functions::construct_reward_unit::<T>(
+                amount,
+                campaign_info.instant_percentage,
+                campaign_info.starts_from,
+                campaign_info.end_target,
+            )?;
+
+            <Contribution<T>>::insert(&crowdloan_id, &contributer, reward_unit);
 
             Self::deposit_event(Event::<T>::ContributerAdded {
                 crowdloan_id,

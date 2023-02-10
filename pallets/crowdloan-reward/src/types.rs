@@ -6,13 +6,9 @@ use codec::{
 use frame_support::traits::Currency;
 use pallet_vesting::VestingInfo;
 use scale_info::TypeInfo;
-// use sp_runtime::Percent;
-use sp_runtime::{
-    traits::{
-        CheckedDiv,
-        CheckedMul,
-    },
-    ArithmeticError,
+use sp_runtime::traits::{
+    CheckedDiv,
+    CheckedMul,
 };
 use sp_std::fmt::Debug;
 

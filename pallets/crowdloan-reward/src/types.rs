@@ -57,12 +57,10 @@ pub struct CrowdloanReward<AccountId, BlockNumber, Balance> {
 #[derive(Encode, Decode, Eq, PartialEq, Clone, TypeInfo, MaxEncodedLen, Debug)]
 pub struct CrowdloanRewardParam<AccountId, BlockNumber, Balance> {
     // If present change the hoster
-    // else:
-    // 		updating: use previous one
-    // 		creating: use the origin
+    // else: origin ( while creating ) or unchanged ( while updating )
     pub hoster: Option<AccountId>,
     // If present change the reward source
-    // else: 0 (while creating) or previous (while updating)
+    // else: throw error (while creating) or previous (while updating)
     pub reward_source: Option<AccountId>,
     // if preset change the total pool
     // else: throw error ( while creating) or previous (while updating)
@@ -70,9 +68,8 @@ pub struct CrowdloanRewardParam<AccountId, BlockNumber, Balance> {
     // if present change the instant percentage
     // else: throw error (while creating) or unchanged ( while updating )
     pub instant_percentage: Option<SmallRational>,
-    // if None set to previous one ( whole updating ) None (while creating)
-    // if Some(Some(bl)) change to Some(bl)
-    // if Some(None) set to None
+     // if present change the start from block number
+    // else: current_block_number or unchanged ( while updating )
     pub starts_from: Option<BlockNumber>,
     // same as starts_form
     pub end_target: Option<BlockNumber>,

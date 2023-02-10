@@ -186,8 +186,9 @@ pub mod pallet {
             let reward_source = info.reward_source.ok_or(<Error<T>>::InsufficientInfo)?;
             let total_pool = info.total_pool.ok_or(<Error<T>>::InsufficientInfo)?;
             let end_target = info.end_target.ok_or(<Error<T>>::InsufficientInfo)?;
-            let starts_from = info.starts_from.ok_or(<Error<T>>::InsufficientInfo)?;
             let instant_percentage = info.instant_percentage.ok_or(<Error<T>>::InsufficientInfo)?;
+            let starts_from = info.starts_from.unwrap_or_else(Self::get_current_block_number);
+            let hoster = info.hoster.unwrap_or(hoster);
 
             let crowdloan_reward_info = CrowdloanRewardFor::<T> {
                 hoster,

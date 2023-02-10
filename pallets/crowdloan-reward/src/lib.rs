@@ -68,8 +68,7 @@ pub mod pallet {
 
         type Currency: Currency<AccountIdOf<Self>>
             + ReservableCurrency<AccountIdOf<Self>>
-            + LockableCurrency<AccountIdOf<Self>>
-            + IsType<VestingBalanceOf<Self>>;
+            + LockableCurrency<AccountIdOf<Self>>;
 
         type CrowdloanId: Parameter
             + Member

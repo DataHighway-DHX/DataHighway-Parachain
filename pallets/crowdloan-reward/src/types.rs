@@ -68,7 +68,7 @@ pub struct CrowdloanRewardParam<AccountId, BlockNumber, Balance> {
     // if present change the instant percentage
     // else: throw error (while creating) or unchanged ( while updating )
     pub instant_percentage: Option<SmallRational>,
-     // if present change the start from block number
+    // if present change the start from block number
     // else: current_block_number or unchanged ( while updating )
     pub starts_from: Option<BlockNumber>,
     // same as starts_form

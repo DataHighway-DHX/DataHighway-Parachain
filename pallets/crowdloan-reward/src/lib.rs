@@ -32,15 +32,16 @@ pub mod pallet {
             ReservableCurrency,
         },
     };
-    use frame_system::pallet_prelude::*;
-    pub use sp_runtime::Percent;
-    use sp_runtime::{
-        traits::{
-            AtLeast32Bit,
-            Convert,
-            MaybeDisplay,
-        },
+    use frame_system::pallet_prelude::{
+        OriginFor,
+        *,
     };
+    use sp_runtime::traits::{
+        AtLeast32Bit,
+        Convert,
+        MaybeDisplay,
+    };
+    pub use sp_runtime::Percent;
     use sp_std::fmt::Debug;
     use types::{
         AccountIdOf,
@@ -103,15 +104,12 @@ pub mod pallet {
     pub enum Event<T: Config> {
         /// A new reward campaign with `CrowdloanId` started
         CampaignStarted(CrowdloanIdOf<T>),
+        /// This reward campaign's info have been updated
+        CampaignUpdated(CrowdloanIdOf<T>),
         /// Campaign have been locked
         CampaignLocked(CrowdloanIdOf<T>),
         /// Campaign have been wiped
         CampaignWiped(CrowdloanIdOf<T>),
-        /// Campaign details have been updated
-        CampaignUpdated {
-            crowdloan_id: CrowdloanIdOf<T>,
-            previous_state: CrowdloanRewardFor<T>,
-        },
         /// A contributer received instant amount of reward
         InstantRewarded {
             crowdloan_id: CrowdloanIdOf<T>,
@@ -167,6 +165,8 @@ pub mod pallet {
         VestingRewardApplied,
         /// Some error occured while splitting total amount
         CanotSplitAmount,
+        /// This campaign is not empty. i.e some contributers exists
+        NonEmptyCampaign,
     }
 
     #[pallet::call]
@@ -181,7 +181,10 @@ pub mod pallet {
 
             ensure!(!<CampaignStatus<T>>::contains_key(&crowdloan_id), <Error<T>>::RewardCampaignExists);
             ensure!(!<RewardInfo<T>>::contains_key(&crowdloan_id), <Error<T>>::RewardCampaignExists);
-            ensure!(<Contribution<T>>::iter_key_prefix(&crowdloan_id).count() == 0, <Error<T>>::RewardCampaignExists);
+            ensure!(
+                <Contribution<T>>::iter_key_prefix(&crowdloan_id).next().is_none(),
+                <Error<T>>::RewardCampaignExists
+            );
 
             let reward_source = info.reward_source.ok_or(<Error<T>>::InsufficientInfo)?;
             let total_pool = info.total_pool.ok_or(<Error<T>>::InsufficientInfo)?;
@@ -203,6 +206,39 @@ pub mod pallet {
             <RewardInfo<T>>::insert(crowdloan_id, crowdloan_reward_info);
 
             Self::deposit_event(Event::<T>::CampaignStarted(crowdloan_id));
+            Ok(())
+        }
+
+        #[pallet::weight(10_000)]
+        pub fn update_campaign(
+            origin: OriginFor<T>,
+            crowdloan_id: CrowdloanIdOf<T>,
+            new_info: CrowdloanRewardParamFor<T>,
+        ) -> DispatchResult {
+            Self::ensure_hoster(origin, crowdloan_id)?;
+            Self::ensure_campaign_writable(&crowdloan_id)?;
+
+            ensure!(<Contribution<T>>::iter_key_prefix(&crowdloan_id).next().is_none(), <Error<T>>::NonEmptyCampaign);
+            let old_info = Self::get_reward_info(&crowdloan_id).ok_or(<Error<T>>::NoRewardCampaign)?;
+
+            let reward_source = new_info.reward_source.unwrap_or(old_info.reward_source);
+            let total_pool = new_info.total_pool.unwrap_or(old_info.total_pool);
+            let end_target = new_info.end_target.unwrap_or(old_info.end_target);
+            let instant_percentage = new_info.instant_percentage.unwrap_or(old_info.instant_percentage);
+            let starts_from = new_info.starts_from.unwrap_or(old_info.starts_from);
+            let hoster = new_info.hoster.unwrap_or(old_info.hoster);
+
+            let crowdloan_reward_info = CrowdloanRewardFor::<T> {
+                hoster,
+                reward_source,
+                total_pool,
+                end_target,
+                starts_from,
+                instant_percentage,
+            };
+            <RewardInfo<T>>::insert(crowdloan_id, crowdloan_reward_info);
+
+            Self::deposit_event(<Event<T>>::CampaignUpdated(crowdloan_id));
             Ok(())
         }
 

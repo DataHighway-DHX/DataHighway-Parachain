@@ -33,19 +33,13 @@ pub mod pallet {
         },
     };
     use frame_system::pallet_prelude::*;
-    use functions::{
-        SplitableAmount,
-        SplittedAmount,
-    };
     pub use sp_runtime::Percent;
     use sp_runtime::{
         traits::{
             AtLeast32Bit,
-            CheckedAdd,
             Convert,
             MaybeDisplay,
         },
-        ArithmeticError,
     };
     use sp_std::fmt::Debug;
     use types::{
@@ -194,7 +188,6 @@ pub mod pallet {
             let end_target = info.end_target.ok_or(<Error<T>>::InsufficientInfo)?;
             let starts_from = info.starts_from.ok_or(<Error<T>>::InsufficientInfo)?;
             let instant_percentage = info.instant_percentage.ok_or(<Error<T>>::InsufficientInfo)?;
-            let vesting_percentage = info.vesting_percentage.ok_or(<Error<T>>::InsufficientInfo)?;
 
             let crowdloan_reward_info = CrowdloanRewardFor::<T> {
                 hoster,
@@ -203,7 +196,6 @@ pub mod pallet {
                 end_target,
                 starts_from,
                 instant_percentage,
-                vesting_percentage,
             };
 
             <CampaignStatus<T>>::insert(crowdloan_id, RewardCampaignStatus::InProgress);

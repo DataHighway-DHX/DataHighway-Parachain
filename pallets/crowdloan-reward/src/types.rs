@@ -48,8 +48,6 @@ pub struct CrowdloanReward<AccountId, BlockNumber, Balance> {
     pub total_pool: Option<Balance>,
     /// How many of total user reward will be given instantly
     pub instant_percentage: SmallRational,
-    /// How many of total user reward will be given in vested manner
-    pub vesting_percentage: SmallRational,
     /// This crowdload rewards starts from
     pub starts_from: BlockNumber,
     /// Is there any targeted time until when we prefer to finish the reward distribution
@@ -72,8 +70,6 @@ pub struct CrowdloanRewardParam<AccountId, BlockNumber, Balance> {
     // if present change the instant percentage
     // else: throw error (while creating) or unchanged ( while updating )
     pub instant_percentage: Option<SmallRational>,
-    // same asd instant_percentage
-    pub vesting_percentage: Option<SmallRational>,
     // if None set to previous one ( whole updating ) None (while creating)
     // if Some(Some(bl)) change to Some(bl)
     // if Some(None) set to None

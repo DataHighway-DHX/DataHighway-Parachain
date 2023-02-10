@@ -396,7 +396,7 @@ pub mod pallet {
             let new_status = match info.status {
                 ClaimerStatus::Unprocessed => Ok(ClaimerStatus::DoneVesting),
                 ClaimerStatus::DoneInstant => Ok(ClaimerStatus::DoneBoth),
-                ClaimerStatus::DoneVesting | ClaimerStatus::DoneBoth => Err(Error::<T>::InstantRewardTaken),
+                ClaimerStatus::DoneVesting | ClaimerStatus::DoneBoth => Err(Error::<T>::VestingRewardApplied),
             }?;
 
             Ok(VestedEnsuredResultOf::<T> {

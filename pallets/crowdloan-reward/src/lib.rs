@@ -1,4 +1,5 @@
 #![cfg_attr(not(feature = "std"), no_std)]
+#![feature(result_flattening)]
 
 pub use pallet::*;
 
@@ -11,11 +12,15 @@ mod tests;
 #[cfg(feature = "runtime-benchmarks")]
 mod benchmarking;
 
+mod functions;
 mod types;
 
 #[frame_support::pallet]
 pub mod pallet {
-    use super::types;
+    use super::{
+        functions,
+        types,
+    };
     use frame_support::{
         pallet_prelude::{
             DispatchResult,
@@ -284,12 +289,7 @@ pub mod pallet {
 
             let reward_info = Self::get_reward_info(&crowdloan_id).ok_or(<Error<T>>::NoRewardCampaign)?;
 
-            <T as Config>::Currency::transfer(
-                &reward_info.reward_source,
-                &contributer,
-                instant_amount,
-                ExistenceRequirement::KeepAlive,
-            )?;
+            functions::do_instant_reward::<T>(&reward_info.reward_source, &contributer, instant_amount)?;
 
             Self::update_contributer_status(&crowdloan_id, &contributer, new_status);
 
@@ -311,14 +311,14 @@ pub mod pallet {
             } = Self::ensure_vested_claimable(&crowdloan_id, &contributer)?;
 
             let reward_info = Self::get_reward_info(&crowdloan_id).ok_or(<Error<T>>::NoRewardCampaign)?;
-            let starts_from = reward_info.starts_from.unwrap_or_else(Self::get_current_block_number);
-            let vesting_info = VestingInfoOf::<T>::new(vesting_amount, per_block, starts_from);
 
-            let creditor_origin =
-                <T as frame_system::Config>::Origin::from(frame_system::RawOrigin::Signed(reward_info.reward_source));
-            let contributer_lookup = <T::Lookup as StaticLookup>::unlookup(contributer.clone());
-
-            pallet_vesting::Pallet::<T>::vested_transfer(creditor_origin, contributer_lookup, vesting_info)?;
+            functions::do_vesting_reward::<T>(
+                reward_info.reward_source.clone(),
+                reward_info.starts_from,
+                contributer.clone(),
+                vesting_amount,
+                per_block,
+            )?;
 
             Self::update_contributer_status(&crowdloan_id, &contributer, new_status);
 

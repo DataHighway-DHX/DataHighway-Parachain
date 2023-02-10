@@ -6,7 +6,14 @@ use codec::{
 use frame_support::traits::Currency;
 use pallet_vesting::VestingInfo;
 use scale_info::TypeInfo;
-use sp_runtime::Percent;
+// use sp_runtime::Percent;
+use sp_runtime::{
+    traits::{
+        CheckedDiv,
+        CheckedMul,
+    },
+    ArithmeticError,
+};
 use sp_std::fmt::Debug;
 
 /// Represent the status of claimer
@@ -44,13 +51,13 @@ pub struct CrowdloanReward<AccountId, BlockNumber, Balance> {
     /// Total pool limit if exists
     pub total_pool: Option<Balance>,
     /// How many of total user reward will be given instantly
-    pub instant_percentage: Percent,
+    pub instant_percentage: SmallRational,
     /// How many of total user reward will be given in vested manner
-    pub vesting_percentage: Percent,
+    pub vesting_percentage: SmallRational,
     /// This crowdload rewards starts from
-    pub starts_from: Option<BlockNumber>,
+    pub starts_from: BlockNumber,
     /// Is there any targeted time until when we prefer to finish the reward distribution
-    pub end_target: Option<BlockNumber>,
+    pub end_target: BlockNumber,
 }
 
 #[derive(Encode, Decode, Eq, PartialEq, Clone, TypeInfo, MaxEncodedLen, Debug)]
@@ -68,15 +75,15 @@ pub struct CrowdloanRewardParam<AccountId, BlockNumber, Balance> {
     pub total_pool: Option<Option<Balance>>,
     // if present change the instant percentage
     // else: throw error (while creating) or unchanged ( while updating )
-    pub instant_percentage: Option<Percent>,
+    pub instant_percentage: Option<SmallRational>,
     // same asd instant_percentage
-    pub vesting_percentage: Option<Percent>,
+    pub vesting_percentage: Option<SmallRational>,
     // if None set to previous one ( whole updating ) None (while creating)
     // if Some(Some(bl)) change to Some(bl)
     // if Some(None) set to None
-    pub starts_from: Option<Option<BlockNumber>>,
+    pub starts_from: Option<BlockNumber>,
     // same as starts_form
-    pub end_target: Option<Option<BlockNumber>>,
+    pub end_target: Option<BlockNumber>,
 }
 
 #[derive(Encode, Decode, Eq, PartialEq, Clone, TypeInfo, MaxEncodedLen, Debug)]
@@ -100,6 +107,23 @@ pub struct VestedEnsuredResult<Balance> {
     pub new_status: ClaimerStatus,
     pub vesting_amount: Balance,
     pub per_block: Balance,
+}
+
+#[derive(Encode, Decode, Eq, PartialEq, Clone, TypeInfo, MaxEncodedLen, Debug)]
+pub struct SmallRational {
+    pub numenator: u32,
+    pub denomator: u32,
+}
+
+impl SmallRational {
+    pub fn checked_mul<Number>(self, number: Number) -> Option<Number>
+    where
+        Number: From<u32> + CheckedMul + CheckedDiv,
+    {
+        number.checked_mul(&self.numenator.into()).map(|u| u.checked_div(&self.denomator.into())).flatten().or_else(
+            || number.checked_div(&self.denomator.into()).map(|d| d.checked_mul(&self.numenator.into())).flatten(),
+        )
+    }
 }
 
 pub type AccountIdOf<T> = <T as frame_system::Config>::AccountId;

@@ -173,6 +173,42 @@ fn split_amount() {
         assert_eq!(split, None);
     }
 
+    // vesting amount will be 0
+    {
+        let input = functions::SplitableAmount {
+            reward_amount: 10_u128,
+            vesting_starts: 30_u64,
+            vesting_ends: 20_u64,
+            instant_percentage: SmallRational::new(1, 1),
+        };
+        let split = input.clone().split_amount::<<Test as crate::Config>::BlockNumberToBalance>();
+        let expected_split = functions::SplittedAmount {
+            instant_amount: 10_u128,
+            vesting_amount: 0,
+            per_block: 0,
+        };
+        assert_eq!(split.as_ref(), Some(&expected_split));
+        split_check(expected_split, input);
+    }
+
+    // vesting amount cannot cover whole time range
+    {
+        let input = functions::SplitableAmount {
+            reward_amount: 100_u128,
+            vesting_starts: 100_u64,
+            vesting_ends: 200,
+            instant_percentage: SmallRational::new(1, 2),
+        };
+        let split = input.clone().split_amount::<<Test as crate::Config>::BlockNumberToBalance>();
+        let expected_split = functions::SplittedAmount {
+            instant_amount: 50,
+            vesting_amount: 50,
+            per_block: 1,
+        };
+        assert_eq!(split.as_ref(), Some(&expected_split));
+        split_check(expected_split, input);
+    }
+
     {
         let input = functions::SplitableAmount {
             reward_amount: 100_u128,

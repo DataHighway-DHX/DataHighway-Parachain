@@ -5,6 +5,8 @@ use frame_support::{
     traits::{
         ConstU16,
         ConstU64,
+        Currency,
+        Imbalance,
     },
 };
 use frame_system as system;
@@ -117,4 +119,7 @@ pub fn run_to_block(n: types::BlockNumberOf<Test>) {
         System::on_initialize(System::block_number());
         Reward::on_initialize(System::block_number());
     }
+}
+pub fn credit_account<T: crate::Config>(account: &AccountId, amount: Balance) {
+    assert_eq!(<Test as crate::Config>::Currency::deposit_creating(account, amount).peek(), amount)
 }

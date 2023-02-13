@@ -34,7 +34,6 @@ pub struct SplittedAmount<Balance> {
     pub instant_amount: Balance,
     pub vesting_amount: Balance,
     pub per_block: Balance,
-    pub reminder_amount: Balance,
 }
 
 impl<BlockNumber, Balance> SplitableAmount<BlockNumber, Balance>
@@ -48,18 +47,21 @@ where
     {
         let instant_amount = types::SmallRational::checked_mul(self.instant_percentage, self.reward_amount.clone())?;
         let vesting_amount = self.reward_amount.checked_sub(&instant_amount)?;
+        let mut per_block = 0u32.into();
 
-        let time_duration = self.vesting_ends.checked_sub(&self.vesting_starts)?;
-        let per_block =
-            vesting_amount.checked_div(&BlockNumberToBalance::convert(time_duration.clone())).unwrap_or_else(One::one);
-        let covered = per_block.checked_mul(&BlockNumberToBalance::convert(time_duration.clone()))?;
-        let reminder_amount = vesting_amount.checked_sub(&covered)?;
+        if !vesting_amount.is_zero() {
+            let time_duration = self.vesting_ends.checked_sub(&self.vesting_starts)?;
+            per_block = vesting_amount
+                .checked_div(&BlockNumberToBalance::convert(time_duration.clone()))
+                .unwrap_or_else(One::one);
+
+            per_block = sp_std::cmp::max(One::one(), per_block);
+        }
 
         Some(SplittedAmount {
             instant_amount,
             vesting_amount,
             per_block,
-            reminder_amount,
         })
     }
 }
@@ -77,15 +79,13 @@ pub fn construct_reward_unit<T: crate::Config>(
         vesting_ends: ends_at,
     };
     let SplittedAmount::<types::BalanceOf<T>> {
-        mut instant_amount,
+        instant_amount,
         vesting_amount,
         per_block,
-        reminder_amount,
     } = splittable_amount
         .split_amount::<<T as crate::Config>::BlockNumberToBalance>()
         .ok_or(Error::<T>::CanotSplitAmount)?;
 
-    instant_amount = instant_amount.checked_add(&reminder_amount).ok_or(ArithmeticError::Overflow)?;
     let vesting_amount = <T as crate::Config>::CurrencyConvert::convert(vesting_amount);
     let per_block = <T as crate::Config>::CurrencyConvert::convert(per_block);
 

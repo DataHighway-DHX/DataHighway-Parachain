@@ -28,6 +28,7 @@ static_assertions = '1.1.0'
 module-primitives = { default-features = false, path = '../pallets/primitives' }
 parachain-staking = { path = "../pallets/parachain-staking", default-features = false }
 pallet-inflation = { path = "../pallets/pallet-inflation", default-features = false }
+pallet-crowdloan-reward = { path = "../pallets/crowdloan-reward", default-features = false }
 
 # Substrate
 frame-benchmarking = { git = 'https://github.com/paritytech/substrate', branch = 'polkadot-v0.9.29', default-features = false, optional = true }
@@ -160,6 +161,7 @@ std = [
     'pallet-xcm/std',
     'parachain-info/std',
     'parachain-staking/std',
+    'pallet-crowdloan-reward/std',
     'polkadot-parachain/std',
     'polkadot-runtime-common/std',
     'sp-api/std',

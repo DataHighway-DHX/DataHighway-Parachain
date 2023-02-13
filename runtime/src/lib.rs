@@ -1100,6 +1100,14 @@ impl parachain_staking::Config for Runtime {
 	type WeightInfo = parachain_staking::default_weights::SubstrateWeight<Runtime>;
 }
 
+impl pallet_crowdloan_reward::Config for Runtime {
+    type BlockNumberToBalance = sp_runtime::traits::ConvertInto;
+    type CrowdloanId = u32;
+    type Currency = Balances;
+    type CurrencyConvert = sp_runtime::traits::ConvertInto;
+    type Event = Event;
+}
+
 // Create the runtime by composing the FRAME pallets that were previously configured.
 construct_runtime!(
     pub enum Runtime where
@@ -1143,6 +1151,7 @@ construct_runtime!(
         CumulusXcm: cumulus_pallet_xcm::{Pallet, Event<T>, Origin} = 32,
         DmpQueue: cumulus_pallet_dmp_queue::{Pallet, Call, Storage, Event<T>} = 33,
 
+        Reward: pallet_crowdloan_reward::{Pallet, Call, Storage, Event<T> },
         Inflation: pallet_inflation,
         Council: pallet_collective::<Instance1>,
         TechnicalCommittee: pallet_collective::<Instance2>,

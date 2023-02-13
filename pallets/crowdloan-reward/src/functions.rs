@@ -9,13 +9,11 @@ use frame_support::{
 use sp_runtime::{
     traits::{
         AtLeast32BitUnsigned,
-        CheckedAdd,
         CheckedSub,
         Convert,
         One,
         StaticLookup,
     },
-    ArithmeticError,
     DispatchError,
 };
 

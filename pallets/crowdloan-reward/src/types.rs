@@ -105,6 +105,13 @@ pub struct SmallRational {
 }
 
 impl SmallRational {
+    pub fn new(n: u32, d: u32) -> Self {
+        SmallRational {
+            numenator: n,
+            denomator: d,
+        }
+    }
+
     pub fn checked_mul<Number>(self, number: Number) -> Option<Number>
     where
         Number: From<u32> + CheckedMul + CheckedDiv,

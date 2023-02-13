@@ -1,7 +1,11 @@
 use crate::{
     functions,
     mock::*,
-    types,
+    types::{
+        self,
+        SmallRational,
+    },
+    Config,
     Error,
 };
 use frame_support::{
@@ -90,27 +94,100 @@ fn campaign_creation_success() {
         assert_ok!(Reward::get_vested_reward(Origin::signed(user_b.0), crowdloan_id));
 
         // Make sure only status is updated
-        assert_eq!(Reward::get_contribution(crowdloan_id, user_a.0), Some(types::RewardUnitOf::<Test> {
-            status: types::ClaimerStatus::DoneInstant,
-            ..user_a_reward.clone()
-        }));
-        assert_eq!(Reward::get_contribution(crowdloan_id, user_b.0), Some(types::RewardUnitOf::<Test> {
-            status: types::ClaimerStatus::DoneVesting,
-            ..user_b_reward.clone()
-        }));
+        assert_eq!(
+            Reward::get_contribution(crowdloan_id, user_a.0),
+            Some(types::RewardUnitOf::<Test> {
+                status: types::ClaimerStatus::DoneInstant,
+                ..user_a_reward.clone()
+            })
+        );
+        assert_eq!(
+            Reward::get_contribution(crowdloan_id, user_b.0),
+            Some(types::RewardUnitOf::<Test> {
+                status: types::ClaimerStatus::DoneVesting,
+                ..user_b_reward.clone()
+            })
+        );
 
         // now user can claim the reward
         assert_ok!(Reward::get_vested_reward(Origin::signed(user_a.0), crowdloan_id));
         assert_ok!(Reward::get_instant_reward(Origin::signed(user_b.0), crowdloan_id));
 
         // Again status should be updated
-        assert_eq!(Reward::get_contribution(crowdloan_id, user_a.0), Some(types::RewardUnitOf::<Test> {
-            status: types::ClaimerStatus::DoneBoth,
-            ..user_a_reward
-        }));
-        assert_eq!(Reward::get_contribution(crowdloan_id, user_b.0), Some(types::RewardUnitOf::<Test> {
-            status: types::ClaimerStatus::DoneBoth,
-            ..user_b_reward
-        }));
+        assert_eq!(
+            Reward::get_contribution(crowdloan_id, user_a.0),
+            Some(types::RewardUnitOf::<Test> {
+                status: types::ClaimerStatus::DoneBoth,
+                ..user_a_reward
+            })
+        );
+        assert_eq!(
+            Reward::get_contribution(crowdloan_id, user_b.0),
+            Some(types::RewardUnitOf::<Test> {
+                status: types::ClaimerStatus::DoneBoth,
+                ..user_b_reward
+            })
+        );
     });
+}
+
+#[test]
+fn split_amount() {
+    let split_check = |split: functions::SplittedAmount<u128>, input: functions::SplitableAmount<u64, u128>| {
+        let time = input.vesting_ends - input.vesting_starts;
+        let vesting_amount = split.per_block * time as u128;
+        let total = split.instant_amount + vesting_amount + split.reminder_amount;
+
+        assert_eq!(total, input.reward_amount);
+        assert_eq!(vesting_amount, split.vesting_amount);
+    };
+
+    {
+        let input = functions::SplitableAmount {
+            reward_amount: 10_000_204_u128,
+            vesting_starts: 20_u64,
+            vesting_ends: 53_u64,
+            instant_percentage: SmallRational::new(5, 10),
+        };
+        let split = input.clone().split_amount::<<Test as crate::Config>::BlockNumberToBalance>();
+        let expected_split = functions::SplittedAmount {
+            instant_amount: 5_000_102,
+            vesting_amount: 5000094,
+            per_block: 151518,
+            reminder_amount: 8,
+        };
+
+        assert_eq!(split.as_ref(), Some(&expected_split));
+        split_check(expected_split, input);
+    }
+
+    // vesting starts > vesting ends
+    {
+        let input = functions::SplitableAmount {
+            reward_amount: 10_u128,
+            vesting_starts: 30_u64,
+            vesting_ends: 20_u64,
+            instant_percentage: SmallRational::new(1, 1),
+        };
+        let split = input.split_amount::<<Test as crate::Config>::BlockNumberToBalance>();
+        assert_eq!(split, None);
+    }
+
+    {
+        let input = functions::SplitableAmount {
+            reward_amount: 100_u128,
+            vesting_starts: 10,
+            vesting_ends: 100,
+            instant_percentage: types::SmallRational::new(1, 2),
+        };
+        let split = input.clone().split_amount::<<Test as crate::Config>::BlockNumberToBalance>();
+        let expected_split = functions::SplittedAmount {
+            instant_amount: 50,
+            vesting_amount: 50,
+            per_block: 1,
+            reminder_amount: 0,
+        };
+        assert_eq!(split.as_ref(), Some(&expected_split));
+        split_check(expected_split, input);
+    }
 }

@@ -306,7 +306,7 @@ pub mod pallet {
         }
 
         #[pallet::weight(10_000)]
-        pub fn wipe_crowdloan_campaign(origin: OriginFor<T>, crowdloan_id: CrowdloanIdOf<T>) -> DispatchResult {
+        pub fn wipe_campaign(origin: OriginFor<T>, crowdloan_id: CrowdloanIdOf<T>) -> DispatchResult {
             Self::ensure_hoster(origin, crowdloan_id)?;
 
             // TODO:

@@ -274,5 +274,45 @@ benchmarks! {
         );
     }
 
+    lock_campaign {
+        let l in 0 .. 100;
+        let caller: types::AccountIdOf<T> = 2_u64.into();
+
+        assert_ok!(
+            CrowdloanReward::<T>::start_new_crowdloan(
+                RawOrigin::Signed(caller.clone()).into(),
+                l.into(),
+                types::CrowdloanRewardParamFor::<T> {
+                    hoster: None,
+                    reward_source: Some(32_u64.into()),
+                    total_pool: Some(None),
+                    instant_percentage: Some(types::SmallRational {
+                        numenator: 1_u32.into(),
+                        denomator: 1_u32.into(),
+                    }),
+                    starts_from: None,
+                    end_target: Some(10_u64.into()),
+                }
+            )
+        );
+
+        for contributer in 0_u64 .. 10_u64 {
+            assert_ok!(
+                CrowdloanReward::<T>::add_contributer(RawOrigin::Signed(caller.clone()).into(),
+                    l.into(),
+                    contributer.into(),
+                    10_000_u128.into()
+                )
+            );
+        }
+
+    }: _(RawOrigin::Signed(caller.clone()), l.into())
+    verify {
+        assert_eq!(
+            CrowdloanReward::<T>::get_campaign_status::<types::CrowdloanIdOf<T>>(l.into()),
+            Some(types::RewardCampaignStatus::Locked)
+        );
+    }
+
     impl_benchmark_test_suite!(CrowdloanReward, crate::mock::new_test_ext(), crate::mock::Test);
 }

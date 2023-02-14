@@ -180,5 +180,51 @@ benchmarks! {
         );
     }
 
+    get_vested_reward {
+        let l in 0 .. 100;
+        let caller: types::AccountIdOf<T> = 1u64.into();
+        let crowdloan_id: types::CrowdloanIdOf<T> = 10u32.into();
+        let params = types::CrowdloanRewardParamFor::<T> {
+            hoster: None,
+            reward_source: Some(caller.clone()),
+            total_pool: Some(Some(10_000_000_u128.into())),
+            instant_percentage: Some(types::SmallRational {
+                numenator: 3_u32.into(),
+                denomator: 10_u32.into(),
+            }),
+            starts_from: Some(0u64.into()),
+            end_target: Some(100_u64.into()),
+        };
+
+        assert_eq!(
+            <T as crate::Config>::Currency::deposit_creating(&caller, 10_000_000_u128.into()).peek(),
+            10_000_000_u128.into(),
+        );
+        assert_ok!(
+            CrowdloanReward::<T>::start_new_crowdloan(
+                RawOrigin::Signed(caller.clone()).into(),
+                crowdloan_id,
+                params
+            )
+        );
+        assert_ok!(
+            CrowdloanReward::<T>::add_contributer(RawOrigin::Signed(caller.clone()).into(),
+                crowdloan_id,
+                (l as u64).into(),
+                10_000_u128.into()
+            )
+        );
+        assert_ok!(
+            CrowdloanReward::<T>::lock_campaign(RawOrigin::Signed(caller.clone()).into(), crowdloan_id.clone())
+        );
+    }: _(RawOrigin::Signed((l as u64).into()), crowdloan_id)
+    verify {
+        assert_eq!(
+            CrowdloanReward::<T>::get_contribution::<_, types::AccountIdOf<T>>(crowdloan_id, (l as u64).into())
+                .map(|p| p.status),
+            Some(types::ClaimerStatus::DoneVesting)
+        );
+    }
+
     impl_benchmark_test_suite!(CrowdloanReward, crate::mock::new_test_ext(), crate::mock::Test);
 }

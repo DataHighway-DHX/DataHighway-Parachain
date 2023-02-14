@@ -19,7 +19,7 @@ use sp_runtime::{
 
 use crate::types;
 
-#[cfg_attr(test, derive(Clone))]
+#[cfg_attr(test, derive(Clone, Debug))]
 pub struct SplitableAmount<BlockNumber, Balance> {
     pub reward_amount: Balance,
     pub vesting_starts: BlockNumber,
@@ -27,7 +27,7 @@ pub struct SplitableAmount<BlockNumber, Balance> {
     pub instant_percentage: types::SmallRational,
 }
 
-#[cfg_attr(test, derive(Eq, PartialEq, Debug))]
+#[cfg_attr(test, derive(Eq, PartialEq, Debug, Clone))]
 pub struct SplittedAmount<Balance> {
     pub instant_amount: Balance,
     pub vesting_amount: Balance,

@@ -6,7 +6,10 @@ use crate::{
         SmallRational,
     },
 };
-use frame_support::assert_ok;
+use frame_support::{
+    assert_ok,
+    inherent::BlockT,
+};
 
 pub const DOLLARS: u128 = 1_000_000_000_000_000_000_u128;
 
@@ -221,6 +224,23 @@ fn split_amount() {
             instant_amount: 50,
             vesting_amount: 50,
             per_block: 1,
+        };
+        assert_eq!(split.as_ref(), Some(&expected_split));
+        split_check(expected_split, input);
+    }
+
+    {
+        let input = functions::SplitableAmount {
+            reward_amount: 10_000_000_u128,
+            vesting_starts: 0,
+            vesting_ends: 100,
+            instant_percentage: types::SmallRational::new(3, 10),
+        };
+        let split = input.clone().split_amount::<<Test as crate::Config>::BlockNumberToBalance>();
+        let expected_split = functions::SplittedAmount {
+            instant_amount: 3_000_000,
+            vesting_amount: 7_000_000,
+            per_block: 70_000,
         };
         assert_eq!(split.as_ref(), Some(&expected_split));
         split_check(expected_split, input);

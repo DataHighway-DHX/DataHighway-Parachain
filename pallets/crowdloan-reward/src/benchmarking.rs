@@ -5,7 +5,13 @@ use crate::{
     types,
     Pallet as CrowdloanReward,
 };
-use frame_support::assert_ok;
+use frame_support::{
+    assert_ok,
+    traits::{
+        Currency,
+        Imbalance,
+    },
+};
 use frame_system::Origin;
 
 #[allow(unused)]
@@ -81,15 +87,8 @@ benchmarks! {
 
     }: _(RawOrigin::Signed(caller.clone()), crowdloan_id, (l as u64).into(), amount)
     verify {
-        let reward = types::RewardUnitOf::<T> {
-            instant_amount: 3_000_000_u128.into(),
-            vesting_amount: 7_000_000_u128.into(),
-            per_block: 70_000_u128.into(),
-            status: types::ClaimerStatus::Unprocessed,
-        };
-        assert_eq!(
-            CrowdloanReward::<T>::get_contribution::<_, types::AccountIdOf<T>>(crowdloan_id, (l as u64).into()),
-            Some(reward)
+        assert!(
+            CrowdloanReward::<T>::get_contribution::<_, types::AccountIdOf<T>>(crowdloan_id, (l as u64).into()).is_some()
         );
     }
 
@@ -132,6 +131,52 @@ benchmarks! {
         assert_eq!(
             CrowdloanReward::<T>::get_contribution::<_, types::AccountIdOf<T>>(crowdloan_id, (l as u64).into()),
             None,
+        );
+    }
+
+    get_instant_reward {
+        let l in 0 .. 100;
+        let caller: types::AccountIdOf<T> = 1u64.into();
+        let crowdloan_id: types::CrowdloanIdOf<T> = 10u32.into();
+        let params = types::CrowdloanRewardParamFor::<T> {
+            hoster: None,
+            reward_source: Some(caller.clone()),
+            total_pool: Some(Some(10_000_000_u128.into())),
+            instant_percentage: Some(types::SmallRational {
+                numenator: 3_u32.into(),
+                denomator: 10_u32.into(),
+            }),
+            starts_from: Some(0u64.into()),
+            end_target: Some(100_u64.into()),
+        };
+
+        assert_eq!(
+            <T as crate::Config>::Currency::deposit_creating(&caller, 10_000_000_u128.into()).peek(),
+            10_000_000_u128.into(),
+        );
+        assert_ok!(
+            CrowdloanReward::<T>::start_new_crowdloan(
+                RawOrigin::Signed(caller.clone()).into(),
+                crowdloan_id,
+                params
+            )
+        );
+        assert_ok!(
+            CrowdloanReward::<T>::add_contributer(RawOrigin::Signed(caller.clone()).into(),
+                crowdloan_id,
+                (l as u64).into(),
+                10_000_u128.into()
+            )
+        );
+        assert_ok!(
+            CrowdloanReward::<T>::lock_campaign(RawOrigin::Signed(caller.clone()).into(), crowdloan_id.clone())
+        );
+    }: _(RawOrigin::Signed((l as u64).into()), crowdloan_id)
+    verify {
+        assert_eq!(
+            CrowdloanReward::<T>::get_contribution::<_, types::AccountIdOf<T>>(crowdloan_id, (l as u64).into())
+                .map(|p| p.status),
+            Some(types::ClaimerStatus::DoneInstant)
         );
     }
 

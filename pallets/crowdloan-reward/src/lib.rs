@@ -30,7 +30,6 @@ pub mod pallet {
             DispatchResult,
             *,
         },
-        storage::unhashed::clear_prefix,
         traits::{
             Currency,
             LockableCurrency,
@@ -320,13 +319,11 @@ pub mod pallet {
         #[pallet::weight(10_0000)]
         pub fn discard_campaign(origin: OriginFor<T>, crowdloan_id: CrowdloanIdOf<T>) -> DispatchResult {
             Self::ensure_hoster(origin, crowdloan_id)?;
-            Self::ensure_campaign_writable(&crowdloan_id)?;
+            Self::ensure_campaign_discardable(&crowdloan_id)?;
 
-            // TODO:
-            // - check if we can discard this campaign
-            // - remove all contributer from contribution
-            // - remove from crowdloanStatus
-            // - remove from reward info
+            <Contribution<T>>::remove_prefix(&crowdloan_id, None);
+            <RewardInfo<T>>::remove(&crowdloan_id);
+            <CampaignStatus<T>>::remove(&crowdloan_id);
 
             Self::deposit_event(Event::<T>::CampaignDiscarded(crowdloan_id));
 
@@ -452,6 +449,16 @@ pub mod pallet {
                     .next()
                     .is_none(),
                 <Error<T>>::UnclaimedContribution,
+            );
+
+            Ok(())
+        }
+
+        fn ensure_campaign_discardable(crowdloan_id: &CrowdloanIdOf<T>) -> DispatchResult {
+            ensure!(
+                Self::get_campaign_status(crowdloan_id).ok_or(<Error<T>>::NoRewardCampaign)? ==
+                    RewardCampaignStatus::InProgress,
+                <Error<T>>::CampaignNotLocked,
             );
 
             Ok(())

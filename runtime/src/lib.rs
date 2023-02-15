@@ -1106,6 +1106,7 @@ impl pallet_crowdloan_reward::Config for Runtime {
     type Currency = Balances;
     type CurrencyConvert = sp_runtime::traits::ConvertInto;
     type Event = Event;
+    type WeightInfo = pallet_crowdloan_reward::weights::SubstrateWeight<Self>;
 }
 
 // Create the runtime by composing the FRAME pallets that were previously configured.

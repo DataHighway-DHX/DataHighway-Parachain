@@ -99,6 +99,7 @@ impl crowdloan_reward::Config for Test {
     type Currency = Balances;
     type CurrencyConvert = sp_runtime::traits::ConvertInto;
     type Event = Event;
+    type WeightInfo = ();
 }
 
 // Build genesis storage according to the mock runtime.

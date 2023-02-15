@@ -14,13 +14,18 @@ mod benchmarking;
 
 mod functions;
 mod types;
+pub mod weights;
+
+pub use weights::WeightInfo;
 
 #[frame_support::pallet]
 pub mod pallet {
     use super::{
         functions,
         types,
+        weights,
     };
+    use weights::WeightInfo;
     use frame_support::{
         pallet_prelude::{
             DispatchResult,
@@ -83,6 +88,8 @@ pub mod pallet {
         type BlockNumberToBalance: Convert<BlockNumberOf<Self>, BalanceOf<Self>>;
         type CurrencyConvert: Convert<BalanceOf<Self>, VestingBalanceOf<Self>>
             + Convert<VestingBalanceOf<Self>, BalanceOf<Self>>;
+
+        type WeightInfo: WeightInfo;
     }
 
     #[pallet::storage]

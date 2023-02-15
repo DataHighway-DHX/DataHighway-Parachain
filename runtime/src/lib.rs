@@ -1198,6 +1198,7 @@ mod benches {
         [pallet_multisig, Multisig]
         [pallet_referenda, Referenda]
         [pallet_conviction_voting, ConvictionVoting]
+        [pallet_crowdloan_reward, Reward]
     );
 }
 

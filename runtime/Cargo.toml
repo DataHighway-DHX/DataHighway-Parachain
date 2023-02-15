@@ -210,6 +210,7 @@ runtime-benchmarks = [
     'pallet-utility/runtime-benchmarks',
     'pallet-xcm/runtime-benchmarks',
     'parachain-staking/runtime-benchmarks',
+    'pallet-crowdloan-reward/runtime-benchmarks',
     'polkadot-runtime-common/runtime-benchmarks',
     'sp-runtime/runtime-benchmarks',
     'xcm-builder/runtime-benchmarks',

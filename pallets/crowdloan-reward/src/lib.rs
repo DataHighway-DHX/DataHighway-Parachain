@@ -30,6 +30,7 @@ pub mod pallet {
             DispatchResult,
             *,
         },
+        storage::unhashed::clear_prefix,
         traits::{
             Currency,
             LockableCurrency,
@@ -335,12 +336,10 @@ pub mod pallet {
         #[pallet::weight(10_000)]
         pub fn wipe_campaign(origin: OriginFor<T>, crowdloan_id: CrowdloanIdOf<T>) -> DispatchResult {
             Self::ensure_hoster(origin, crowdloan_id.clone())?;
+            Self::ensure_campaign_wipable(&crowdloan_id)?;
 
-            // TODO:
-            // - check state is wipeable ( status is locked and all contributer sttaus is claimedBoth)
-            // - check if all receiver have received the reward
-            // - kill Contribution storage mapped to this id
-            // - kill RewardInfo storage under this id
+            <Contribution<T>>::remove_prefix(&crowdloan_id, None);
+            <RewardInfo<T>>::remove(&crowdloan_id);
 
             <CampaignStatus<T>>::insert(&crowdloan_id, RewardCampaignStatus::Wiped);
 
@@ -436,6 +435,25 @@ pub mod pallet {
                     RewardCampaignStatus::InProgress,
                 <Error<T>>::NonLockableCampaign
             );
+            Ok(())
+        }
+
+        fn ensure_campaign_wipable(crowdloan_id: &CrowdloanIdOf<T>) -> DispatchResult {
+            ensure!(
+                Self::get_campaign_status(crowdloan_id).ok_or(<Error<T>>::NoRewardCampaign)? ==
+                    RewardCampaignStatus::Locked,
+                <Error<T>>::CampaignNotLocked,
+            );
+            ensure!(
+                <Contribution<T>>::iter_key_prefix(crowdloan_id)
+                    .map(|acc| {
+                        Self::get_contribution(crowdloan_id, acc).map(|p| p.status) != Some(ClaimerStatus::DoneBoth)
+                    })
+                    .next()
+                    .is_none(),
+                <Error<T>>::UnclaimedContribution,
+            );
+
             Ok(())
         }
 

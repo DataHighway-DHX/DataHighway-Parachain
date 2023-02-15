@@ -736,7 +736,7 @@ pub mod pallet {
 		/// - Reads: [Origin Account]
 		/// - Writes: ForceNewRound
 		/// # </weight>
-		#[pallet::weight(<T as pallet::Config>::WeightInfo::set_inflation())]
+		#[pallet::weight(<T as pallet::Config>::WeightInfo::force_new_round())]
 		pub fn force_new_round(origin: OriginFor<T>) -> DispatchResult {
 			ensure_root(origin)?;
 

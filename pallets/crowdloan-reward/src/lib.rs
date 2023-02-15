@@ -25,7 +25,6 @@ pub mod pallet {
         types,
         weights,
     };
-    use weights::WeightInfo;
     use frame_support::{
         pallet_prelude::{
             DispatchResult,
@@ -62,6 +61,7 @@ pub mod pallet {
         VestedEnsuredResultOf,
         VestingBalanceOf,
     };
+    use weights::WeightInfo;
 
     #[pallet::pallet]
     #[pallet::generate_store(pub(super) trait Store)]
@@ -116,6 +116,8 @@ pub mod pallet {
         CampaignLocked(CrowdloanIdOf<T>),
         /// Campaign have been wiped
         CampaignWiped(CrowdloanIdOf<T>),
+        /// Campaign have been discarded
+        CampaignDiscarded(CrowdloanIdOf<T>),
         /// A contributer received instant amount of reward
         InstantRewarded {
             crowdloan_id: CrowdloanIdOf<T>,
@@ -173,6 +175,8 @@ pub mod pallet {
         CanotSplitAmount,
         /// This campaign is not empty. i.e some contributers exists
         NonEmptyCampaign,
+        /// Some contributer have not claimed their reward yet
+        UnclaimedContribution,
     }
 
     #[pallet::call]
@@ -312,12 +316,28 @@ pub mod pallet {
             Ok(())
         }
 
-        #[pallet::weight(10_000)]
-        pub fn wipe_campaign(origin: OriginFor<T>, crowdloan_id: CrowdloanIdOf<T>) -> DispatchResult {
+        #[pallet::weight(10_0000)]
+        pub fn discard_campaign(origin: OriginFor<T>, crowdloan_id: CrowdloanIdOf<T>) -> DispatchResult {
             Self::ensure_hoster(origin, crowdloan_id)?;
+            Self::ensure_campaign_writable(&crowdloan_id)?;
 
             // TODO:
-            // - check state is wipeable
+            // - check if we can discard this campaign
+            // - remove all contributer from contribution
+            // - remove from crowdloanStatus
+            // - remove from reward info
+
+            Self::deposit_event(Event::<T>::CampaignDiscarded(crowdloan_id));
+
+            Ok(())
+        }
+
+        #[pallet::weight(10_000)]
+        pub fn wipe_campaign(origin: OriginFor<T>, crowdloan_id: CrowdloanIdOf<T>) -> DispatchResult {
+            Self::ensure_hoster(origin, crowdloan_id.clone())?;
+
+            // TODO:
+            // - check state is wipeable ( status is locked and all contributer sttaus is claimedBoth)
             // - check if all receiver have received the reward
             // - kill Contribution storage mapped to this id
             // - kill RewardInfo storage under this id

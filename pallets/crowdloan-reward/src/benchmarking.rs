@@ -5,7 +5,7 @@ use crate::{
     types,
     Pallet as CrowdloanReward,
 };
-use frame_benchmarking::{account};
+use frame_benchmarking::account;
 use frame_support::{
     assert_ok,
     traits::{

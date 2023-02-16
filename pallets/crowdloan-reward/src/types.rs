@@ -54,6 +54,25 @@ pub struct CrowdloanReward<AccountId, BlockNumber, Balance> {
     pub end_target: BlockNumber,
 }
 
+#[cfg(test)]
+impl<Account, Block, Balance> Default for CrowdloanReward<Account, Block, Balance>
+where
+    Account: Default,
+    Block: Default,
+    Balance: Default,
+{
+    fn default() -> Self {
+        Self {
+            hoster: Default::default(),
+            reward_source: Default::default(),
+            total_pool: Default::default(),
+            instant_percentage: SmallRational::new(1, 1),
+            starts_from: Default::default(),
+            end_target: Default::default(),
+        }
+    }
+}
+
 #[derive(Encode, Decode, Eq, PartialEq, Clone, TypeInfo, MaxEncodedLen, Debug)]
 pub struct CrowdloanRewardParam<AccountId, BlockNumber, Balance> {
     // If present change the hoster

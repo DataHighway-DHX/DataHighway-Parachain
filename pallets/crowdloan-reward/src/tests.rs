@@ -3,15 +3,20 @@ use crate::{
     mock::*,
     types::{
         self,
+        RewardCampaignStatus,
         SmallRational,
     },
 };
 use frame_support::{
+    assert_noop,
     assert_ok,
+    assert_storage_noop,
     inherent::BlockT,
 };
+use frame_system::RawOrigin;
 
 pub const DOLLARS: u128 = 1_000_000_000_000_000_000_u128;
+type RewardError = crate::Error<Test>;
 
 #[test]
 fn campaign_creation_success() {
@@ -245,4 +250,176 @@ fn split_amount() {
         assert_eq!(split.as_ref(), Some(&expected_split));
         split_check(expected_split, input);
     }
+}
+
+#[test]
+fn campaign_status() {
+    let new_quick_campaign = |hoster, id| {
+        Reward::start_new_crowdloan(
+            Origin::signed(hoster),
+            id,
+            types::CrowdloanRewardParamFor::<Test> {
+                hoster: None,
+                reward_source: Some(100_u32.into()),
+                total_pool: Some(None),
+                instant_percentage: Some(types::SmallRational::new(3, 10)),
+                starts_from: Some(0_u32.into()),
+                end_target: Some(100_u32.into()),
+            },
+        )
+    };
+
+    // With in-progress status
+    // - contributer can be added
+    // - contributer can be removed
+    // - contributer cannot claim instant reward
+    // - contributr cannot claim vesting reward
+    // - campaign can be locked
+    // - campaign can be discarded
+    new_test_ext().execute_with(|| {
+        let hoster = 10_u32.into();
+        let crowdloan_id = 3_u32.into();
+
+        // Initilialize the campaign
+        assert_ok!(new_quick_campaign(hoster, crowdloan_id));
+        assert_eq!(Reward::get_campaign_status(crowdloan_id), Some(types::RewardCampaignStatus::InProgress));
+
+        // cann add contributer
+        assert_ok!(Reward::add_contributer(Origin::signed(hoster), crowdloan_id, 5_u32.into(), 10000_u128.into()));
+        // can remove contributer
+        assert_ok!(Reward::remove_contributer(Origin::signed(hoster), crowdloan_id, 5_u32.into()));
+        // cannot wipe campaign
+        assert_noop!(Reward::wipe_campaign(Origin::signed(hoster), crowdloan_id), RewardError::CampaignNotLocked,);
+        // cannot claim instant reward
+        assert_noop!(
+            Reward::get_instant_reward(Origin::signed(100_u32.into()), crowdloan_id),
+            RewardError::NonClaimableCampaign,
+        );
+        // cannot claim vesting reward
+        assert_noop!(
+            Reward::get_vested_reward(Origin::signed(100_u32.into()), crowdloan_id),
+            RewardError::NonClaimableCampaign,
+        );
+        // Campaign cannot be wiped
+        assert_noop!(Reward::wipe_campaign(Origin::signed(hoster), crowdloan_id), RewardError::CampaignNotLocked,);
+        // Campaign can be locked
+        assert_ok!(Reward::lock_campaign(Origin::signed(hoster), crowdloan_id));
+
+        // roll back to in-progress state
+        <crate::CampaignStatus<Test>>::insert(crowdloan_id, types::RewardCampaignStatus::InProgress);
+
+        // campaign can be discarded
+        assert_ok!(Reward::discard_campaign(Origin::signed(hoster), crowdloan_id));
+    });
+
+    // With Locked status
+    // - contributer cannot be added
+    // - contributer cannot be removed
+    // - contributer can claim instant reward
+    // - contributer can claim vesting reward
+    // - campaign cannot be discarded
+    // - campaign cannot be locked
+    // - campaign can be wiped ( only if all contributer are rewarded)
+    new_test_ext().execute_with(|| {
+        let hoster = 1_u32.into();
+        let crowdloan_id = 10_u32.into();
+        let contributer_a = 1_u32.into();
+        let contributer_b = 2_u32.into();
+
+        // initilize the campaign
+        assert_ok!(new_quick_campaign(hoster, crowdloan_id));
+        assert_ok!(Reward::add_contributer(Origin::signed(hoster), crowdloan_id, contributer_a, 100_000_u32.into()));
+        assert_ok!(Reward::add_contributer(Origin::signed(hoster), crowdloan_id, contributer_b, 200_000_u32.into()));
+        let reward_source = Reward::get_reward_info(crowdloan_id).unwrap().reward_source;
+        credit_account::<Test>(&reward_source, 1_000_000_u32.into());
+
+        // lock the campaign
+        assert_ok!(Reward::lock_campaign(Origin::signed(hoster), crowdloan_id));
+
+        // cannot add contributer
+        assert_noop!(
+            Reward::add_contributer(Origin::signed(hoster), crowdloan_id, 33_u32.into(), 100_000_u32.into()),
+            RewardError::ReadOnlyCampaign,
+        );
+        // Cannot remove contributer
+        assert_noop!(
+            Reward::remove_contributer(Origin::signed(hoster), crowdloan_id, contributer_a),
+            RewardError::ReadOnlyCampaign,
+        );
+        // Cannot lock campaign
+        assert_noop!(Reward::lock_campaign(Origin::signed(hoster), crowdloan_id), RewardError::NonLockableCampaign,);
+        // cannot discard the campaign
+        assert_noop!(Reward::discard_campaign(Origin::signed(hoster), crowdloan_id), RewardError::CampaignLocked,);
+        // can call get instant reward
+        assert_ok!(Reward::get_instant_reward(Origin::signed(contributer_a), crowdloan_id));
+        assert_ok!(Reward::get_instant_reward(Origin::signed(contributer_b), crowdloan_id));
+        // can call get vesting reward
+        assert_ok!(Reward::get_vested_reward(Origin::signed(contributer_a), crowdloan_id));
+        // since there is still unclaimed contribution ( vesting reward of contributer_b)
+        // cannot wipe campaign
+        assert_noop!(Reward::wipe_campaign(Origin::signed(hoster), crowdloan_id), RewardError::UnclaimedContribution,);
+        assert_ok!(Reward::get_vested_reward(Origin::signed(contributer_b), crowdloan_id));
+        // can wipe campaign
+        assert_ok!(Reward::wipe_campaign(Origin::signed(hoster), crowdloan_id));
+    });
+
+    // With Wiped status
+    // - cannot add contributer
+    // - cannot remove contributer
+    // - cannot lock campaign
+    // - cannot discard campaign
+    // - contributer cannot claim instant reward
+    // - contributer cannot claim vesting reward
+    new_test_ext().execute_with(|| {
+        let hoster = 10_u32.into();
+        let crowdloan_id = 3_u32.into();
+
+        // Initilialize the campaign
+        assert_ok!(new_quick_campaign(hoster, crowdloan_id));
+        let reward_source = Reward::get_reward_info(crowdloan_id).unwrap().reward_source;
+        credit_account::<Test>(&reward_source, 1_000_000_u32.into());
+        assert_ok!(Reward::add_contributer(Origin::signed(hoster), crowdloan_id, 100_u32.into(), 100_000_u32.into()));
+        assert_ok!(Reward::lock_campaign(Origin::signed(hoster), crowdloan_id));
+        assert_ok!(Reward::get_vested_reward(Origin::signed(100_u32.into()), crowdloan_id));
+        assert_ok!(Reward::get_instant_reward(Origin::signed(100_u32.into()), crowdloan_id));
+        assert_ok!(Reward::wipe_campaign(Origin::signed(hoster), crowdloan_id));
+        assert_eq!(Reward::get_campaign_status(crowdloan_id), Some(types::RewardCampaignStatus::Wiped));
+
+        // cannot add contributer
+        assert_noop!(
+            Reward::add_contributer(Origin::signed(hoster), crowdloan_id, 33_u32.into(), 100_000_u32.into()),
+            RewardError::NoRewardCampaign,
+        );
+        // Cannot remove contributer
+        assert_noop!(
+            Reward::remove_contributer(Origin::signed(hoster), crowdloan_id, 33_u32.into()),
+            RewardError::NoRewardCampaign,
+        );
+        // Cannot lock campaign
+        assert_noop!(Reward::lock_campaign(Origin::signed(hoster), crowdloan_id), RewardError::NoRewardCampaign,);
+        // cannot discard the campaign
+        assert_noop!(Reward::discard_campaign(Origin::signed(hoster), crowdloan_id), RewardError::NoRewardCampaign,);
+        // cannot claim instant reward
+        assert_noop!(
+            Reward::get_instant_reward(Origin::signed(33_u32.into()), crowdloan_id),
+            RewardError::NonClaimableCampaign,
+        );
+        // cannot claim vesting reward
+        assert_noop!(
+            Reward::get_vested_reward(Origin::signed(33_u32.into()), crowdloan_id),
+            RewardError::NonClaimableCampaign,
+        );
+        // cannot wipe campaign
+        {
+            // to bypass the host check let's enter a dummy unit
+            <crate::RewardInfo<Test>>::insert(
+                crowdloan_id,
+                types::CrowdloanRewardFor::<Test> {
+                    hoster,
+                    ..Default::default()
+                },
+            );
+            assert_noop!(Reward::wipe_campaign(Origin::signed(hoster), crowdloan_id), RewardError::CampaignNotLocked,);
+        }
+    });
 }

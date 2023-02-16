@@ -177,6 +177,8 @@ pub mod pallet {
         NonEmptyCampaign,
         /// Some contributer have not claimed their reward yet
         UnclaimedContribution,
+        /// Campaign is not in claimable state
+        NonClaimableCampaign,
     }
 
     #[pallet::call]
@@ -421,7 +423,7 @@ pub mod pallet {
             ensure!(
                 Self::get_campaign_status(crowdloan_id).ok_or(<Error<T>>::NoRewardCampaign)? ==
                     RewardCampaignStatus::Locked,
-                <Error<T>>::CampaignNotLocked
+                <Error<T>>::NonClaimableCampaign
             );
             Ok(())
         }
@@ -443,7 +445,7 @@ pub mod pallet {
             );
             ensure!(
                 <Contribution<T>>::iter_key_prefix(crowdloan_id)
-                    .map(|acc| {
+                    .filter(|acc| {
                         Self::get_contribution(crowdloan_id, acc).map(|p| p.status) != Some(ClaimerStatus::DoneBoth)
                     })
                     .next()
@@ -458,7 +460,7 @@ pub mod pallet {
             ensure!(
                 Self::get_campaign_status(crowdloan_id).ok_or(<Error<T>>::NoRewardCampaign)? ==
                     RewardCampaignStatus::InProgress,
-                <Error<T>>::CampaignNotLocked,
+                <Error<T>>::CampaignLocked,
             );
 
             Ok(())

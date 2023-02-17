@@ -725,3 +725,60 @@ fn wipe_campaign_success() {
         assert_eq!(reward_events().last(), Some(&RewardEvent::CampaignWiped(crowdloan_id)));
     })
 }
+
+#[test]
+fn hoster_access_control() {
+    new_test_ext().execute_with(|| {
+        let hoster = 1_u32.into();
+        let not_hoster = 2_u32.into();
+        let crowdloan_id = 100_u32.into();
+
+        assert_ok!(Reward::start_new_crowdloan(
+            Origin::signed(hoster),
+            crowdloan_id,
+            types::CrowdloanRewardParamFor::<Test> {
+                hoster: None,
+                reward_source: Some(100_u32.into()),
+                instant_percentage: Some(types::SmallRational::new(3, 10)),
+                starts_from: Some(0_u32.into()),
+                end_target: Some(10_u32.into()),
+            }
+        ));
+
+        // other user than hoster
+        // - cannot update the campaign
+        // - cannot discard the campaign
+        // - cannot lock the campaign
+        // - cannot add contributer
+        // - cannot remove contributer
+        // - cannot wipe contributer
+        assert_noop!(
+            Reward::update_campaign(Origin::signed(not_hoster), crowdloan_id, Default::default()),
+            RewardError::PermissionDenied,
+        );
+        assert_noop!(
+            Reward::discard_campaign(Origin::signed(not_hoster), crowdloan_id),
+            RewardError::PermissionDenied,
+        );
+        assert_noop!(
+            Reward::lock_campaign(Origin::signed(not_hoster), crowdloan_id),
+            RewardError::PermissionDenied,
+        );
+        assert_noop!(
+            Reward::discard_campaign(Origin::signed(not_hoster), crowdloan_id),
+            RewardError::PermissionDenied,
+        );
+        assert_noop!(
+            Reward::add_contributer(Origin::signed(not_hoster), crowdloan_id, 99_u32.into(), 10_000_u32.into()),
+            RewardError::PermissionDenied,
+        );
+        assert_noop!(
+            Reward::remove_contributer(Origin::signed(not_hoster), crowdloan_id, 99_u32.into()),
+            RewardError::PermissionDenied,
+        );
+        assert_noop!(
+            Reward::wipe_campaign(Origin::signed(not_hoster), crowdloan_id),
+            RewardError::PermissionDenied,
+        );
+    });
+}

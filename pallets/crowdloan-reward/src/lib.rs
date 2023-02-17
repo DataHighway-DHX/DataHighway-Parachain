@@ -196,7 +196,6 @@ pub mod pallet {
             );
 
             let reward_source = info.reward_source.ok_or(<Error<T>>::InsufficientInfo)?;
-            let total_pool = info.total_pool.ok_or(<Error<T>>::InsufficientInfo)?;
             let end_target = info.end_target.ok_or(<Error<T>>::InsufficientInfo)?;
             let instant_percentage = info.instant_percentage.ok_or(<Error<T>>::InsufficientInfo)?;
             let starts_from = info.starts_from.unwrap_or_else(Self::get_current_block_number);
@@ -205,7 +204,6 @@ pub mod pallet {
             let crowdloan_reward_info = CrowdloanRewardFor::<T> {
                 hoster,
                 reward_source,
-                total_pool,
                 end_target,
                 starts_from,
                 instant_percentage,
@@ -231,7 +229,6 @@ pub mod pallet {
             let old_info = Self::get_reward_info(&crowdloan_id).ok_or(<Error<T>>::NoRewardCampaign)?;
 
             let reward_source = new_info.reward_source.unwrap_or(old_info.reward_source);
-            let total_pool = new_info.total_pool.unwrap_or(old_info.total_pool);
             let end_target = new_info.end_target.unwrap_or(old_info.end_target);
             let instant_percentage = new_info.instant_percentage.unwrap_or(old_info.instant_percentage);
             let starts_from = new_info.starts_from.unwrap_or(old_info.starts_from);
@@ -240,7 +237,6 @@ pub mod pallet {
             let crowdloan_reward_info = CrowdloanRewardFor::<T> {
                 hoster,
                 reward_source,
-                total_pool,
                 end_target,
                 starts_from,
                 instant_percentage,

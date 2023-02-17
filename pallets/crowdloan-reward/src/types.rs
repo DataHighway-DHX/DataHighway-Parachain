@@ -37,15 +37,13 @@ pub struct RewardUnit<InstantBalance, VestingBalance> {
 }
 
 #[derive(Encode, Decode, Eq, PartialEq, Clone, TypeInfo, MaxEncodedLen, Debug)]
-pub struct CrowdloanReward<AccountId, BlockNumber, Balance> {
+pub struct CrowdloanReward<AccountId, BlockNumber> {
     /// Hoster of this crowdload
     /// Note: if this needs to be owned by multiple AccountId,
     /// make this account id a multi-signature
     pub hoster: AccountId,
     /// The source account to give reward from
     pub reward_source: AccountId,
-    /// Total pool limit if exists
-    pub total_pool: Option<Balance>,
     /// How many of total user reward will be given instantly
     pub instant_percentage: SmallRational,
     /// This crowdload rewards starts from
@@ -55,17 +53,15 @@ pub struct CrowdloanReward<AccountId, BlockNumber, Balance> {
 }
 
 #[cfg(test)]
-impl<Account, Block, Balance> Default for CrowdloanReward<Account, Block, Balance>
+impl<Account, Block> Default for CrowdloanReward<Account, Block>
 where
     Account: Default,
     Block: Default,
-    Balance: Default,
 {
     fn default() -> Self {
         Self {
             hoster: Default::default(),
             reward_source: Default::default(),
-            total_pool: Default::default(),
             instant_percentage: SmallRational::new(1, 1),
             starts_from: Default::default(),
             end_target: Default::default(),
@@ -74,16 +70,13 @@ where
 }
 
 #[derive(Encode, Decode, Eq, PartialEq, Clone, TypeInfo, MaxEncodedLen, Debug)]
-pub struct CrowdloanRewardParam<AccountId, BlockNumber, Balance> {
+pub struct CrowdloanRewardParam<AccountId, BlockNumber> {
     // If present change the hoster
     // else: origin ( while creating ) or unchanged ( while updating )
     pub hoster: Option<AccountId>,
     // If present change the reward source
     // else: throw error (while creating) or previous (while updating)
     pub reward_source: Option<AccountId>,
-    // if preset change the total pool
-    // else: throw error ( while creating) or previous (while updating)
-    pub total_pool: Option<Option<Balance>>,
     // if present change the instant percentage
     // else: throw error (while creating) or unchanged ( while updating )
     pub instant_percentage: Option<SmallRational>,
@@ -142,8 +135,8 @@ impl SmallRational {
 }
 
 pub type AccountIdOf<T> = <T as frame_system::Config>::AccountId;
-pub type CrowdloanRewardFor<T> = CrowdloanReward<AccountIdOf<T>, BlockNumberOf<T>, BalanceOf<T>>;
-pub type CrowdloanRewardParamFor<T> = CrowdloanRewardParam<AccountIdOf<T>, BlockNumberOf<T>, BalanceOf<T>>;
+pub type CrowdloanRewardFor<T> = CrowdloanReward<AccountIdOf<T>, BlockNumberOf<T>>;
+pub type CrowdloanRewardParamFor<T> = CrowdloanRewardParam<AccountIdOf<T>, BlockNumberOf<T>>;
 pub type BlockNumberOf<T> = <T as frame_system::Config>::BlockNumber;
 pub type BalanceOf<T> = <<T as crate::Config>::Currency as Currency<AccountIdOf<T>>>::Balance;
 pub type RewardUnitOf<T> = RewardUnit<BalanceOf<T>, VestingBalanceOf<T>>;

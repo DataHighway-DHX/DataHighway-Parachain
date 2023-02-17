@@ -34,7 +34,6 @@ fn campaign_creation_success() {
         let info = types::CrowdloanRewardParamFor::<Test> {
             hoster: None,
             reward_source: Some(reward_source),
-            total_pool: Some(Some(reward_pool)),
             instant_percentage: Some(types::SmallRational {
                 numenator: 3,
                 denomator: 10,
@@ -56,7 +55,6 @@ fn campaign_creation_success() {
             Some(types::CrowdloanRewardFor::<Test> {
                 hoster,
                 starts_from: current_block_num,
-                total_pool: Some(reward_pool),
                 instant_percentage: types::SmallRational {
                     numenator: 3,
                     denomator: 10
@@ -262,7 +260,6 @@ fn campaign_status() {
             types::CrowdloanRewardParamFor::<Test> {
                 hoster: None,
                 reward_source: Some(100_u32.into()),
-                total_pool: Some(None),
                 instant_percentage: Some(types::SmallRational::new(3, 10)),
                 starts_from: Some(0_u32.into()),
                 end_target: Some(100_u32.into()),
@@ -440,7 +437,6 @@ fn claimer_status() {
             types::CrowdloanRewardParamFor::<Test> {
                 hoster: None,
                 reward_source: Some(reward_source),
-                total_pool: Some(None),
                 instant_percentage: Some(types::SmallRational::new(3, 10)),
                 starts_from: Some(0_u32.into()),
                 end_target: Some(10_u32.into()),
@@ -476,7 +472,6 @@ fn new_crowdloan_creation_sucess() {
         let crowdloan_params = types::CrowdloanRewardParamFor::<Test> {
             hoster: None,
             reward_source: Some(100_u32.into()),
-            total_pool: Some(None),
             instant_percentage: Some(types::SmallRational::new(3, 10)),
             starts_from: None,
             end_target: Some(100_u32.into()),
@@ -489,7 +484,6 @@ fn new_crowdloan_creation_sucess() {
         let expected_info = types::CrowdloanRewardFor::<Test> {
             hoster,
             reward_source: 100_u32.into(),
-            total_pool: None,
             instant_percentage: types::SmallRational::new(3, 10),
             starts_from: current_block,
             end_target: 100_u32.into(),
@@ -519,7 +513,6 @@ fn new_crowdloan_update_sucess() {
             types::CrowdloanRewardParamFor::<Test> {
                 hoster: None,
                 reward_source: Some(33_u32.into()),
-                total_pool: Some(None),
                 instant_percentage: Some(types::SmallRational::new(1, 1)),
                 starts_from: None,
                 end_target: Some(0_u32.into()),
@@ -529,7 +522,6 @@ fn new_crowdloan_update_sucess() {
         let old_info = types::CrowdloanRewardFor::<Test> {
             hoster,
             reward_source: 33_u32.into(),
-            total_pool: None,
             instant_percentage: types::SmallRational::new(1, 1),
             starts_from: current_block,
             end_target: 0_u32.into(),
@@ -537,7 +529,6 @@ fn new_crowdloan_update_sucess() {
         let new_crowdloan_params = types::CrowdloanRewardParamFor::<Test> {
             hoster: None,
             reward_source: Some(100_u32.into()),
-            total_pool: Some(None),
             instant_percentage: Some(types::SmallRational::new(3, 10)),
             starts_from: Some(20_u32.into()),
             end_target: Some(100_u32.into()),
@@ -545,7 +536,6 @@ fn new_crowdloan_update_sucess() {
         let new_info = types::CrowdloanRewardFor::<Test> {
             hoster,
             reward_source: 100_u32.into(),
-            total_pool: None,
             instant_percentage: types::SmallRational::new(3, 10),
             starts_from: 20_u32.into(),
             end_target: 100_u32.into(),
@@ -577,7 +567,6 @@ fn contributer_addition_removal_success() {
             types::CrowdloanRewardParamFor::<Test> {
                 hoster: None,
                 reward_source: Some(100_u32.into()),
-                total_pool: Some(None),
                 instant_percentage: Some(types::SmallRational::new(3, 10)),
                 starts_from: Some(0_u32.into()),
                 end_target: Some(100_u32.into()),
@@ -642,7 +631,6 @@ fn discard_campaign_success() {
             types::CrowdloanRewardParamFor::<Test> {
                 hoster: None,
                 reward_source: Some(100_u32.into()),
-                total_pool: Some(None),
                 instant_percentage: Some(types::SmallRational::new(3, 10)),
                 starts_from: Some(0_u32.into()),
                 end_target: Some(100_u32.into()),

@@ -89,12 +89,10 @@ pub struct CrowdloanRewardParam<AccountId, BlockNumber> {
 
 #[derive(Encode, Decode, Eq, PartialEq, Clone, TypeInfo, MaxEncodedLen, Debug)]
 pub enum RewardCampaignStatus {
-    /// A campaign is in progress from this blocknumber
+    /// A campaign is in progress
     InProgress,
-    /// A campaign is in locked state from this blocknumber
+    /// A campaign is in locked state
     Locked,
-    /// A previous campaign ended in this blocknumber
-    Ended,
     /// This crowdloan existed but have been wiped
     Wiped,
 }

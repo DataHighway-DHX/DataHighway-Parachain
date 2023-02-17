@@ -70,6 +70,7 @@ where
 }
 
 #[derive(Encode, Decode, Eq, PartialEq, Clone, TypeInfo, MaxEncodedLen, Debug)]
+#[cfg_attr(test, derive(Default))]
 pub struct CrowdloanRewardParam<AccountId, BlockNumber> {
     // If present change the hoster
     // else: origin ( while creating ) or unchanged ( while updating )

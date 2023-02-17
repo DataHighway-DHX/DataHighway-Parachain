@@ -563,3 +563,68 @@ fn new_crowdloan_update_sucess() {
         assert_eq!(reward_events().last(), Some(&RewardEvent::CampaignUpdated(crowdloan_id)));
     });
 }
+
+#[test]
+fn contributer_addition_removal_success() {
+    new_test_ext().execute_with(|| {
+        let crowdloan_id = 22_u32.into();
+        let hoster = 100_u32.into();
+
+        // Initilization
+        assert_ok!(Reward::start_new_crowdloan(
+            Origin::signed(hoster),
+            crowdloan_id,
+            types::CrowdloanRewardParamFor::<Test> {
+                hoster: None,
+                reward_source: Some(100_u32.into()),
+                total_pool: Some(None),
+                instant_percentage: Some(types::SmallRational::new(3, 10)),
+                starts_from: Some(0_u32.into()),
+                end_target: Some(100_u32.into()),
+            }
+        ));
+
+        let contributer_a = 101_u32.into();
+        let contributer_b = 102_u32.into();
+        let contributer_amount = 1_000_000_u32.into();
+        let contributer_unit = types::RewardUnitOf::<Test> {
+            instant_amount: 300_000_u32.into(),
+            vesting_amount: 700_000_u32.into(),
+            per_block: 7_000_u32.into(),
+            status: types::ClaimerStatus::Unprocessed,
+        };
+
+        // add contributer a
+        assert_ok!(Reward::add_contributer(Origin::signed(hoster), crowdloan_id, contributer_a, contributer_amount));
+        assert_eq!(Reward::get_contribution(crowdloan_id, contributer_a), Some(contributer_unit.clone()));
+        assert_eq!(
+            reward_events().last(),
+            Some(&RewardEvent::ContributerAdded {
+                crowdloan_id,
+                contributer: contributer_a,
+                amount: contributer_amount
+            })
+        );
+        // add contributer b
+        assert_ok!(Reward::add_contributer(Origin::signed(hoster), crowdloan_id, contributer_b, contributer_amount));
+        assert_eq!(Reward::get_contribution(crowdloan_id, contributer_b), Some(contributer_unit.clone()));
+        assert_eq!(
+            reward_events().last(),
+            Some(&RewardEvent::ContributerAdded {
+                crowdloan_id,
+                contributer: contributer_b,
+                amount: contributer_amount
+            })
+        );
+        // remove contributer a
+        assert_ok!(Reward::remove_contributer(Origin::signed(hoster), crowdloan_id, contributer_a));
+        assert_eq!(Reward::get_contribution(crowdloan_id, contributer_a), None);
+        assert_eq!(
+            reward_events().last(),
+            Some(&RewardEvent::ContributerKicked {
+                crowdloan_id,
+                contributer: contributer_a
+            })
+        );
+    });
+}

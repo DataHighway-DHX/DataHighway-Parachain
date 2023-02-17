@@ -17,6 +17,7 @@ use frame_system::RawOrigin;
 
 pub const DOLLARS: u128 = 1_000_000_000_000_000_000_u128;
 type RewardError = crate::Error<Test>;
+type RewardEvent = crate::Event<Test>;
 
 #[test]
 fn campaign_creation_success() {
@@ -461,5 +462,44 @@ fn claimer_status() {
         assert_ok!(Reward::get_instant_reward(Origin::signed(contributer), crowdloan_id));
         // cannot call again instant reward
         assert_noop!(Reward::get_instant_reward(Origin::signed(contributer), crowdloan_id), RewardError::RewardTaken);
+    });
+}
+
+#[test]
+fn new_crowdloan_creation_sucess() {
+    new_test_ext().execute_with(|| {
+        run_to_block(10);
+        let current_block = frame_system::Pallet::<Test>::block_number();
+
+        let hoster = 1_u32.into();
+        let crowdloan_id = 33_u32.into();
+        let crowdloan_params = types::CrowdloanRewardParamFor::<Test> {
+            hoster: None,
+            reward_source: Some(100_u32.into()),
+            total_pool: Some(None),
+            instant_percentage: Some(types::SmallRational::new(3, 10)),
+            starts_from: None,
+            end_target: Some(100_u32.into()),
+        };
+
+        // extrinsic call should success
+        assert_ok!(Reward::start_new_crowdloan(Origin::signed(hoster), crowdloan_id, crowdloan_params));
+
+        // expect right reward info
+        let expected_info = types::CrowdloanRewardFor::<Test> {
+            hoster,
+            reward_source: 100_u32.into(),
+            total_pool: None,
+            instant_percentage: types::SmallRational::new(3, 10),
+            starts_from: current_block,
+            end_target: 100_u32.into(),
+        };
+        assert_eq!(Reward::get_reward_info(crowdloan_id), Some(expected_info));
+
+        // check initial status is in-progress
+        assert_eq!(Reward::get_campaign_status(crowdloan_id), Some(types::RewardCampaignStatus::InProgress));
+
+        // check correct event is dispatched
+        assert_eq!(reward_events().last(), Some(&RewardEvent::CampaignStarted(crowdloan_id)));
     });
 }

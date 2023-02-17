@@ -121,6 +121,21 @@ pub fn run_to_block(n: types::BlockNumberOf<Test>) {
         Reward::on_initialize(System::block_number());
     }
 }
+
 pub fn credit_account<T: crate::Config>(account: &AccountId, amount: Balance) {
     assert_eq!(<Test as crate::Config>::Currency::deposit_creating(account, amount).peek(), amount)
+}
+
+pub fn reward_events() -> Vec<crate::Event<Test>> {
+    System::events()
+        .into_iter()
+        .map(|r| r.event)
+        .filter_map(|e| {
+            if let Event::Reward(inner) = e {
+                Some(inner)
+            } else {
+                None
+            }
+        })
+        .collect::<Vec<_>>()
 }

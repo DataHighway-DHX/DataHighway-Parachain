@@ -503,3 +503,63 @@ fn new_crowdloan_creation_sucess() {
         assert_eq!(reward_events().last(), Some(&RewardEvent::CampaignStarted(crowdloan_id)));
     });
 }
+
+#[test]
+fn new_crowdloan_update_sucess() {
+    new_test_ext().execute_with(|| {
+        run_to_block(10);
+        let current_block = frame_system::Pallet::<Test>::block_number();
+
+        let hoster = 1_u32.into();
+        let crowdloan_id = 33_u32.into();
+
+        assert_ok!(Reward::start_new_crowdloan(
+            Origin::signed(hoster),
+            crowdloan_id,
+            types::CrowdloanRewardParamFor::<Test> {
+                hoster: None,
+                reward_source: Some(33_u32.into()),
+                total_pool: Some(None),
+                instant_percentage: Some(types::SmallRational::new(1, 1)),
+                starts_from: None,
+                end_target: Some(0_u32.into()),
+            }
+        ));
+
+        let old_info = types::CrowdloanRewardFor::<Test> {
+            hoster,
+            reward_source: 33_u32.into(),
+            total_pool: None,
+            instant_percentage: types::SmallRational::new(1, 1),
+            starts_from: current_block,
+            end_target: 0_u32.into(),
+        };
+        let new_crowdloan_params = types::CrowdloanRewardParamFor::<Test> {
+            hoster: None,
+            reward_source: Some(100_u32.into()),
+            total_pool: Some(None),
+            instant_percentage: Some(types::SmallRational::new(3, 10)),
+            starts_from: Some(20_u32.into()),
+            end_target: Some(100_u32.into()),
+        };
+        let new_info = types::CrowdloanRewardFor::<Test> {
+            hoster,
+            reward_source: 100_u32.into(),
+            total_pool: None,
+            instant_percentage: types::SmallRational::new(3, 10),
+            starts_from: 20_u32.into(),
+            end_target: 100_u32.into(),
+        };
+
+        // expect unupdated reward info
+        assert_eq!(Reward::get_reward_info(crowdloan_id), Some(old_info));
+        // expect the extrinsic to execute sucessfully
+        assert_ok!(Reward::update_campaign(Origin::signed(hoster), crowdloan_id, new_crowdloan_params));
+        // expect updated new info
+        assert_eq!(Reward::get_reward_info(crowdloan_id), Some(new_info));
+        // make sure status is still untouched
+        assert_eq!(Reward::get_campaign_status(crowdloan_id), Some(RewardCampaignStatus::InProgress));
+        // expect the event
+        assert_eq!(reward_events().last(), Some(&RewardEvent::CampaignUpdated(crowdloan_id)));
+    });
+}

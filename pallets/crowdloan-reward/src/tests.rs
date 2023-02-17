@@ -628,3 +628,40 @@ fn contributer_addition_removal_success() {
         );
     });
 }
+
+#[test]
+fn discard_campaign_success() {
+    new_test_ext().execute_with(|| {
+        let hoster = 101_u32.into();
+        let crowdloan_id = 10_u32.into();
+
+        // initilization
+        assert_ok!(Reward::start_new_crowdloan(
+            Origin::signed(hoster),
+            crowdloan_id,
+            types::CrowdloanRewardParamFor::<Test> {
+                hoster: None,
+                reward_source: Some(100_u32.into()),
+                total_pool: Some(None),
+                instant_percentage: Some(types::SmallRational::new(3, 10)),
+                starts_from: Some(0_u32.into()),
+                end_target: Some(100_u32.into()),
+            }
+        ));
+
+        // add a contributers
+        assert_ok!(Reward::add_contributer(Origin::signed(hoster), crowdloan_id, 22_u32.into(), 100_000));
+
+        // attempt to discard
+        assert_ok!(Reward::discard_campaign(Origin::signed(hoster), crowdloan_id));
+
+        // there should be no status
+        assert_eq!(Reward::get_campaign_status(crowdloan_id), None);
+        // there should be no reward info
+        assert_eq!(Reward::get_reward_info(crowdloan_id), None);
+        // should be no contribution inside this id
+        assert_eq!(crate::Contribution::<Test>::iter_prefix(crowdloan_id).next(), None);
+        // should be event
+        assert_eq!(reward_events().last(), Some(&RewardEvent::CampaignDiscarded(crowdloan_id)));
+    });
+}

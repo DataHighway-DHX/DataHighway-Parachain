@@ -276,6 +276,7 @@ fn campaign_status() {
     // - contributr cannot claim vesting reward
     // - campaign can be locked
     // - campaign can be discarded
+    // - campaign cannot be wiped
     new_test_ext().execute_with(|| {
         let hoster = 10_u32.into();
         let crowdloan_id = 3_u32.into();
@@ -421,5 +422,44 @@ fn campaign_status() {
             );
             assert_noop!(Reward::wipe_campaign(Origin::signed(hoster), crowdloan_id), RewardError::CampaignNotLocked,);
         }
+    });
+}
+
+#[test]
+fn claimer_status() {
+    new_test_ext().execute_with(|| {
+        let hoster = 1_u32.into();
+        let crowdloan_id = 3_u32.into();
+        let contributer = 4_u32.into();
+        let reward_source = 100_u32.into();
+
+        assert_ok!(Reward::start_new_crowdloan(
+            Origin::signed(hoster),
+            crowdloan_id,
+            types::CrowdloanRewardParamFor::<Test> {
+                hoster: None,
+                reward_source: Some(reward_source),
+                total_pool: Some(None),
+                instant_percentage: Some(types::SmallRational::new(3, 10)),
+                starts_from: Some(0_u32.into()),
+                end_target: Some(10_u32.into()),
+            },
+        ));
+        assert_ok!(Reward::add_contributer(Origin::signed(hoster), crowdloan_id, contributer, 100_000_u32.into()));
+        assert_ok!(Reward::lock_campaign(Origin::signed(hoster), crowdloan_id));
+        assert_eq!(
+            Reward::get_contribution(crowdloan_id, contributer).map(|p| p.status),
+            Some(types::ClaimerStatus::Unprocessed)
+        );
+        credit_account::<Test>(&reward_source, 10_000_000_u32.into());
+
+        // can claim vesting reward
+        assert_ok!(Reward::get_vested_reward(Origin::signed(contributer), crowdloan_id));
+        // cannot call again vesting reward
+        assert_noop!(Reward::get_vested_reward(Origin::signed(contributer), crowdloan_id), RewardError::RewardTaken);
+        // can call instant reward
+        assert_ok!(Reward::get_instant_reward(Origin::signed(contributer), crowdloan_id));
+        // cannot call again instant reward
+        assert_noop!(Reward::get_instant_reward(Origin::signed(contributer), crowdloan_id), RewardError::RewardTaken);
     });
 }

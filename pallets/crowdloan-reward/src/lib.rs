@@ -167,11 +167,8 @@ pub mod pallet {
         CampaignNotLocked,
         /// This campaign cannot be locked
         NonLockableCampaign,
-        /// Instant reward have been taken by this contributer
-        InstantRewardTaken,
-        /// Vesting scheduled have been applied to this contributer's address
-        VestingRewardApplied,
-        /// Some error occured while splitting total amount
+        /// This Reward have been taken by this contributer
+        RewardTaken,
         CanotSplitAmount,
         /// This campaign is not empty. i.e some contributers exists
         NonEmptyCampaign,
@@ -475,7 +472,7 @@ pub mod pallet {
             let new_status = match info.status {
                 ClaimerStatus::Unprocessed => Ok(ClaimerStatus::DoneInstant),
                 ClaimerStatus::DoneVesting => Ok(ClaimerStatus::DoneBoth),
-                ClaimerStatus::DoneInstant | ClaimerStatus::DoneBoth => Err(Error::<T>::InstantRewardTaken),
+                ClaimerStatus::DoneInstant | ClaimerStatus::DoneBoth => Err(Error::<T>::RewardTaken),
             }?;
 
             Ok(InstantEnsuredResultOf::<T> {
@@ -493,7 +490,7 @@ pub mod pallet {
             let new_status = match info.status {
                 ClaimerStatus::Unprocessed => Ok(ClaimerStatus::DoneVesting),
                 ClaimerStatus::DoneInstant => Ok(ClaimerStatus::DoneBoth),
-                ClaimerStatus::DoneVesting | ClaimerStatus::DoneBoth => Err(Error::<T>::VestingRewardApplied),
+                ClaimerStatus::DoneVesting | ClaimerStatus::DoneBoth => Err(Error::<T>::RewardTaken),
             }?;
 
             Ok(VestedEnsuredResultOf::<T> {

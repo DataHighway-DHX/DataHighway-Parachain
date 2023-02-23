@@ -100,7 +100,7 @@ pub fn do_instant_reward<T: crate::Config>(
     user: &types::AccountIdOf<T>,
     instant_amount: types::BalanceOf<T>,
 ) -> DispatchResult {
-    <T as crate::Config>::Currency::transfer(reward_source, user, instant_amount, ExistenceRequirement::KeepAlive)
+    <T as crate::Config>::Currency::transfer(reward_source, user, instant_amount, ExistenceRequirement::AllowDeath)
 }
 
 pub fn do_vesting_reward<T: crate::Config>(

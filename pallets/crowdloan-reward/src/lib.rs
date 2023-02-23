@@ -31,9 +31,7 @@ pub mod pallet {
             *,
         },
         traits::{
-            Currency,
-            LockableCurrency,
-            ReservableCurrency,
+            Currency
         },
     };
     use frame_system::pallet_prelude::{
@@ -71,9 +69,7 @@ pub mod pallet {
     pub trait Config: frame_system::Config + pallet_vesting::Config {
         type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
 
-        type Currency: Currency<AccountIdOf<Self>>
-            + ReservableCurrency<AccountIdOf<Self>>
-            + LockableCurrency<AccountIdOf<Self>>;
+        type Currency: Currency<AccountIdOf<Self>>;
 
         type CrowdloanId: Parameter
             + Member

@@ -302,9 +302,6 @@ pub mod pallet {
             Self::ensure_hoster(origin, crowdloan_id)?;
             Self::ensure_campaign_lockable(&crowdloan_id)?;
 
-            // TODO
-            // - check the source have enough locked balance ( the locked field ) to reward all contributers
-
             <CampaignStatus<T>>::insert(crowdloan_id, RewardCampaignStatus::Locked);
 
             Self::deposit_event(Event::<T>::CampaignLocked(crowdloan_id));

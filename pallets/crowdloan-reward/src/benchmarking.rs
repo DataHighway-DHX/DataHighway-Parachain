@@ -276,6 +276,9 @@ benchmarks! {
         );
     }
 
+    // TODO:
+    // make weight dependent on number of contributer
+    // that exists in this campaign
     wipe_campaign {
         let crowdloan_id: types::CrowdloanIdOf<T> = 3_u32.into();
         let caller = make_account::<T>(2);
@@ -309,6 +312,41 @@ benchmarks! {
         assert_eq!(
             CrowdloanReward::<T>::get_campaign_status(crowdloan_id.clone()),
             Some(types::RewardCampaignStatus::Wiped)
+        );
+    }
+
+    discard_campaign {
+        let crowdloan_id: types::CrowdloanIdOf<T> = 3_u32.into();
+        let caller = make_account::<T>(2);
+
+        assert_ok!(
+            CrowdloanReward::<T>::start_new_crowdloan(
+                RawOrigin::Signed(caller.clone()).into(),
+                crowdloan_id.clone(),
+                types::CrowdloanRewardParamFor::<T> {
+                    hoster: None,
+                    reward_source: Some(caller.clone()),
+                    instant_percentage: Some(types::SmallRational::new(1, 1)),
+                    starts_from: None,
+                    end_target: Some(10_u32.into()),
+                }
+            )
+        );
+
+        for contributer in 0_u32 .. 10_u32 {
+            crate::Contribution::<T>::insert(crowdloan_id.clone(), make_account::<T>(contributer), types::RewardUnitOf::<T> {
+                instant_amount: 10_000_u32.into(),
+                vesting_amount: 10_000_u32.into(),
+                per_block: 100_000_u32.into(),
+                status: types::ClaimerStatus::DoneBoth,
+            });
+        }
+
+    }: _(RawOrigin::Signed(caller.clone()), crowdloan_id.into())
+    verify {
+        assert_eq!(
+            CrowdloanReward::<T>::get_campaign_status(crowdloan_id.clone()),
+            None
         );
     }
 

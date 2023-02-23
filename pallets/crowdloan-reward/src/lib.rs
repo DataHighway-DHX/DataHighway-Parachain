@@ -30,9 +30,7 @@ pub mod pallet {
             DispatchResult,
             *,
         },
-        traits::{
-            Currency
-        },
+        traits::Currency,
     };
     use frame_system::pallet_prelude::{
         OriginFor,

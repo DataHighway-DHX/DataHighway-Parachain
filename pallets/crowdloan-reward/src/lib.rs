@@ -180,7 +180,7 @@ pub mod pallet {
 
     #[pallet::call]
     impl<T: Config> Pallet<T> {
-        #[pallet::weight(10_000)]
+        #[pallet::weight(<T as Config>::WeightInfo::start_new_crowdloan())]
         pub fn start_new_crowdloan(
             origin: OriginFor<T>,
             crowdloan_id: CrowdloanIdOf<T>,
@@ -216,7 +216,7 @@ pub mod pallet {
             Ok(())
         }
 
-        #[pallet::weight(10_000)]
+        #[pallet::weight(<T as Config>::WeightInfo::update_campaign())]
         pub fn update_campaign(
             origin: OriginFor<T>,
             crowdloan_id: CrowdloanIdOf<T>,
@@ -247,7 +247,7 @@ pub mod pallet {
             Ok(())
         }
 
-        #[pallet::weight(10_000)]
+        #[pallet::weight(<T as Config>::WeightInfo::add_contributer())]
         pub fn add_contributer(
             origin: OriginFor<T>,
             crowdloan_id: CrowdloanIdOf<T>,
@@ -277,7 +277,7 @@ pub mod pallet {
             Ok(())
         }
 
-        #[pallet::weight(10_000)]
+        #[pallet::weight(<T as Config>::WeightInfo::remove_contributer())]
         pub fn remove_contributer(
             origin: OriginFor<T>,
             crowdloan_id: CrowdloanIdOf<T>,
@@ -297,7 +297,7 @@ pub mod pallet {
             Ok(())
         }
 
-        #[pallet::weight(10_000)]
+        #[pallet::weight(<T as Config>::WeightInfo::lock_campaign())]
         pub fn lock_campaign(origin: OriginFor<T>, crowdloan_id: CrowdloanIdOf<T>) -> DispatchResult {
             Self::ensure_hoster(origin, crowdloan_id)?;
             Self::ensure_campaign_lockable(&crowdloan_id)?;
@@ -325,7 +325,7 @@ pub mod pallet {
             Ok(())
         }
 
-        #[pallet::weight(10_000)]
+        #[pallet::weight(<T as Config>::WeightInfo::wipe_campaign())]
         pub fn wipe_campaign(origin: OriginFor<T>, crowdloan_id: CrowdloanIdOf<T>) -> DispatchResult {
             Self::ensure_hoster(origin, crowdloan_id.clone())?;
             Self::ensure_campaign_wipable(&crowdloan_id)?;

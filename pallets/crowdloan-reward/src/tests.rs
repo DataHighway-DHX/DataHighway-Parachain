@@ -277,6 +277,7 @@ fn campaign_status() {
     // - campaign can be discarded
     // - campaign cannot be wiped
     new_test_ext().execute_with(|| {
+        run_to_block(1);
         let hoster = 10_u32.into();
         let crowdloan_id = 3_u32.into();
 
@@ -321,6 +322,7 @@ fn campaign_status() {
     // - campaign cannot be locked
     // - campaign can be wiped ( only if all contributer are rewarded)
     new_test_ext().execute_with(|| {
+        run_to_block(1);
         let hoster = 1_u32.into();
         let crowdloan_id = 10_u32.into();
         let contributer_a = 1_u32.into();
@@ -371,6 +373,7 @@ fn campaign_status() {
     // - contributer cannot claim instant reward
     // - contributer cannot claim vesting reward
     new_test_ext().execute_with(|| {
+        run_to_block(1);
         let hoster = 10_u32.into();
         let crowdloan_id = 3_u32.into();
 
@@ -427,6 +430,7 @@ fn campaign_status() {
 #[test]
 fn claimer_status() {
     new_test_ext().execute_with(|| {
+        run_to_block(1);
         let hoster = 1_u32.into();
         let crowdloan_id = 3_u32.into();
         let contributer = 4_u32.into();
@@ -558,6 +562,7 @@ fn new_crowdloan_update_sucess() {
 #[test]
 fn contributer_addition_removal_success() {
     new_test_ext().execute_with(|| {
+        run_to_block(1);
         let crowdloan_id = 22_u32.into();
         let hoster = 100_u32.into();
 
@@ -622,6 +627,7 @@ fn contributer_addition_removal_success() {
 #[test]
 fn discard_campaign_success() {
     new_test_ext().execute_with(|| {
+        run_to_block(1);
         let hoster = 101_u32.into();
         let crowdloan_id = 10_u32.into();
 
@@ -658,6 +664,7 @@ fn discard_campaign_success() {
 #[test]
 fn lock_campaign_success() {
     new_test_ext().execute_with(|| {
+        run_to_block(1);
         let hoster = 1_u32.into();
         let crowdloan_id = 33_u32.into();
 
@@ -692,6 +699,7 @@ fn lock_campaign_success() {
 #[test]
 fn wipe_campaign_success() {
     new_test_ext().execute_with(|| {
+        run_to_block(1);
         let hoster = 1_u32.into();
         let crowdloan_id = 33_u32.into();
 
@@ -729,6 +737,7 @@ fn wipe_campaign_success() {
 #[test]
 fn hoster_access_control() {
     new_test_ext().execute_with(|| {
+        run_to_block(1);
         let hoster = 1_u32.into();
         let not_hoster = 2_u32.into();
         let crowdloan_id = 100_u32.into();

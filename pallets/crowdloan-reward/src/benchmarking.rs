@@ -29,10 +29,8 @@ benchmarks! {
     start_new_crowdloan {
         let crowdloan_id = 1_u32;
         let caller = make_account::<T>(2);
-        let reward_source = make_account::<T>(10);
         let params = types::CrowdloanRewardParamFor::<T> {
             hoster: None,
-            reward_source: Some(reward_source.clone()),
             instant_percentage: Some(types::SmallRational::new(3, 10)),
             starts_from: None,
             end_target: Some(100_u32.into()),
@@ -40,8 +38,8 @@ benchmarks! {
     }: _(RawOrigin::Signed(caller.clone()), crowdloan_id.into(), params)
     verify {
         let info = types::CrowdloanRewardFor::<T> {
-            hoster: caller,
-            reward_source,
+            hoster: caller.clone(),
+            reward_source: caller,
             instant_percentage: types::SmallRational::new(3, 10),
             starts_from: 1_u32.into(),
             end_target: 100_u32.into(),
@@ -55,10 +53,8 @@ benchmarks! {
     update_campaign {
         let crowdloan_id = 33_u32;
         let caller = make_account::<T>(1);
-        let reward_source = make_account::<T>(10);
         let new_params = types::CrowdloanRewardParamFor::<T> {
             hoster: None,
-            reward_source: Some(reward_source.clone()),
             instant_percentage: Some(types::SmallRational::new(3, 10)),
             starts_from: Some(1_u32.into()),
             end_target: Some(100_u32.into()),
@@ -69,7 +65,6 @@ benchmarks! {
                 crowdloan_id.into(),
                 types::CrowdloanRewardParamFor::<T> {
                     hoster: None,
-                    reward_source: Some(make_account::<T>(32)),
                     instant_percentage: Some(types::SmallRational::new(0, 0)),
                     starts_from: None,
                     end_target: Some(0_u32.into()),
@@ -79,8 +74,8 @@ benchmarks! {
     }: _(RawOrigin::Signed(caller.clone()), crowdloan_id.into(), new_params)
     verify {
         let info = types::CrowdloanRewardFor::<T> {
-            hoster: caller,
-            reward_source,
+            hoster: caller.clone(),
+            reward_source: caller,
             instant_percentage: types::SmallRational::new(3, 10),
             starts_from: 1_u32.into(),
             end_target: 100_u32.into(),
@@ -98,7 +93,6 @@ benchmarks! {
         let amount: types::BalanceOf<T> = 10_000_000_u32.into();
         let params = types::CrowdloanRewardParamFor::<T> {
             hoster: None,
-            reward_source: Some(caller.clone()),
             instant_percentage: Some(types::SmallRational::new(3, 10)),
             starts_from: Some(0_u32.into()),
             end_target: Some(100_u32.into()),
@@ -126,7 +120,6 @@ benchmarks! {
         let amount: types::BalanceOf<T> = 10_000_000_u32.into();
         let params = types::CrowdloanRewardParamFor::<T> {
             hoster: None,
-            reward_source: Some(caller.clone()),
             instant_percentage: Some(types::SmallRational::new(3, 10)),
             starts_from: Some(0_u32.into()),
             end_target: Some(100_u32.into()),
@@ -163,7 +156,6 @@ benchmarks! {
         let crowdloan_id: types::CrowdloanIdOf<T> = 10_u32.into();
         let params = types::CrowdloanRewardParamFor::<T> {
             hoster: None,
-            reward_source: Some(caller.clone()),
             instant_percentage: Some(types::SmallRational::new(3, 10)),
             starts_from: Some(0_u32.into()),
             end_target: Some(100_u32.into()),
@@ -205,7 +197,6 @@ benchmarks! {
         let crowdloan_id: types::CrowdloanIdOf<T> = 10_u32.into();
         let params = types::CrowdloanRewardParamFor::<T> {
             hoster: None,
-            reward_source: Some(caller.clone()),
             instant_percentage: Some(types::SmallRational::new(3, 10)),
             starts_from: Some(0_u32.into()),
             end_target: Some(100_u32.into()),
@@ -251,7 +242,6 @@ benchmarks! {
                 crowdloan_id.into(),
                 types::CrowdloanRewardParamFor::<T> {
                     hoster: None,
-                    reward_source: Some(caller.clone()),
                     instant_percentage: Some(types::SmallRational::new(1, 1)),
                     starts_from: None,
                     end_target: Some(10_u32.into()),
@@ -289,7 +279,6 @@ benchmarks! {
                 crowdloan_id.clone(),
                 types::CrowdloanRewardParamFor::<T> {
                     hoster: None,
-                    reward_source: Some(caller.clone()),
                     instant_percentage: Some(types::SmallRational::new(1, 1)),
                     starts_from: None,
                     end_target: Some(10_u32.into()),
@@ -325,7 +314,6 @@ benchmarks! {
                 crowdloan_id.clone(),
                 types::CrowdloanRewardParamFor::<T> {
                     hoster: None,
-                    reward_source: Some(caller.clone()),
                     instant_percentage: Some(types::SmallRational::new(1, 1)),
                     starts_from: None,
                     end_target: Some(10_u32.into()),

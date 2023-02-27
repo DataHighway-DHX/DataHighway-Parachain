@@ -28,13 +28,11 @@ fn campaign_creation_success() {
         run_to_block(current_block_num);
 
         // initilization data for a crowdloan campaign
-        let reward_source = 1u32.into();
         let crowdloan_id = 3u32;
         let hoster = 10u32.into();
         let reward_pool = 10_000_000;
         let info = types::CrowdloanRewardParamFor::<Test> {
             hoster: None,
-            reward_source: Some(reward_source),
             instant_percentage: Some(types::SmallRational {
                 numenator: 3,
                 denomator: 10,
@@ -44,7 +42,7 @@ fn campaign_creation_success() {
         };
 
         // Put enough balance in creditor
-        credit_account::<Test>(&reward_source, reward_pool);
+        credit_account::<Test>(&hoster, reward_pool);
 
         // Create crowdloan
         assert_ok!(Reward::start_new_crowdloan(Origin::signed(hoster), crowdloan_id, info.clone()));
@@ -54,6 +52,7 @@ fn campaign_creation_success() {
         assert_eq!(
             Reward::get_reward_info(&crowdloan_id),
             Some(types::CrowdloanRewardFor::<Test> {
+                reward_source: hoster.clone(),
                 hoster,
                 starts_from: current_block_num,
                 instant_percentage: types::SmallRational {
@@ -61,7 +60,6 @@ fn campaign_creation_success() {
                     denomator: 10
                 },
                 end_target: 100u32.into(),
-                reward_source,
             })
         );
 
@@ -260,7 +258,6 @@ fn campaign_status() {
             id,
             types::CrowdloanRewardParamFor::<Test> {
                 hoster: None,
-                reward_source: Some(100_u32.into()),
                 instant_percentage: Some(types::SmallRational::new(3, 10)),
                 starts_from: Some(0_u32.into()),
                 end_target: Some(100_u32.into()),
@@ -434,14 +431,12 @@ fn claimer_status() {
         let hoster = 1_u32.into();
         let crowdloan_id = 3_u32.into();
         let contributer = 4_u32.into();
-        let reward_source = 100_u32.into();
 
         assert_ok!(Reward::start_new_crowdloan(
             Origin::signed(hoster),
             crowdloan_id,
             types::CrowdloanRewardParamFor::<Test> {
                 hoster: None,
-                reward_source: Some(reward_source),
                 instant_percentage: Some(types::SmallRational::new(3, 10)),
                 starts_from: Some(0_u32.into()),
                 end_target: Some(10_u32.into()),
@@ -453,7 +448,7 @@ fn claimer_status() {
             Reward::get_contribution(crowdloan_id, contributer).map(|p| p.status),
             Some(types::ClaimerStatus::Unprocessed)
         );
-        credit_account::<Test>(&reward_source, 10_000_000_u32.into());
+        credit_account::<Test>(&hoster, 10_000_000_u32.into());
 
         // can claim vesting reward
         assert_ok!(Reward::get_vested_reward(Origin::signed(contributer), crowdloan_id));
@@ -476,7 +471,6 @@ fn new_crowdloan_creation_sucess() {
         let crowdloan_id = 33_u32.into();
         let crowdloan_params = types::CrowdloanRewardParamFor::<Test> {
             hoster: None,
-            reward_source: Some(100_u32.into()),
             instant_percentage: Some(types::SmallRational::new(3, 10)),
             starts_from: None,
             end_target: Some(100_u32.into()),
@@ -487,8 +481,8 @@ fn new_crowdloan_creation_sucess() {
 
         // expect right reward info
         let expected_info = types::CrowdloanRewardFor::<Test> {
+            reward_source: hoster.clone(),
             hoster,
-            reward_source: 100_u32.into(),
             instant_percentage: types::SmallRational::new(3, 10),
             starts_from: current_block,
             end_target: 100_u32.into(),
@@ -517,7 +511,6 @@ fn new_crowdloan_update_sucess() {
             crowdloan_id,
             types::CrowdloanRewardParamFor::<Test> {
                 hoster: None,
-                reward_source: Some(33_u32.into()),
                 instant_percentage: Some(types::SmallRational::new(1, 1)),
                 starts_from: None,
                 end_target: Some(0_u32.into()),
@@ -525,22 +518,21 @@ fn new_crowdloan_update_sucess() {
         ));
 
         let old_info = types::CrowdloanRewardFor::<Test> {
+            reward_source: hoster.clone(),
             hoster,
-            reward_source: 33_u32.into(),
             instant_percentage: types::SmallRational::new(1, 1),
             starts_from: current_block,
             end_target: 0_u32.into(),
         };
         let new_crowdloan_params = types::CrowdloanRewardParamFor::<Test> {
             hoster: None,
-            reward_source: Some(100_u32.into()),
             instant_percentage: Some(types::SmallRational::new(3, 10)),
             starts_from: Some(20_u32.into()),
             end_target: Some(100_u32.into()),
         };
         let new_info = types::CrowdloanRewardFor::<Test> {
+            reward_source: hoster.clone(),
             hoster,
-            reward_source: 100_u32.into(),
             instant_percentage: types::SmallRational::new(3, 10),
             starts_from: 20_u32.into(),
             end_target: 100_u32.into(),
@@ -572,7 +564,6 @@ fn contributer_addition_removal_success() {
             crowdloan_id,
             types::CrowdloanRewardParamFor::<Test> {
                 hoster: None,
-                reward_source: Some(100_u32.into()),
                 instant_percentage: Some(types::SmallRational::new(3, 10)),
                 starts_from: Some(0_u32.into()),
                 end_target: Some(100_u32.into()),
@@ -637,7 +628,6 @@ fn discard_campaign_success() {
             crowdloan_id,
             types::CrowdloanRewardParamFor::<Test> {
                 hoster: None,
-                reward_source: Some(100_u32.into()),
                 instant_percentage: Some(types::SmallRational::new(3, 10)),
                 starts_from: Some(0_u32.into()),
                 end_target: Some(100_u32.into()),
@@ -674,7 +664,6 @@ fn lock_campaign_success() {
             crowdloan_id,
             types::CrowdloanRewardParamFor::<Test> {
                 hoster: None,
-                reward_source: Some(100_u32.into()),
                 instant_percentage: Some(types::SmallRational::new(3, 10)),
                 starts_from: Some(0_u32.into()),
                 end_target: Some(100_u32.into()),
@@ -709,13 +698,12 @@ fn wipe_campaign_success() {
             crowdloan_id,
             types::CrowdloanRewardParamFor::<Test> {
                 hoster: None,
-                reward_source: Some(100_u32.into()),
                 instant_percentage: Some(types::SmallRational::new(3, 10)),
                 starts_from: Some(0_u32.into()),
                 end_target: Some(10_u32.into()),
             }
         ));
-        credit_account::<Test>(&100_u32.into(), 100_000_u32.into());
+        credit_account::<Test>(&hoster, 100_000_u32.into());
         assert_ok!(Reward::add_contributer(Origin::signed(hoster), crowdloan_id, 101_u32.into(), 10_000));
         assert_ok!(Reward::lock_campaign(Origin::signed(hoster), crowdloan_id));
         assert_ok!(Reward::get_instant_reward(Origin::signed(101_u32.into()), crowdloan_id));
@@ -747,7 +735,6 @@ fn hoster_access_control() {
             crowdloan_id,
             types::CrowdloanRewardParamFor::<Test> {
                 hoster: None,
-                reward_source: Some(100_u32.into()),
                 instant_percentage: Some(types::SmallRational::new(3, 10)),
                 starts_from: Some(0_u32.into()),
                 end_target: Some(10_u32.into()),

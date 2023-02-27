@@ -75,9 +75,6 @@ pub struct CrowdloanRewardParam<AccountId, BlockNumber> {
     // If present change the hoster
     // else: origin ( while creating ) or unchanged ( while updating )
     pub hoster: Option<AccountId>,
-    // If present change the reward source
-    // else: throw error (while creating) or previous (while updating)
-    pub reward_source: Option<AccountId>,
     // if present change the instant percentage
     // else: throw error (while creating) or unchanged ( while updating )
     pub instant_percentage: Option<SmallRational>,

@@ -69,19 +69,31 @@ where
     }
 }
 
+/// Paramater required to start a new reward campaign
 #[derive(Encode, Decode, Eq, PartialEq, Clone, TypeInfo, MaxEncodedLen, Debug)]
 #[cfg_attr(test, derive(Default))]
-pub struct CrowdloanRewardParam<AccountId, BlockNumber> {
-    // If present change the hoster
-    // else: origin ( while creating ) or unchanged ( while updating )
+pub struct CreateCampaignParam<AccountId, BlockNumber> {
+    /// Who owns this campaign and also the funder of whole reward
+    /// If not passed, use the origin
     pub hoster: Option<AccountId>,
-    // if present change the instant percentage
-    // else: throw error (while creating) or unchanged ( while updating )
-    pub instant_percentage: Option<SmallRational>,
-    // if present change the start from block number
-    // else: current_block_number or unchanged ( while updating )
+    /// How much percentage out of 100% to give as instantly without vesting scheule
+    pub instant_percentage: SmallRational,
+    /// Starting block number for vesting schedule to be applied
+    /// If not passed, use the current block number
     pub starts_from: Option<BlockNumber>,
-    // same as starts_form
+    /// Target block number to prefer to end the vesting scheudle
+    pub end_target: BlockNumber,
+}
+
+/// Parameter to update the already existing reward campaign
+/// if any of the field is passed as None,
+/// then the old value will be used in-place
+#[derive(Encode, Decode, Eq, PartialEq, Clone, TypeInfo, MaxEncodedLen, Debug)]
+#[cfg_attr(test, derive(Default))]
+pub struct UpdateCampaignParam<AccountId, BlockNumber> {
+    pub hoster: Option<AccountId>,
+    pub instant_percentage: Option<SmallRational>,
+    pub starts_from: Option<BlockNumber>,
     pub end_target: Option<BlockNumber>,
 }
 
@@ -112,6 +124,13 @@ pub struct SmallRational {
     pub denomator: u32,
 }
 
+#[cfg(test)]
+impl Default for SmallRational {
+    fn default() -> Self {
+        SmallRational::new(0, 1)
+    }
+}
+
 impl SmallRational {
     pub fn new(n: u32, d: u32) -> Self {
         SmallRational {
@@ -132,7 +151,8 @@ impl SmallRational {
 
 pub type AccountIdOf<T> = <T as frame_system::Config>::AccountId;
 pub type CrowdloanRewardFor<T> = CrowdloanReward<AccountIdOf<T>, BlockNumberOf<T>>;
-pub type CrowdloanRewardParamFor<T> = CrowdloanRewardParam<AccountIdOf<T>, BlockNumberOf<T>>;
+pub type CreateCampaignParamFor<T> = CreateCampaignParam<AccountIdOf<T>, BlockNumberOf<T>>;
+pub type UpdateCampaignParamFor<T> = UpdateCampaignParam<AccountIdOf<T>, BlockNumberOf<T>>;
 pub type BlockNumberOf<T> = <T as frame_system::Config>::BlockNumber;
 pub type BalanceOf<T> = <<T as crate::Config>::Currency as Currency<AccountIdOf<T>>>::Balance;
 pub type RewardUnitOf<T> = RewardUnit<BalanceOf<T>, VestingBalanceOf<T>>;

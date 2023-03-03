@@ -34,11 +34,11 @@ benchmarks! {
     start_new_crowdloan {
         let crowdloan_id = 1_u32;
         let caller = make_account::<T>(2);
-        let params = types::CrowdloanRewardParamFor::<T> {
+        let params = types::CreateCampaignParamFor::<T> {
             hoster: None,
-            instant_percentage: Some(types::SmallRational::new(3, 10)),
+            instant_percentage: types::SmallRational::new(3, 10),
             starts_from: None,
-            end_target: Some(100_u32.into()),
+            end_target: 100_u32.into(),
         };
     }: _(RawOrigin::Signed(caller.clone()), crowdloan_id.into(), params)
     verify {
@@ -58,7 +58,7 @@ benchmarks! {
     update_campaign {
         let crowdloan_id = 33_u32;
         let caller = make_account::<T>(1);
-        let new_params = types::CrowdloanRewardParamFor::<T> {
+        let new_params = types::UpdateCampaignParamFor::<T> {
             hoster: None,
             instant_percentage: Some(types::SmallRational::new(3, 10)),
             starts_from: Some(1_u32.into()),
@@ -68,11 +68,11 @@ benchmarks! {
             CrowdloanReward::<T>::start_new_crowdloan(
                 RawOrigin::Signed(caller.clone()).into(),
                 crowdloan_id.into(),
-                types::CrowdloanRewardParamFor::<T> {
+                types::CreateCampaignParamFor::<T> {
                     hoster: None,
-                    instant_percentage: Some(types::SmallRational::new(0, 0)),
+                    instant_percentage: types::SmallRational::new(0, 0),
                     starts_from: None,
-                    end_target: Some(0_u32.into()),
+                    end_target: 0_u32.into(),
                 }
             )
         );
@@ -96,11 +96,11 @@ benchmarks! {
         let caller = make_account::<T>(1);
         let crowdloan_id: types::CrowdloanIdOf<T> = 2_u32.into();
         let amount: types::BalanceOf<T> = 10_000_000_u32.into();
-        let params = types::CrowdloanRewardParamFor::<T> {
+        let params = types::CreateCampaignParamFor::<T> {
             hoster: None,
-            instant_percentage: Some(types::SmallRational::new(3, 10)),
+            instant_percentage: types::SmallRational::new(3, 10),
             starts_from: Some(0_u32.into()),
-            end_target: Some(100_u32.into()),
+            end_target: 100_u32.into(),
         };
 
         assert_ok!(
@@ -123,11 +123,11 @@ benchmarks! {
         let caller = make_account::<T>(1);
         let crowdloan_id: types::CrowdloanIdOf<T> = 2_u32.into();
         let amount: types::BalanceOf<T> = 10_000_000_u32.into();
-        let params = types::CrowdloanRewardParamFor::<T> {
+        let params = types::CreateCampaignParamFor::<T> {
             hoster: None,
-            instant_percentage: Some(types::SmallRational::new(3, 10)),
+            instant_percentage: types::SmallRational::new(3, 10),
             starts_from: Some(0_u32.into()),
-            end_target: Some(100_u32.into()),
+            end_target: 100_u32.into(),
         };
 
         assert_ok!(
@@ -159,11 +159,11 @@ benchmarks! {
         let contributer = make_account::<T>(22);
         let caller = make_account::<T>(1);
         let crowdloan_id: types::CrowdloanIdOf<T> = 10_u32.into();
-        let params = types::CrowdloanRewardParamFor::<T> {
+        let params = types::CreateCampaignParamFor::<T> {
             hoster: None,
-            instant_percentage: Some(types::SmallRational::new(1, 1)),
+            instant_percentage: types::SmallRational::new(1, 1),
             starts_from: Some(0_u32.into()),
-            end_target: Some(100_u32.into()),
+            end_target: 100_u32.into(),
         };
 
         let deposit_amount = <T as crate::Config>::Currency::minimum_balance() * 2_u32.into();
@@ -198,11 +198,11 @@ benchmarks! {
         let contributer = make_account::<T>(22);
         let caller = make_account::<T>(1);
         let crowdloan_id: types::CrowdloanIdOf<T> = 10_u32.into();
-        let params = types::CrowdloanRewardParamFor::<T> {
+        let params = types::CreateCampaignParamFor::<T> {
             hoster: None,
-            instant_percentage: Some(types::SmallRational::new(5, 10)),
+            instant_percentage: types::SmallRational::new(5, 10),
             starts_from: Some(1_u32.into()),
-            end_target: Some(10_u32.into()),
+            end_target: 10_u32.into(),
         };
 
         assert_eq!(<T as crate::Config>::Currency::deposit_creating(&caller, Bounded::max_value()).peek(), Bounded::max_value());
@@ -244,11 +244,11 @@ benchmarks! {
             CrowdloanReward::<T>::start_new_crowdloan(
                 RawOrigin::Signed(caller.clone()).into(),
                 crowdloan_id.into(),
-                types::CrowdloanRewardParamFor::<T> {
+                types::CreateCampaignParamFor::<T> {
                     hoster: None,
-                    instant_percentage: Some(types::SmallRational::new(1, 1)),
+                    instant_percentage: types::SmallRational::new(1, 1),
                     starts_from: None,
-                    end_target: Some(10_u32.into()),
+                    end_target: 10_u32.into(),
                 }
             )
         );
@@ -281,11 +281,11 @@ benchmarks! {
             CrowdloanReward::<T>::start_new_crowdloan(
                 RawOrigin::Signed(caller.clone()).into(),
                 crowdloan_id.clone(),
-                types::CrowdloanRewardParamFor::<T> {
+                types::CreateCampaignParamFor::<T> {
                     hoster: None,
-                    instant_percentage: Some(types::SmallRational::new(1, 1)),
+                    instant_percentage: types::SmallRational::new(1, 1),
                     starts_from: None,
-                    end_target: Some(10_u32.into()),
+                    end_target: 10_u32.into(),
                 }
             )
         );
@@ -316,11 +316,11 @@ benchmarks! {
             CrowdloanReward::<T>::start_new_crowdloan(
                 RawOrigin::Signed(caller.clone()).into(),
                 crowdloan_id.clone(),
-                types::CrowdloanRewardParamFor::<T> {
+                types::CreateCampaignParamFor::<T> {
                     hoster: None,
-                    instant_percentage: Some(types::SmallRational::new(1, 1)),
+                    instant_percentage: types::SmallRational::new(1, 1),
                     starts_from: None,
-                    end_target: Some(10_u32.into()),
+                    end_target: 10_u32.into(),
                 }
             )
         );

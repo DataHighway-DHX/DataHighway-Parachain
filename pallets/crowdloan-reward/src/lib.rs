@@ -50,12 +50,13 @@ pub mod pallet {
         ClaimerStatus,
         CrowdloanIdOf,
         CrowdloanRewardFor,
-        CrowdloanRewardParamFor,
+        CreateCampaignParamFor,
         InstantEnsuredResultOf,
         RewardCampaignStatus,
         RewardUnitOf,
         VestedEnsuredResultOf,
         VestingBalanceOf,
+        UpdateCampaignParamFor,
     };
     use weights::WeightInfo;
 
@@ -153,8 +154,6 @@ pub mod pallet {
         CampaignInProgress,
         /// Campaign wiped
         CampaignWiped,
-        /// Not all required information was passed
-        InsufficientInfo,
         /// This crowdloan is in one of read-only state
         ReadOnlyCampaign,
         /// This campaign is not yet in claimable state for contributers
@@ -178,7 +177,7 @@ pub mod pallet {
         pub fn start_new_crowdloan(
             origin: OriginFor<T>,
             crowdloan_id: CrowdloanIdOf<T>,
-            info: CrowdloanRewardParamFor<T>,
+            info: CreateCampaignParamFor<T>,
         ) -> DispatchResult {
             let hoster = ensure_signed(origin)?;
 
@@ -189,8 +188,6 @@ pub mod pallet {
                 <Error<T>>::RewardCampaignExists
             );
 
-            let end_target = info.end_target.ok_or(<Error<T>>::InsufficientInfo)?;
-            let instant_percentage = info.instant_percentage.ok_or(<Error<T>>::InsufficientInfo)?;
             let starts_from = info.starts_from.unwrap_or_else(Self::get_current_block_number);
             let hoster = info.hoster.unwrap_or(hoster);
             let reward_source = hoster.clone();
@@ -198,9 +195,9 @@ pub mod pallet {
             let crowdloan_reward_info = CrowdloanRewardFor::<T> {
                 hoster,
                 reward_source,
-                end_target,
+                end_target: info.end_target,
                 starts_from,
-                instant_percentage,
+                instant_percentage: info.instant_percentage,
             };
 
             <CampaignStatus<T>>::insert(crowdloan_id, RewardCampaignStatus::InProgress);
@@ -214,7 +211,7 @@ pub mod pallet {
         pub fn update_campaign(
             origin: OriginFor<T>,
             crowdloan_id: CrowdloanIdOf<T>,
-            new_info: CrowdloanRewardParamFor<T>,
+            new_info: UpdateCampaignParamFor<T>,
         ) -> DispatchResult {
             Self::ensure_hoster(origin, crowdloan_id)?;
             Self::ensure_campaign_writable(&crowdloan_id)?;

@@ -13,6 +13,7 @@ use frame_support::{
         Imbalance,
     },
 };
+use sp_runtime::traits::Bounded;
 
 #[allow(unused)]
 use frame_benchmarking::{
@@ -26,6 +27,10 @@ fn make_account<T: crate::Config>(id: u32) -> types::AccountIdOf<T> {
 }
 
 benchmarks! {
+    where_clause { where
+        types::BalanceOf<T>: Bounded,
+    }
+
     start_new_crowdloan {
         let crowdloan_id = 1_u32;
         let caller = make_account::<T>(2);
@@ -156,15 +161,13 @@ benchmarks! {
         let crowdloan_id: types::CrowdloanIdOf<T> = 10_u32.into();
         let params = types::CrowdloanRewardParamFor::<T> {
             hoster: None,
-            instant_percentage: Some(types::SmallRational::new(3, 10)),
+            instant_percentage: Some(types::SmallRational::new(1, 1)),
             starts_from: Some(0_u32.into()),
             end_target: Some(100_u32.into()),
         };
 
-        assert_eq!(
-            <T as crate::Config>::Currency::deposit_creating(&caller, 10_000_000_u32.into()).peek(),
-            10_000_000_u32.into(),
-        );
+        let deposit_amount = <T as crate::Config>::Currency::minimum_balance() * 2_u32.into();
+        assert_eq!(<T as crate::Config>::Currency::deposit_creating(&caller, Bounded::max_value()).peek(), Bounded::max_value());
         assert_ok!(
             CrowdloanReward::<T>::start_new_crowdloan(
                 RawOrigin::Signed(caller.clone()).into(),
@@ -176,7 +179,7 @@ benchmarks! {
             CrowdloanReward::<T>::add_contributer(RawOrigin::Signed(caller.clone()).into(),
                 crowdloan_id,
                 contributer.clone(),
-                10_000_u32.into()
+                deposit_amount,
             )
         );
         assert_ok!(
@@ -197,15 +200,12 @@ benchmarks! {
         let crowdloan_id: types::CrowdloanIdOf<T> = 10_u32.into();
         let params = types::CrowdloanRewardParamFor::<T> {
             hoster: None,
-            instant_percentage: Some(types::SmallRational::new(3, 10)),
-            starts_from: Some(0_u32.into()),
-            end_target: Some(100_u32.into()),
+            instant_percentage: Some(types::SmallRational::new(5, 10)),
+            starts_from: Some(1_u32.into()),
+            end_target: Some(10_u32.into()),
         };
 
-        assert_eq!(
-            <T as crate::Config>::Currency::deposit_creating(&caller, 10_000_000_u32.into()).peek(),
-            10_000_000_u32.into(),
-        );
+        assert_eq!(<T as crate::Config>::Currency::deposit_creating(&caller, Bounded::max_value()).peek(), Bounded::max_value());
         assert_ok!(
             CrowdloanReward::<T>::start_new_crowdloan(
                 RawOrigin::Signed(caller.clone()).into(),
@@ -217,12 +217,16 @@ benchmarks! {
             CrowdloanReward::<T>::add_contributer(RawOrigin::Signed(caller.clone()).into(),
                 crowdloan_id,
                 contributer.clone(),
-                10_000_u32.into()
+                <types::BalanceOf<T> as Bounded>::max_value() - 10_000_000_u32.into(),
             )
         );
         assert_ok!(
             CrowdloanReward::<T>::lock_campaign(RawOrigin::Signed(caller.clone()).into(), crowdloan_id.clone())
         );
+        log::info!("Vesting init complete with amount: total,per_block: {:?}", {
+            let info = CrowdloanReward::<T>::get_contribution(crowdloan_id, contributer.clone()).unwrap();
+            (info.vesting_amount, info.per_block)
+        });
     }: _(RawOrigin::Signed(contributer.clone()), crowdloan_id)
     verify {
         assert_eq!(

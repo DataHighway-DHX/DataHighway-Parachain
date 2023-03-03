@@ -330,7 +330,7 @@ pub mod pallet {
             Ok(())
         }
 
-        #[pallet::weight(10_0000)]
+        #[pallet::weight(<T as Config>::WeightInfo::get_instant_reward())]
         pub fn get_instant_reward(origin: OriginFor<T>, crowdloan_id: CrowdloanIdOf<T>) -> DispatchResult {
             let contributer = ensure_signed(origin)?;
             Self::ensure_campaign_claimable(&crowdloan_id)?;
@@ -352,7 +352,7 @@ pub mod pallet {
             Ok(())
         }
 
-        #[pallet::weight(10_000)]
+        #[pallet::weight(<T as Config>::WeightInfo::get_vested_reward())]
         pub fn get_vested_reward(origin: OriginFor<T>, crowdloan_id: CrowdloanIdOf<T>) -> DispatchResult {
             let contributer = ensure_signed(origin)?;
             Self::ensure_campaign_claimable(&crowdloan_id)?;

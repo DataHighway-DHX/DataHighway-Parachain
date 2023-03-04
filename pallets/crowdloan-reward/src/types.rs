@@ -3,12 +3,14 @@ use codec::{
     Encode,
     MaxEncodedLen,
 };
+use core::cmp::Ord;
 use frame_support::traits::Currency;
 use pallet_vesting::VestingInfo;
 use scale_info::TypeInfo;
 use sp_runtime::traits::{
     CheckedDiv,
     CheckedMul,
+    Zero,
 };
 use sp_std::fmt::Debug;
 
@@ -72,7 +74,10 @@ where
 /// Paramater required to start a new reward campaign
 #[derive(Encode, Decode, Eq, PartialEq, Clone, TypeInfo, MaxEncodedLen, Debug)]
 #[cfg_attr(test, derive(Default))]
-pub struct CreateCampaignParam<AccountId, BlockNumber> {
+pub struct CreateCampaignParam<AccountId, BlockNumber>
+where
+    BlockNumber: Ord,
+{
     /// Who owns this campaign and also the funder of whole reward
     /// If not passed, use the origin
     pub hoster: Option<AccountId>,
@@ -83,6 +88,19 @@ pub struct CreateCampaignParam<AccountId, BlockNumber> {
     pub starts_from: Option<BlockNumber>,
     /// Target block number to prefer to end the vesting scheudle
     pub end_target: BlockNumber,
+}
+
+impl<Account, BlockNumber> CrowdloanReward<Account, BlockNumber>
+where
+    BlockNumber: Ord 
+{
+    pub fn validate(&self) -> Option<()> {
+        if self.instant_percentage.denomator.is_zero() || !self.end_target.cmp(&self.starts_from).is_gt() {
+            None
+        } else {
+            Some(())
+        }
+    }
 }
 
 /// Parameter to update the already existing reward campaign

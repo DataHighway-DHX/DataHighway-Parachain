@@ -510,7 +510,7 @@ fn new_crowdloan_update_sucess() {
                 hoster: None,
                 instant_percentage: types::SmallRational::new(1, 1),
                 starts_from: None,
-                end_target: 0_u32.into(),
+                end_target: 11_u32.into(),
             }
         ));
 
@@ -519,7 +519,7 @@ fn new_crowdloan_update_sucess() {
             hoster,
             instant_percentage: types::SmallRational::new(1, 1),
             starts_from: current_block,
-            end_target: 0_u32.into(),
+            end_target: 11_u32.into(),
         };
         let new_crowdloan_params = types::UpdateCampaignParamFor::<Test> {
             hoster: None,

@@ -70,9 +70,9 @@ benchmarks! {
                 crowdloan_id.into(),
                 types::CreateCampaignParamFor::<T> {
                     hoster: None,
-                    instant_percentage: types::SmallRational::new(0, 0),
+                    instant_percentage: types::SmallRational::new(0, 1),
                     starts_from: None,
-                    end_target: 0_u32.into(),
+                    end_target: 1_u32.into(),
                 }
             )
         );

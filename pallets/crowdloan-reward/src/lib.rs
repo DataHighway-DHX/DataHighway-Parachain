@@ -48,15 +48,15 @@ pub mod pallet {
         BalanceOf,
         BlockNumberOf,
         ClaimerStatus,
+        CreateCampaignParamFor,
         CrowdloanIdOf,
         CrowdloanRewardFor,
-        CreateCampaignParamFor,
         InstantEnsuredResultOf,
         RewardCampaignStatus,
         RewardUnitOf,
+        UpdateCampaignParamFor,
         VestedEnsuredResultOf,
         VestingBalanceOf,
-        UpdateCampaignParamFor,
     };
     use weights::WeightInfo;
 
@@ -169,6 +169,8 @@ pub mod pallet {
         UnclaimedContribution,
         /// Campaign is not in claimable state
         NonClaimableCampaign,
+        /// Provided input is invalid
+        InvalidInput,
     }
 
     #[pallet::call]
@@ -192,7 +194,7 @@ pub mod pallet {
             let hoster = info.hoster.unwrap_or(hoster);
             let reward_source = hoster.clone();
 
-            let crowdloan_reward_info = CrowdloanRewardFor::<T> {
+            let campaign_info = CrowdloanRewardFor::<T> {
                 hoster,
                 reward_source,
                 end_target: info.end_target,
@@ -200,8 +202,10 @@ pub mod pallet {
                 instant_percentage: info.instant_percentage,
             };
 
+            ensure!(campaign_info.validate().is_some(), <Error<T>>::InvalidInput);
+
             <CampaignStatus<T>>::insert(crowdloan_id, RewardCampaignStatus::InProgress);
-            <RewardInfo<T>>::insert(crowdloan_id, crowdloan_reward_info);
+            <RewardInfo<T>>::insert(crowdloan_id, campaign_info);
 
             Self::deposit_event(Event::<T>::CampaignStarted(crowdloan_id));
             Ok(())
@@ -225,14 +229,17 @@ pub mod pallet {
             let hoster = new_info.hoster.unwrap_or(old_info.hoster);
             let reward_source = hoster.clone();
 
-            let crowdloan_reward_info = CrowdloanRewardFor::<T> {
+            let campaign_info = CrowdloanRewardFor::<T> {
                 hoster,
                 reward_source,
                 end_target,
                 starts_from,
                 instant_percentage,
             };
-            <RewardInfo<T>>::insert(crowdloan_id, crowdloan_reward_info);
+
+            ensure!(campaign_info.validate().is_some(), <Error<T>>::InvalidInput);
+
+            <RewardInfo<T>>::insert(crowdloan_id, campaign_info);
 
             Self::deposit_event(<Event<T>>::CampaignUpdated(crowdloan_id));
             Ok(())

@@ -1806,7 +1806,7 @@ dependencies = [
 
 [[package]]
 name = "datahighway-collator"
-version = "3.8.0"
+version = "3.8.1"
 dependencies = [
  "clap",
  "cumulus-client-cli",

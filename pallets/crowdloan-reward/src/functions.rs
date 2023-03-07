@@ -17,6 +17,8 @@ use sp_runtime::{
     },
     DispatchError,
 };
+use frame_support::*;
+use sp_runtime::traits::Get;
 
 use crate::types;
 
@@ -48,7 +50,7 @@ where
         let vesting_amount = self.reward_amount.checked_sub(&instant_amount)?;
         let mut per_block = 0u32.into();
 
-        if !vesting_amount.is_zero() {
+        if vesting_amount >= One::one() {
             let time_duration = self.vesting_ends.checked_sub(&self.vesting_starts)?;
             per_block = vesting_amount
                 .checked_div(&BlockNumberToBalance::convert(time_duration.clone()))
@@ -87,6 +89,12 @@ pub fn construct_reward_unit<T: crate::Config>(
 
     let vesting_amount = <T as crate::Config>::CurrencyConvert::convert(vesting_amount);
     let per_block = <T as crate::Config>::CurrencyConvert::convert(per_block);
+    let min_vesting_amount = <T as pallet_vesting::Config>::MinVestedTransfer::get();
+
+    ensure!(
+        vesting_amount.is_zero() || vesting_amount >= min_vesting_amount,
+        Error::<T>::RewardTooSmall
+    );
 
     Ok(types::RewardUnitOf::<T> {
         instant_amount,

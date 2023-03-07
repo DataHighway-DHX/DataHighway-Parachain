@@ -92,7 +92,7 @@ where
 
 impl<Account, BlockNumber> CrowdloanReward<Account, BlockNumber>
 where
-    BlockNumber: Ord 
+    BlockNumber: Ord,
 {
     pub fn validate(&self) -> Option<()> {
         if self.instant_percentage.denomator.is_zero() || !self.end_target.cmp(&self.starts_from).is_gt() {

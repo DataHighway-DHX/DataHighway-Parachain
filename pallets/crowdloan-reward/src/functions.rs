@@ -13,6 +13,7 @@ use sp_runtime::{
         Convert,
         One,
         StaticLookup,
+        Zero,
     },
     DispatchError,
 };
@@ -100,7 +101,11 @@ pub fn do_instant_reward<T: crate::Config>(
     user: &types::AccountIdOf<T>,
     instant_amount: types::BalanceOf<T>,
 ) -> DispatchResult {
-    <T as crate::Config>::Currency::transfer(reward_source, user, instant_amount, ExistenceRequirement::AllowDeath)
+    if instant_amount.is_zero() {
+        Ok(())
+    } else {
+        <T as crate::Config>::Currency::transfer(reward_source, user, instant_amount, ExistenceRequirement::AllowDeath)
+    }
 }
 
 pub fn do_vesting_reward<T: crate::Config>(
@@ -110,10 +115,14 @@ pub fn do_vesting_reward<T: crate::Config>(
     vesting_amount: types::VestingBalanceOf<T>,
     per_block: types::VestingBalanceOf<T>,
 ) -> DispatchResult {
-    let vesting_info = types::VestingInfoOf::<T>::new(vesting_amount, per_block, starts_from);
+    if vesting_amount.is_zero() {
+        Ok(())
+    } else {
+        let vesting_info = types::VestingInfoOf::<T>::new(vesting_amount, per_block, starts_from);
 
-    let creditor_origin = <T as frame_system::Config>::Origin::from(frame_system::RawOrigin::Signed(reward_source));
-    let contributer_lookup = <T::Lookup as StaticLookup>::unlookup(user);
+        let creditor_origin = <T as frame_system::Config>::Origin::from(frame_system::RawOrigin::Signed(reward_source));
+        let contributer_lookup = <T::Lookup as StaticLookup>::unlookup(user);
 
-    pallet_vesting::Pallet::<T>::vested_transfer(creditor_origin, contributer_lookup, vesting_info)
+        pallet_vesting::Pallet::<T>::vested_transfer(creditor_origin, contributer_lookup, vesting_info)
+    }
 }

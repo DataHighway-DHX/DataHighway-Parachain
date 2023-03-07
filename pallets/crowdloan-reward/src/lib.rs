@@ -36,12 +36,16 @@ pub mod pallet {
         OriginFor,
         *,
     };
-    use sp_runtime::traits::{
-        AtLeast32Bit,
-        Convert,
-        MaybeDisplay,
-    };
     pub use sp_runtime::Percent;
+    use sp_runtime::{
+        traits::{
+            AtLeast32Bit,
+            Convert,
+            MaybeDisplay,
+            Zero,
+        },
+        DispatchError,
+    };
     use sp_std::fmt::Debug;
     use types::{
         AccountIdOf,
@@ -171,6 +175,8 @@ pub mod pallet {
         NonClaimableCampaign,
         /// Provided input is invalid
         InvalidInput,
+        /// Added reward amount is too small
+        RewardTooSmall,
     }
 
     #[pallet::call]
@@ -258,7 +264,7 @@ pub mod pallet {
             ensure!(!<Contribution<T>>::contains_key(&crowdloan_id, &contributer), <Error<T>>::ContributerExists);
 
             let campaign_info = Self::get_reward_info(&crowdloan_id).ok_or(<Error<T>>::NoRewardCampaign)?;
-            let reward_unit = functions::construct_reward_unit::<T>(
+            let reward_unit = Self::make_reward_unit(
                 amount,
                 campaign_info.instant_percentage,
                 campaign_info.starts_from,
@@ -501,6 +507,21 @@ pub mod pallet {
                     state.status = new_status;
                 });
             });
+        }
+
+        fn make_reward_unit(
+            amount: types::BalanceOf<T>,
+            instant_percentage: types::SmallRational,
+            starts_from: types::BlockNumberOf<T>,
+            ends_at: types::BlockNumberOf<T>,
+        ) -> Result<types::RewardUnitOf<T>, DispatchError> {
+            let unit = functions::construct_reward_unit::<T>(amount, instant_percentage, starts_from, ends_at)?;
+            let min_vesting_amount = <T as pallet_vesting::Config>::MinVestedTransfer::get();
+            ensure!(
+                unit.vesting_amount.is_zero() || unit.vesting_amount >= min_vesting_amount,
+                Error::<T>::RewardTooSmall
+            );
+            Ok(unit)
         }
 
         fn get_current_block_number() -> BlockNumberOf<T> {

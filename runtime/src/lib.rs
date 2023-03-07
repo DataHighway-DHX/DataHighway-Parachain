@@ -880,7 +880,7 @@ impl pallet_conviction_voting::Config for Runtime {
 
 parameter_types! {
     pub const AlarmInterval: BlockNumber = 1;
-    pub const SubmissionDeposit: Balance = 1 * DOLLARS;
+    pub const SubmissionDeposit: Balance = 10_000 * DOLLARS;
     pub const UndecidingTimeout: BlockNumber = 7 * DAYS;
 }
 
@@ -951,7 +951,7 @@ parameter_types! {
     pub const VotingPeriod: BlockNumber = 7 * DAYS;
     pub const FastTrackVotingPeriod: BlockNumber = 3 * DAYS;
     pub const InstantAllowed: bool = true;
-    pub const MinimumDeposit: Balance = 1 * DOLLARS;
+    pub const MinimumDeposit: Balance = 10_000 * DOLLARS;
     pub const EnactmentPeriod: BlockNumber = 1 * DAYS;
     pub const CooloffPeriod: BlockNumber = 7 * DAYS;
     pub const MaxVotes: u32 = MAX_VOTES_AS_CONST;

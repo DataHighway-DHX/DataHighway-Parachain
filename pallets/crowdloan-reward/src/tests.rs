@@ -8,15 +8,11 @@ use crate::{
     },
 };
 use frame_support::{
+    assert_err,
     assert_noop,
     assert_ok,
-    assert_storage_noop,
-    inherent::BlockT,
-    IterableStorageDoubleMap,
 };
-use frame_system::RawOrigin;
 
-pub const DOLLARS: u128 = 1_000_000_000_000_000_000_u128;
 type RewardError = crate::Error<Test>;
 type RewardEvent = crate::Event<Test>;
 
@@ -774,4 +770,33 @@ fn hoster_access_control() {
             RewardError::PermissionDenied,
         );
     });
+}
+
+#[test]
+fn construct_reward_unit() {
+    {
+        let amount = 10_000_204_u128;
+        let starts_from = 20_u64;
+        let ends_at = 53_u64;
+        let instant_per = SmallRational::new(1, 2);
+
+        let reward_unit = functions::construct_reward_unit::<Test>(amount, instant_per, starts_from, ends_at);
+        let expected_reward_unit = types::RewardUnitOf::<Test> {
+            instant_amount: 5_000_102,
+            vesting_amount: 5_000_102,
+            per_block: 151518,
+            status: types::ClaimerStatus::Unprocessed,
+        };
+        assert_eq!(reward_unit, Ok(expected_reward_unit));
+    }
+
+    // If vesting amount is below MinVestedAmount then throw the error
+    // if not making vesting schedule will always fail
+    {
+        let min_vested_amount = <Test as pallet_vesting::Config>::MinVestedTransfer::get();
+        let amount = min_vested_amount - 1;
+        let ratio = SmallRational::new(0, 1); // everything goes to vesting
+
+        assert_err!(functions::construct_reward_unit::<Test>(amount, ratio, 10, 20), RewardError::RewardTooSmall);
+    }
 }

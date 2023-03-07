@@ -264,7 +264,7 @@ pub mod pallet {
             ensure!(!<Contribution<T>>::contains_key(&crowdloan_id, &contributer), <Error<T>>::ContributerExists);
 
             let campaign_info = Self::get_reward_info(&crowdloan_id).ok_or(<Error<T>>::NoRewardCampaign)?;
-            let reward_unit = functions::construct_reward_unit::<T> (
+            let reward_unit = functions::construct_reward_unit::<T>(
                 amount,
                 campaign_info.instant_percentage,
                 campaign_info.starts_from,

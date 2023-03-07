@@ -5,20 +5,20 @@ use frame_support::{
         Currency,
         ExistenceRequirement,
     },
+    *,
 };
 use sp_runtime::{
     traits::{
         AtLeast32BitUnsigned,
         CheckedSub,
         Convert,
+        Get,
         One,
         StaticLookup,
         Zero,
     },
     DispatchError,
 };
-use frame_support::*;
-use sp_runtime::traits::Get;
 
 use crate::types;
 
@@ -91,10 +91,7 @@ pub fn construct_reward_unit<T: crate::Config>(
     let per_block = <T as crate::Config>::CurrencyConvert::convert(per_block);
     let min_vesting_amount = <T as pallet_vesting::Config>::MinVestedTransfer::get();
 
-    ensure!(
-        vesting_amount.is_zero() || vesting_amount >= min_vesting_amount,
-        Error::<T>::RewardTooSmall
-    );
+    ensure!(vesting_amount.is_zero() || vesting_amount >= min_vesting_amount, Error::<T>::RewardTooSmall);
 
     Ok(types::RewardUnitOf::<T> {
         instant_amount,

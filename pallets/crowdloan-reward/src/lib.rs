@@ -42,7 +42,6 @@ pub mod pallet {
             AtLeast32Bit,
             Convert,
             MaybeDisplay,
-            Zero,
         },
         DispatchError,
     };

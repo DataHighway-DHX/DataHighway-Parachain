@@ -13,7 +13,7 @@ mod tests;
 mod benchmarking;
 
 mod functions;
-mod types;
+pub mod types;
 pub mod weights;
 
 pub use weights::WeightInfo;

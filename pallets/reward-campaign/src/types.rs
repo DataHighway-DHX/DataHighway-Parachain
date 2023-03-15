@@ -39,7 +39,7 @@ pub struct RewardUnit<InstantBalance, VestingBalance> {
 }
 
 #[derive(Encode, Decode, Eq, PartialEq, Clone, TypeInfo, MaxEncodedLen, Debug)]
-pub struct CrowdloanReward<AccountId, BlockNumber> {
+pub struct CampaignReward<AccountId, BlockNumber> {
     /// Hoster of this crowdload
     /// Note: if this needs to be owned by multiple AccountId,
     /// make this account id a multi-signature
@@ -55,7 +55,7 @@ pub struct CrowdloanReward<AccountId, BlockNumber> {
 }
 
 #[cfg(test)]
-impl<Account, Block> Default for CrowdloanReward<Account, Block>
+impl<Account, Block> Default for CampaignReward<Account, Block>
 where
     Account: Default,
     Block: Default,
@@ -90,7 +90,7 @@ where
     pub end_target: BlockNumber,
 }
 
-impl<Account, BlockNumber> CrowdloanReward<Account, BlockNumber>
+impl<Account, BlockNumber> CampaignReward<Account, BlockNumber>
 where
     BlockNumber: Ord,
 {
@@ -121,7 +121,7 @@ pub enum RewardCampaignStatus {
     InProgress,
     /// A campaign is in locked state
     Locked,
-    /// This crowdloan existed but have been wiped
+    /// This campaign existed but have been wiped
     Wiped,
 }
 
@@ -168,13 +168,13 @@ impl SmallRational {
 }
 
 pub type AccountIdOf<T> = <T as frame_system::Config>::AccountId;
-pub type CrowdloanRewardFor<T> = CrowdloanReward<AccountIdOf<T>, BlockNumberOf<T>>;
+pub type CampaignRewardFor<T> = CampaignReward<AccountIdOf<T>, BlockNumberOf<T>>;
 pub type CreateCampaignParamFor<T> = CreateCampaignParam<AccountIdOf<T>, BlockNumberOf<T>>;
 pub type UpdateCampaignParamFor<T> = UpdateCampaignParam<AccountIdOf<T>, BlockNumberOf<T>>;
 pub type BlockNumberOf<T> = <T as frame_system::Config>::BlockNumber;
 pub type BalanceOf<T> = <<T as crate::Config>::Currency as Currency<AccountIdOf<T>>>::Balance;
 pub type RewardUnitOf<T> = RewardUnit<BalanceOf<T>, VestingBalanceOf<T>>;
-pub type CrowdloanIdOf<T> = <T as crate::Config>::CrowdloanId;
+pub type CampaignIdOf<T> = <T as crate::Config>::CampaignId;
 pub type VestedEnsuredResultOf<T> = VestedEnsuredResult<VestingBalanceOf<T>>;
 pub type InstantEnsuredResultOf<T> = InstantEnsuredResult<BalanceOf<T>>;
 pub type VestingInfoOf<T> = VestingInfo<VestingBalanceOf<T>, BlockNumberOf<T>>;

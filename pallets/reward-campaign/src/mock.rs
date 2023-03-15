@@ -95,7 +95,7 @@ impl pallet_vesting::Config for Test {
 
 impl crowdloan_reward::Config for Test {
     type BlockNumberToBalance = sp_runtime::traits::ConvertInto;
-    type CrowdloanId = u32;
+    type CampaignId = u32;
     type Currency = Balances;
     type CurrencyConvert = sp_runtime::traits::ConvertInto;
     type Event = Event;

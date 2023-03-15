@@ -22,6 +22,8 @@ use sp_runtime::{
 
 use crate::types;
 
+/// input details of how a contributer is supposed to receive his reward
+/// this will output `SplittedAmount`
 #[cfg_attr(test, derive(Clone, Debug))]
 pub struct SplitableAmount<BlockNumber, Balance> {
     pub reward_amount: Balance,
@@ -30,6 +32,8 @@ pub struct SplitableAmount<BlockNumber, Balance> {
     pub instant_percentage: types::SmallRational,
 }
 
+/// output of how a contributer is supposed to receive his reward
+/// this will be the output generated from `SplittableAmount`
 #[cfg_attr(test, derive(Eq, PartialEq, Debug, Clone))]
 pub struct SplittedAmount<Balance> {
     pub instant_amount: Balance,
@@ -42,6 +46,9 @@ where
     Balance: AtLeast32BitUnsigned + Clone,
     BlockNumber: CheckedSub + Clone,
 {
+    /// Convert `SplittableAmount` to `SplittedAmount`
+    /// - how much ( if any ) to give in instant reward
+    /// - if any vesting reward is to be given: how much and under what duration and at what rate
     pub fn split_amount<BlockNumberToBalance>(self) -> Option<SplittedAmount<Balance>>
     where
         BlockNumberToBalance: Convert<BlockNumber, Balance>,
@@ -67,6 +74,10 @@ where
     }
 }
 
+/// from the total reward amount of `amount`
+/// make vesting reward ( if any ) starting from `starts_from`
+/// and an ideal end target of `ends_at` with the instant-vesting
+/// ratio of `instant_percentage`
 pub fn construct_reward_unit<T: crate::Config>(
     amount: types::BalanceOf<T>,
     instant_percentage: types::SmallRational,
@@ -91,6 +102,7 @@ pub fn construct_reward_unit<T: crate::Config>(
     let per_block = <T as crate::Config>::CurrencyConvert::convert(per_block);
     let min_vesting_amount = <T as pallet_vesting::Config>::MinVestedTransfer::get();
 
+    // vesting should either be zero or at least minimum vesting_amount
     ensure!(vesting_amount.is_zero() || vesting_amount >= min_vesting_amount, Error::<T>::RewardTooSmall);
 
     Ok(types::RewardUnitOf::<T> {
@@ -101,6 +113,8 @@ pub fn construct_reward_unit<T: crate::Config>(
     })
 }
 
+/// Do instant reward to the `user` from account `reward_source`
+/// with the amount `instant_amount`
 pub fn do_instant_reward<T: crate::Config>(
     reward_source: &types::AccountIdOf<T>,
     user: &types::AccountIdOf<T>,
@@ -113,6 +127,10 @@ pub fn do_instant_reward<T: crate::Config>(
     }
 }
 
+/// Do vesting reward to the `user` from account `reward_source`
+/// Vesting scheudle should start from `starts_from` and
+/// `per_block` amount shall be released per block
+/// to the total of `vesting_amount`
 pub fn do_vesting_reward<T: crate::Config>(
     reward_source: types::AccountIdOf<T>,
     starts_from: types::BlockNumberOf<T>,

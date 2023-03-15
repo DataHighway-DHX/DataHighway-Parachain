@@ -23,8 +23,8 @@ fn campaign_creation_success() {
         let current_block_num = 5;
         run_to_block(current_block_num);
 
-        // initilization data for a crowdloan campaign
-        let crowdloan_id = 3u32;
+        // initilization data for a Crowdloan campaign
+        let campaign_id = 3u32;
         let hoster = 10u32.into();
         let reward_pool = 10_000_000;
         let info = types::CreateCampaignParamFor::<Test> {
@@ -37,14 +37,14 @@ fn campaign_creation_success() {
         // Put enough balance in creditor
         credit_account::<Test>(&hoster, reward_pool);
 
-        // Create crowdloan
-        assert_ok!(Reward::start_new_crowdloan(Origin::signed(hoster), crowdloan_id, info.clone()));
+        // Create Crowdloan
+        assert_ok!(Reward::start_new_campaign(Origin::signed(hoster), campaign_id, info.clone()));
         // Make sure status is `InProgress`
-        assert_eq!(Reward::get_campaign_status(&crowdloan_id), Some(types::RewardCampaignStatus::InProgress));
+        assert_eq!(Reward::get_campaign_status(&campaign_id), Some(types::RewardCampaignStatus::InProgress));
         // Also check the reward details is filled correctly
         assert_eq!(
-            Reward::get_reward_info(&crowdloan_id),
-            Some(types::CrowdloanRewardFor::<Test> {
+            Reward::get_reward_info(&campaign_id),
+            Some(types::CampaignRewardFor::<Test> {
                 reward_source: hoster.clone(),
                 hoster,
                 starts_from: current_block_num,
@@ -76,32 +76,32 @@ fn campaign_creation_success() {
         assert_eq!(user_b_reward.instant_amount + user_b_reward.vesting_amount, user_b.1);
 
         // add users
-        assert_ok!(Reward::add_contributer(Origin::signed(hoster), crowdloan_id, user_a.0, user_a.1));
-        assert_ok!(Reward::add_contributer(Origin::signed(hoster), crowdloan_id, user_b.0, user_b.1));
+        assert_ok!(Reward::add_contributer(Origin::signed(hoster), campaign_id, user_a.0, user_a.1));
+        assert_ok!(Reward::add_contributer(Origin::signed(hoster), campaign_id, user_b.0, user_b.1));
 
         // Check contributers are added properly
-        assert_eq!(Reward::get_contribution(crowdloan_id, user_a.0).as_ref(), Some(&user_a_reward));
-        assert_eq!(Reward::get_contribution(crowdloan_id, user_b.0).as_ref(), Some(&user_b_reward));
+        assert_eq!(Reward::get_contribution(campaign_id, user_a.0).as_ref(), Some(&user_a_reward));
+        assert_eq!(Reward::get_contribution(campaign_id, user_b.0).as_ref(), Some(&user_b_reward));
 
         // lock campaign
-        assert_ok!(Reward::lock_campaign(Origin::signed(hoster), crowdloan_id));
+        assert_ok!(Reward::lock_campaign(Origin::signed(hoster), campaign_id));
         // check lock status
-        assert_eq!(Reward::get_campaign_status(crowdloan_id), Some(types::RewardCampaignStatus::Locked));
+        assert_eq!(Reward::get_campaign_status(campaign_id), Some(types::RewardCampaignStatus::Locked));
 
         // now user can claim the reward
-        assert_ok!(Reward::get_instant_reward(Origin::signed(user_a.0), crowdloan_id));
-        assert_ok!(Reward::get_vested_reward(Origin::signed(user_b.0), crowdloan_id));
+        assert_ok!(Reward::get_instant_reward(Origin::signed(user_a.0), campaign_id));
+        assert_ok!(Reward::get_vested_reward(Origin::signed(user_b.0), campaign_id));
 
         // Make sure only status is updated
         assert_eq!(
-            Reward::get_contribution(crowdloan_id, user_a.0),
+            Reward::get_contribution(campaign_id, user_a.0),
             Some(types::RewardUnitOf::<Test> {
                 status: types::ClaimerStatus::DoneInstant,
                 ..user_a_reward.clone()
             })
         );
         assert_eq!(
-            Reward::get_contribution(crowdloan_id, user_b.0),
+            Reward::get_contribution(campaign_id, user_b.0),
             Some(types::RewardUnitOf::<Test> {
                 status: types::ClaimerStatus::DoneVesting,
                 ..user_b_reward.clone()
@@ -109,19 +109,19 @@ fn campaign_creation_success() {
         );
 
         // now user can claim the reward
-        assert_ok!(Reward::get_vested_reward(Origin::signed(user_a.0), crowdloan_id));
-        assert_ok!(Reward::get_instant_reward(Origin::signed(user_b.0), crowdloan_id));
+        assert_ok!(Reward::get_vested_reward(Origin::signed(user_a.0), campaign_id));
+        assert_ok!(Reward::get_instant_reward(Origin::signed(user_b.0), campaign_id));
 
         // Again status should be updated
         assert_eq!(
-            Reward::get_contribution(crowdloan_id, user_a.0),
+            Reward::get_contribution(campaign_id, user_a.0),
             Some(types::RewardUnitOf::<Test> {
                 status: types::ClaimerStatus::DoneBoth,
                 ..user_a_reward
             })
         );
         assert_eq!(
-            Reward::get_contribution(crowdloan_id, user_b.0),
+            Reward::get_contribution(campaign_id, user_b.0),
             Some(types::RewardUnitOf::<Test> {
                 status: types::ClaimerStatus::DoneBoth,
                 ..user_b_reward
@@ -246,7 +246,7 @@ fn split_amount() {
 #[test]
 fn campaign_status() {
     let new_quick_campaign = |hoster, id| {
-        Reward::start_new_crowdloan(
+        Reward::start_new_campaign(
             Origin::signed(hoster),
             id,
             types::CreateCampaignParamFor::<Test> {
@@ -269,38 +269,38 @@ fn campaign_status() {
     new_test_ext().execute_with(|| {
         run_to_block(1);
         let hoster = 10_u32.into();
-        let crowdloan_id = 3_u32.into();
+        let campaign_id = 3_u32.into();
 
         // Initilialize the campaign
-        assert_ok!(new_quick_campaign(hoster, crowdloan_id));
-        assert_eq!(Reward::get_campaign_status(crowdloan_id), Some(types::RewardCampaignStatus::InProgress));
+        assert_ok!(new_quick_campaign(hoster, campaign_id));
+        assert_eq!(Reward::get_campaign_status(campaign_id), Some(types::RewardCampaignStatus::InProgress));
 
         // cann add contributer
-        assert_ok!(Reward::add_contributer(Origin::signed(hoster), crowdloan_id, 5_u32.into(), 10000_u128.into()));
+        assert_ok!(Reward::add_contributer(Origin::signed(hoster), campaign_id, 5_u32.into(), 10000_u128.into()));
         // can remove contributer
-        assert_ok!(Reward::remove_contributer(Origin::signed(hoster), crowdloan_id, 5_u32.into()));
+        assert_ok!(Reward::remove_contributer(Origin::signed(hoster), campaign_id, 5_u32.into()));
         // cannot wipe campaign
-        assert_noop!(Reward::wipe_campaign(Origin::signed(hoster), crowdloan_id), RewardError::CampaignNotLocked,);
+        assert_noop!(Reward::wipe_campaign(Origin::signed(hoster), campaign_id), RewardError::CampaignNotLocked,);
         // cannot claim instant reward
         assert_noop!(
-            Reward::get_instant_reward(Origin::signed(100_u32.into()), crowdloan_id),
+            Reward::get_instant_reward(Origin::signed(100_u32.into()), campaign_id),
             RewardError::NonClaimableCampaign,
         );
         // cannot claim vesting reward
         assert_noop!(
-            Reward::get_vested_reward(Origin::signed(100_u32.into()), crowdloan_id),
+            Reward::get_vested_reward(Origin::signed(100_u32.into()), campaign_id),
             RewardError::NonClaimableCampaign,
         );
         // Campaign cannot be wiped
-        assert_noop!(Reward::wipe_campaign(Origin::signed(hoster), crowdloan_id), RewardError::CampaignNotLocked,);
+        assert_noop!(Reward::wipe_campaign(Origin::signed(hoster), campaign_id), RewardError::CampaignNotLocked,);
         // Campaign can be locked
-        assert_ok!(Reward::lock_campaign(Origin::signed(hoster), crowdloan_id));
+        assert_ok!(Reward::lock_campaign(Origin::signed(hoster), campaign_id));
 
         // roll back to in-progress state
-        <crate::CampaignStatus<Test>>::insert(crowdloan_id, types::RewardCampaignStatus::InProgress);
+        <crate::CampaignStatus<Test>>::insert(campaign_id, types::RewardCampaignStatus::InProgress);
 
         // campaign can be discarded
-        assert_ok!(Reward::discard_campaign(Origin::signed(hoster), crowdloan_id));
+        assert_ok!(Reward::discard_campaign(Origin::signed(hoster), campaign_id));
     });
 
     // With Locked status
@@ -314,45 +314,45 @@ fn campaign_status() {
     new_test_ext().execute_with(|| {
         run_to_block(1);
         let hoster = 1_u32.into();
-        let crowdloan_id = 10_u32.into();
+        let campaign_id = 10_u32.into();
         let contributer_a = 1_u32.into();
         let contributer_b = 2_u32.into();
 
         // initilize the campaign
-        assert_ok!(new_quick_campaign(hoster, crowdloan_id));
-        assert_ok!(Reward::add_contributer(Origin::signed(hoster), crowdloan_id, contributer_a, 100_000_u32.into()));
-        assert_ok!(Reward::add_contributer(Origin::signed(hoster), crowdloan_id, contributer_b, 200_000_u32.into()));
-        let reward_source = Reward::get_reward_info(crowdloan_id).unwrap().reward_source;
+        assert_ok!(new_quick_campaign(hoster, campaign_id));
+        assert_ok!(Reward::add_contributer(Origin::signed(hoster), campaign_id, contributer_a, 100_000_u32.into()));
+        assert_ok!(Reward::add_contributer(Origin::signed(hoster), campaign_id, contributer_b, 200_000_u32.into()));
+        let reward_source = Reward::get_reward_info(campaign_id).unwrap().reward_source;
         credit_account::<Test>(&reward_source, 1_000_000_u32.into());
 
         // lock the campaign
-        assert_ok!(Reward::lock_campaign(Origin::signed(hoster), crowdloan_id));
+        assert_ok!(Reward::lock_campaign(Origin::signed(hoster), campaign_id));
 
         // cannot add contributer
         assert_noop!(
-            Reward::add_contributer(Origin::signed(hoster), crowdloan_id, 33_u32.into(), 100_000_u32.into()),
+            Reward::add_contributer(Origin::signed(hoster), campaign_id, 33_u32.into(), 100_000_u32.into()),
             RewardError::ReadOnlyCampaign,
         );
         // Cannot remove contributer
         assert_noop!(
-            Reward::remove_contributer(Origin::signed(hoster), crowdloan_id, contributer_a),
+            Reward::remove_contributer(Origin::signed(hoster), campaign_id, contributer_a),
             RewardError::ReadOnlyCampaign,
         );
         // Cannot lock campaign
-        assert_noop!(Reward::lock_campaign(Origin::signed(hoster), crowdloan_id), RewardError::NonLockableCampaign,);
+        assert_noop!(Reward::lock_campaign(Origin::signed(hoster), campaign_id), RewardError::NonLockableCampaign,);
         // cannot discard the campaign
-        assert_noop!(Reward::discard_campaign(Origin::signed(hoster), crowdloan_id), RewardError::CampaignLocked,);
+        assert_noop!(Reward::discard_campaign(Origin::signed(hoster), campaign_id), RewardError::CampaignLocked,);
         // can call get instant reward
-        assert_ok!(Reward::get_instant_reward(Origin::signed(contributer_a), crowdloan_id));
-        assert_ok!(Reward::get_instant_reward(Origin::signed(contributer_b), crowdloan_id));
+        assert_ok!(Reward::get_instant_reward(Origin::signed(contributer_a), campaign_id));
+        assert_ok!(Reward::get_instant_reward(Origin::signed(contributer_b), campaign_id));
         // can call get vesting reward
-        assert_ok!(Reward::get_vested_reward(Origin::signed(contributer_a), crowdloan_id));
+        assert_ok!(Reward::get_vested_reward(Origin::signed(contributer_a), campaign_id));
         // since there is still unclaimed contribution ( vesting reward of contributer_b)
         // cannot wipe campaign
-        assert_noop!(Reward::wipe_campaign(Origin::signed(hoster), crowdloan_id), RewardError::UnclaimedContribution,);
-        assert_ok!(Reward::get_vested_reward(Origin::signed(contributer_b), crowdloan_id));
+        assert_noop!(Reward::wipe_campaign(Origin::signed(hoster), campaign_id), RewardError::UnclaimedContribution,);
+        assert_ok!(Reward::get_vested_reward(Origin::signed(contributer_b), campaign_id));
         // can wipe campaign
-        assert_ok!(Reward::wipe_campaign(Origin::signed(hoster), crowdloan_id));
+        assert_ok!(Reward::wipe_campaign(Origin::signed(hoster), campaign_id));
     });
 
     // With Wiped status
@@ -365,54 +365,54 @@ fn campaign_status() {
     new_test_ext().execute_with(|| {
         run_to_block(1);
         let hoster = 10_u32.into();
-        let crowdloan_id = 3_u32.into();
+        let campaign_id = 3_u32.into();
 
         // Initilialize the campaign
-        assert_ok!(new_quick_campaign(hoster, crowdloan_id));
-        let reward_source = Reward::get_reward_info(crowdloan_id).unwrap().reward_source;
+        assert_ok!(new_quick_campaign(hoster, campaign_id));
+        let reward_source = Reward::get_reward_info(campaign_id).unwrap().reward_source;
         credit_account::<Test>(&reward_source, 1_000_000_u32.into());
-        assert_ok!(Reward::add_contributer(Origin::signed(hoster), crowdloan_id, 100_u32.into(), 100_000_u32.into()));
-        assert_ok!(Reward::lock_campaign(Origin::signed(hoster), crowdloan_id));
-        assert_ok!(Reward::get_vested_reward(Origin::signed(100_u32.into()), crowdloan_id));
-        assert_ok!(Reward::get_instant_reward(Origin::signed(100_u32.into()), crowdloan_id));
-        assert_ok!(Reward::wipe_campaign(Origin::signed(hoster), crowdloan_id));
-        assert_eq!(Reward::get_campaign_status(crowdloan_id), Some(types::RewardCampaignStatus::Wiped));
+        assert_ok!(Reward::add_contributer(Origin::signed(hoster), campaign_id, 100_u32.into(), 100_000_u32.into()));
+        assert_ok!(Reward::lock_campaign(Origin::signed(hoster), campaign_id));
+        assert_ok!(Reward::get_vested_reward(Origin::signed(100_u32.into()), campaign_id));
+        assert_ok!(Reward::get_instant_reward(Origin::signed(100_u32.into()), campaign_id));
+        assert_ok!(Reward::wipe_campaign(Origin::signed(hoster), campaign_id));
+        assert_eq!(Reward::get_campaign_status(campaign_id), Some(types::RewardCampaignStatus::Wiped));
 
         // cannot add contributer
         assert_noop!(
-            Reward::add_contributer(Origin::signed(hoster), crowdloan_id, 33_u32.into(), 100_000_u32.into()),
+            Reward::add_contributer(Origin::signed(hoster), campaign_id, 33_u32.into(), 100_000_u32.into()),
             RewardError::NoRewardCampaign,
         );
         // Cannot remove contributer
         assert_noop!(
-            Reward::remove_contributer(Origin::signed(hoster), crowdloan_id, 33_u32.into()),
+            Reward::remove_contributer(Origin::signed(hoster), campaign_id, 33_u32.into()),
             RewardError::NoRewardCampaign,
         );
         // Cannot lock campaign
-        assert_noop!(Reward::lock_campaign(Origin::signed(hoster), crowdloan_id), RewardError::NoRewardCampaign,);
+        assert_noop!(Reward::lock_campaign(Origin::signed(hoster), campaign_id), RewardError::NoRewardCampaign,);
         // cannot discard the campaign
-        assert_noop!(Reward::discard_campaign(Origin::signed(hoster), crowdloan_id), RewardError::NoRewardCampaign,);
+        assert_noop!(Reward::discard_campaign(Origin::signed(hoster), campaign_id), RewardError::NoRewardCampaign,);
         // cannot claim instant reward
         assert_noop!(
-            Reward::get_instant_reward(Origin::signed(33_u32.into()), crowdloan_id),
+            Reward::get_instant_reward(Origin::signed(33_u32.into()), campaign_id),
             RewardError::NonClaimableCampaign,
         );
         // cannot claim vesting reward
         assert_noop!(
-            Reward::get_vested_reward(Origin::signed(33_u32.into()), crowdloan_id),
+            Reward::get_vested_reward(Origin::signed(33_u32.into()), campaign_id),
             RewardError::NonClaimableCampaign,
         );
         // cannot wipe campaign
         {
             // to bypass the host check let's enter a dummy unit
             <crate::RewardInfo<Test>>::insert(
-                crowdloan_id,
-                types::CrowdloanRewardFor::<Test> {
+                campaign_id,
+                types::CampaignRewardFor::<Test> {
                     hoster,
                     ..Default::default()
                 },
             );
-            assert_noop!(Reward::wipe_campaign(Origin::signed(hoster), crowdloan_id), RewardError::CampaignNotLocked,);
+            assert_noop!(Reward::wipe_campaign(Origin::signed(hoster), campaign_id), RewardError::CampaignNotLocked,);
         }
     });
 }
@@ -422,12 +422,12 @@ fn claimer_status() {
     new_test_ext().execute_with(|| {
         run_to_block(1);
         let hoster = 1_u32.into();
-        let crowdloan_id = 3_u32.into();
+        let campaign_id = 3_u32.into();
         let contributer = 4_u32.into();
 
-        assert_ok!(Reward::start_new_crowdloan(
+        assert_ok!(Reward::start_new_campaign(
             Origin::signed(hoster),
-            crowdloan_id,
+            campaign_id,
             types::CreateCampaignParamFor::<Test> {
                 hoster: None,
                 instant_percentage: types::SmallRational::new(3, 10),
@@ -435,22 +435,22 @@ fn claimer_status() {
                 end_target: 10_u32.into(),
             },
         ));
-        assert_ok!(Reward::add_contributer(Origin::signed(hoster), crowdloan_id, contributer, 100_000_u32.into()));
-        assert_ok!(Reward::lock_campaign(Origin::signed(hoster), crowdloan_id));
+        assert_ok!(Reward::add_contributer(Origin::signed(hoster), campaign_id, contributer, 100_000_u32.into()));
+        assert_ok!(Reward::lock_campaign(Origin::signed(hoster), campaign_id));
         assert_eq!(
-            Reward::get_contribution(crowdloan_id, contributer).map(|p| p.status),
+            Reward::get_contribution(campaign_id, contributer).map(|p| p.status),
             Some(types::ClaimerStatus::Unprocessed)
         );
         credit_account::<Test>(&hoster, 10_000_000_u32.into());
 
         // can claim vesting reward
-        assert_ok!(Reward::get_vested_reward(Origin::signed(contributer), crowdloan_id));
+        assert_ok!(Reward::get_vested_reward(Origin::signed(contributer), campaign_id));
         // cannot call again vesting reward
-        assert_noop!(Reward::get_vested_reward(Origin::signed(contributer), crowdloan_id), RewardError::RewardTaken);
+        assert_noop!(Reward::get_vested_reward(Origin::signed(contributer), campaign_id), RewardError::RewardTaken);
         // can call instant reward
-        assert_ok!(Reward::get_instant_reward(Origin::signed(contributer), crowdloan_id));
+        assert_ok!(Reward::get_instant_reward(Origin::signed(contributer), campaign_id));
         // cannot call again instant reward
-        assert_noop!(Reward::get_instant_reward(Origin::signed(contributer), crowdloan_id), RewardError::RewardTaken);
+        assert_noop!(Reward::get_instant_reward(Origin::signed(contributer), campaign_id), RewardError::RewardTaken);
     });
 }
 
@@ -461,8 +461,8 @@ fn new_crowdloan_creation_sucess() {
         let current_block = frame_system::Pallet::<Test>::block_number();
 
         let hoster = 1_u32.into();
-        let crowdloan_id = 33_u32.into();
-        let crowdloan_params = types::CreateCampaignParamFor::<Test> {
+        let campaign_id = 33_u32.into();
+        let Crowdloan_params = types::CreateCampaignParamFor::<Test> {
             hoster: None,
             instant_percentage: types::SmallRational::new(3, 10),
             starts_from: None,
@@ -470,23 +470,23 @@ fn new_crowdloan_creation_sucess() {
         };
 
         // extrinsic call should success
-        assert_ok!(Reward::start_new_crowdloan(Origin::signed(hoster), crowdloan_id, crowdloan_params));
+        assert_ok!(Reward::start_new_campaign(Origin::signed(hoster), campaign_id, Crowdloan_params));
 
         // expect right reward info
-        let expected_info = types::CrowdloanRewardFor::<Test> {
+        let expected_info = types::CampaignRewardFor::<Test> {
             reward_source: hoster.clone(),
             hoster,
             instant_percentage: types::SmallRational::new(3, 10),
             starts_from: current_block,
             end_target: 100_u32.into(),
         };
-        assert_eq!(Reward::get_reward_info(crowdloan_id), Some(expected_info));
+        assert_eq!(Reward::get_reward_info(campaign_id), Some(expected_info));
 
         // check initial status is in-progress
-        assert_eq!(Reward::get_campaign_status(crowdloan_id), Some(types::RewardCampaignStatus::InProgress));
+        assert_eq!(Reward::get_campaign_status(campaign_id), Some(types::RewardCampaignStatus::InProgress));
 
         // check correct event is dispatched
-        assert_eq!(reward_events().last(), Some(&RewardEvent::CampaignStarted(crowdloan_id)));
+        assert_eq!(reward_events().last(), Some(&RewardEvent::CampaignStarted(campaign_id)));
     });
 }
 
@@ -497,11 +497,11 @@ fn new_crowdloan_update_sucess() {
         let current_block = frame_system::Pallet::<Test>::block_number();
 
         let hoster = 1_u32.into();
-        let crowdloan_id = 33_u32.into();
+        let campaign_id = 33_u32.into();
 
-        assert_ok!(Reward::start_new_crowdloan(
+        assert_ok!(Reward::start_new_campaign(
             Origin::signed(hoster),
-            crowdloan_id,
+            campaign_id,
             types::CreateCampaignParamFor::<Test> {
                 hoster: None,
                 instant_percentage: types::SmallRational::new(1, 1),
@@ -510,7 +510,7 @@ fn new_crowdloan_update_sucess() {
             }
         ));
 
-        let old_info = types::CrowdloanRewardFor::<Test> {
+        let old_info = types::CampaignRewardFor::<Test> {
             reward_source: hoster.clone(),
             hoster,
             instant_percentage: types::SmallRational::new(1, 1),
@@ -523,7 +523,7 @@ fn new_crowdloan_update_sucess() {
             starts_from: Some(20_u32.into()),
             end_target: Some(100_u32.into()),
         };
-        let new_info = types::CrowdloanRewardFor::<Test> {
+        let new_info = types::CampaignRewardFor::<Test> {
             reward_source: hoster.clone(),
             hoster,
             instant_percentage: types::SmallRational::new(3, 10),
@@ -532,15 +532,15 @@ fn new_crowdloan_update_sucess() {
         };
 
         // expect unupdated reward info
-        assert_eq!(Reward::get_reward_info(crowdloan_id), Some(old_info));
+        assert_eq!(Reward::get_reward_info(campaign_id), Some(old_info));
         // expect the extrinsic to execute sucessfully
-        assert_ok!(Reward::update_campaign(Origin::signed(hoster), crowdloan_id, new_crowdloan_params));
+        assert_ok!(Reward::update_campaign(Origin::signed(hoster), campaign_id, new_crowdloan_params));
         // expect updated new info
-        assert_eq!(Reward::get_reward_info(crowdloan_id), Some(new_info));
+        assert_eq!(Reward::get_reward_info(campaign_id), Some(new_info));
         // make sure status is still untouched
-        assert_eq!(Reward::get_campaign_status(crowdloan_id), Some(RewardCampaignStatus::InProgress));
+        assert_eq!(Reward::get_campaign_status(campaign_id), Some(RewardCampaignStatus::InProgress));
         // expect the event
-        assert_eq!(reward_events().last(), Some(&RewardEvent::CampaignUpdated(crowdloan_id)));
+        assert_eq!(reward_events().last(), Some(&RewardEvent::CampaignUpdated(campaign_id)));
     });
 }
 
@@ -548,13 +548,13 @@ fn new_crowdloan_update_sucess() {
 fn contributer_addition_removal_success() {
     new_test_ext().execute_with(|| {
         run_to_block(1);
-        let crowdloan_id = 22_u32.into();
+        let campaign_id = 22_u32.into();
         let hoster = 100_u32.into();
 
         // Initilization
-        assert_ok!(Reward::start_new_crowdloan(
+        assert_ok!(Reward::start_new_campaign(
             Origin::signed(hoster),
-            crowdloan_id,
+            campaign_id,
             types::CreateCampaignParamFor::<Test> {
                 hoster: None,
                 instant_percentage: types::SmallRational::new(3, 10),
@@ -574,34 +574,34 @@ fn contributer_addition_removal_success() {
         };
 
         // add contributer a
-        assert_ok!(Reward::add_contributer(Origin::signed(hoster), crowdloan_id, contributer_a, contributer_amount));
-        assert_eq!(Reward::get_contribution(crowdloan_id, contributer_a), Some(contributer_unit.clone()));
+        assert_ok!(Reward::add_contributer(Origin::signed(hoster), campaign_id, contributer_a, contributer_amount));
+        assert_eq!(Reward::get_contribution(campaign_id, contributer_a), Some(contributer_unit.clone()));
         assert_eq!(
             reward_events().last(),
             Some(&RewardEvent::ContributerAdded {
-                crowdloan_id,
+                campaign_id,
                 contributer: contributer_a,
                 amount: contributer_amount
             })
         );
         // add contributer b
-        assert_ok!(Reward::add_contributer(Origin::signed(hoster), crowdloan_id, contributer_b, contributer_amount));
-        assert_eq!(Reward::get_contribution(crowdloan_id, contributer_b), Some(contributer_unit.clone()));
+        assert_ok!(Reward::add_contributer(Origin::signed(hoster), campaign_id, contributer_b, contributer_amount));
+        assert_eq!(Reward::get_contribution(campaign_id, contributer_b), Some(contributer_unit.clone()));
         assert_eq!(
             reward_events().last(),
             Some(&RewardEvent::ContributerAdded {
-                crowdloan_id,
+                campaign_id,
                 contributer: contributer_b,
                 amount: contributer_amount
             })
         );
         // remove contributer a
-        assert_ok!(Reward::remove_contributer(Origin::signed(hoster), crowdloan_id, contributer_a));
-        assert_eq!(Reward::get_contribution(crowdloan_id, contributer_a), None);
+        assert_ok!(Reward::remove_contributer(Origin::signed(hoster), campaign_id, contributer_a));
+        assert_eq!(Reward::get_contribution(campaign_id, contributer_a), None);
         assert_eq!(
             reward_events().last(),
             Some(&RewardEvent::ContributerKicked {
-                crowdloan_id,
+                campaign_id,
                 contributer: contributer_a
             })
         );
@@ -613,12 +613,12 @@ fn discard_campaign_success() {
     new_test_ext().execute_with(|| {
         run_to_block(1);
         let hoster = 101_u32.into();
-        let crowdloan_id = 10_u32.into();
+        let campaign_id = 10_u32.into();
 
         // initilization
-        assert_ok!(Reward::start_new_crowdloan(
+        assert_ok!(Reward::start_new_campaign(
             Origin::signed(hoster),
-            crowdloan_id,
+            campaign_id,
             types::CreateCampaignParamFor::<Test> {
                 hoster: None,
                 instant_percentage: types::SmallRational::new(3, 10),
@@ -628,19 +628,19 @@ fn discard_campaign_success() {
         ));
 
         // add a contributers
-        assert_ok!(Reward::add_contributer(Origin::signed(hoster), crowdloan_id, 22_u32.into(), 100_000));
+        assert_ok!(Reward::add_contributer(Origin::signed(hoster), campaign_id, 22_u32.into(), 100_000));
 
         // attempt to discard
-        assert_ok!(Reward::discard_campaign(Origin::signed(hoster), crowdloan_id));
+        assert_ok!(Reward::discard_campaign(Origin::signed(hoster), campaign_id));
 
         // there should be no status
-        assert_eq!(Reward::get_campaign_status(crowdloan_id), None);
+        assert_eq!(Reward::get_campaign_status(campaign_id), None);
         // there should be no reward info
-        assert_eq!(Reward::get_reward_info(crowdloan_id), None);
+        assert_eq!(Reward::get_reward_info(campaign_id), None);
         // should be no contribution inside this id
-        assert_eq!(crate::Contribution::<Test>::iter_prefix(crowdloan_id).next(), None);
+        assert_eq!(crate::Contribution::<Test>::iter_prefix(campaign_id).next(), None);
         // should be event
-        assert_eq!(reward_events().last(), Some(&RewardEvent::CampaignDiscarded(crowdloan_id)));
+        assert_eq!(reward_events().last(), Some(&RewardEvent::CampaignDiscarded(campaign_id)));
     });
 }
 
@@ -649,12 +649,12 @@ fn lock_campaign_success() {
     new_test_ext().execute_with(|| {
         run_to_block(1);
         let hoster = 1_u32.into();
-        let crowdloan_id = 33_u32.into();
+        let campaign_id = 33_u32.into();
 
         // initilization
-        assert_ok!(Reward::start_new_crowdloan(
+        assert_ok!(Reward::start_new_campaign(
             Origin::signed(hoster),
-            crowdloan_id,
+            campaign_id,
             types::CreateCampaignParamFor::<Test> {
                 hoster: None,
                 instant_percentage: types::SmallRational::new(3, 10),
@@ -664,17 +664,17 @@ fn lock_campaign_success() {
         ));
 
         // add contributers
-        assert_ok!(Reward::add_contributer(Origin::signed(hoster), crowdloan_id, 101_u32.into(), 100_000));
-        assert_ok!(Reward::add_contributer(Origin::signed(hoster), crowdloan_id, 102_u32.into(), 100_000));
+        assert_ok!(Reward::add_contributer(Origin::signed(hoster), campaign_id, 101_u32.into(), 100_000));
+        assert_ok!(Reward::add_contributer(Origin::signed(hoster), campaign_id, 102_u32.into(), 100_000));
 
         // lock the campaign
-        assert_ok!(Reward::lock_campaign(Origin::signed(hoster), crowdloan_id));
+        assert_ok!(Reward::lock_campaign(Origin::signed(hoster), campaign_id));
         // status should be locked
-        assert_eq!(Reward::get_campaign_status(crowdloan_id), Some(types::RewardCampaignStatus::Locked));
+        assert_eq!(Reward::get_campaign_status(campaign_id), Some(types::RewardCampaignStatus::Locked));
         // contributer should be as-is
-        assert_eq!(crate::Contribution::<Test>::iter_key_prefix(crowdloan_id).collect::<Vec<_>>(), vec![102, 101]);
+        assert_eq!(crate::Contribution::<Test>::iter_key_prefix(campaign_id).collect::<Vec<_>>(), vec![102, 101]);
         // event must be deposited
-        assert_eq!(reward_events().last(), Some(&RewardEvent::CampaignLocked(crowdloan_id)));
+        assert_eq!(reward_events().last(), Some(&RewardEvent::CampaignLocked(campaign_id)));
     });
 }
 
@@ -683,12 +683,12 @@ fn wipe_campaign_success() {
     new_test_ext().execute_with(|| {
         run_to_block(1);
         let hoster = 1_u32.into();
-        let crowdloan_id = 33_u32.into();
+        let campaign_id = 33_u32.into();
 
         // initilization
-        assert_ok!(Reward::start_new_crowdloan(
+        assert_ok!(Reward::start_new_campaign(
             Origin::signed(hoster),
-            crowdloan_id,
+            campaign_id,
             types::CreateCampaignParamFor::<Test> {
                 hoster: None,
                 instant_percentage: types::SmallRational::new(3, 10),
@@ -697,21 +697,21 @@ fn wipe_campaign_success() {
             }
         ));
         credit_account::<Test>(&hoster, 100_000_u32.into());
-        assert_ok!(Reward::add_contributer(Origin::signed(hoster), crowdloan_id, 101_u32.into(), 10_000));
-        assert_ok!(Reward::lock_campaign(Origin::signed(hoster), crowdloan_id));
-        assert_ok!(Reward::get_instant_reward(Origin::signed(101_u32.into()), crowdloan_id));
-        assert_ok!(Reward::get_vested_reward(Origin::signed(101_u32.into()), crowdloan_id));
+        assert_ok!(Reward::add_contributer(Origin::signed(hoster), campaign_id, 101_u32.into(), 10_000));
+        assert_ok!(Reward::lock_campaign(Origin::signed(hoster), campaign_id));
+        assert_ok!(Reward::get_instant_reward(Origin::signed(101_u32.into()), campaign_id));
+        assert_ok!(Reward::get_vested_reward(Origin::signed(101_u32.into()), campaign_id));
 
         // wipe the campaign
-        assert_ok!(Reward::wipe_campaign(Origin::signed(hoster), crowdloan_id));
+        assert_ok!(Reward::wipe_campaign(Origin::signed(hoster), campaign_id));
         // status should be set to wiped
-        assert_eq!(Reward::get_campaign_status(crowdloan_id), Some(types::RewardCampaignStatus::Wiped));
+        assert_eq!(Reward::get_campaign_status(campaign_id), Some(types::RewardCampaignStatus::Wiped));
         // should be no info in rewardInfo
-        assert_eq!(Reward::get_reward_info(crowdloan_id), None);
+        assert_eq!(Reward::get_reward_info(campaign_id), None);
         // contributers should be cleared
-        assert_eq!(crate::Contribution::<Test>::iter_key_prefix(crowdloan_id).next(), None);
+        assert_eq!(crate::Contribution::<Test>::iter_key_prefix(campaign_id).next(), None);
         // event should be deposited
-        assert_eq!(reward_events().last(), Some(&RewardEvent::CampaignWiped(crowdloan_id)));
+        assert_eq!(reward_events().last(), Some(&RewardEvent::CampaignWiped(campaign_id)));
     })
 }
 
@@ -721,11 +721,11 @@ fn hoster_access_control() {
         run_to_block(1);
         let hoster = 1_u32.into();
         let not_hoster = 2_u32.into();
-        let crowdloan_id = 100_u32.into();
+        let campaign_id = 100_u32.into();
 
-        assert_ok!(Reward::start_new_crowdloan(
+        assert_ok!(Reward::start_new_campaign(
             Origin::signed(hoster),
-            crowdloan_id,
+            campaign_id,
             types::CreateCampaignParamFor::<Test> {
                 hoster: None,
                 instant_percentage: types::SmallRational::new(3, 10),
@@ -742,33 +742,21 @@ fn hoster_access_control() {
         // - cannot remove contributer
         // - cannot wipe contributer
         assert_noop!(
-            Reward::update_campaign(Origin::signed(not_hoster), crowdloan_id, Default::default()),
+            Reward::update_campaign(Origin::signed(not_hoster), campaign_id, Default::default()),
+            RewardError::PermissionDenied,
+        );
+        assert_noop!(Reward::discard_campaign(Origin::signed(not_hoster), campaign_id), RewardError::PermissionDenied,);
+        assert_noop!(Reward::lock_campaign(Origin::signed(not_hoster), campaign_id), RewardError::PermissionDenied,);
+        assert_noop!(Reward::discard_campaign(Origin::signed(not_hoster), campaign_id), RewardError::PermissionDenied,);
+        assert_noop!(
+            Reward::add_contributer(Origin::signed(not_hoster), campaign_id, 99_u32.into(), 10_000_u32.into()),
             RewardError::PermissionDenied,
         );
         assert_noop!(
-            Reward::discard_campaign(Origin::signed(not_hoster), crowdloan_id),
+            Reward::remove_contributer(Origin::signed(not_hoster), campaign_id, 99_u32.into()),
             RewardError::PermissionDenied,
         );
-        assert_noop!(
-            Reward::lock_campaign(Origin::signed(not_hoster), crowdloan_id),
-            RewardError::PermissionDenied,
-        );
-        assert_noop!(
-            Reward::discard_campaign(Origin::signed(not_hoster), crowdloan_id),
-            RewardError::PermissionDenied,
-        );
-        assert_noop!(
-            Reward::add_contributer(Origin::signed(not_hoster), crowdloan_id, 99_u32.into(), 10_000_u32.into()),
-            RewardError::PermissionDenied,
-        );
-        assert_noop!(
-            Reward::remove_contributer(Origin::signed(not_hoster), crowdloan_id, 99_u32.into()),
-            RewardError::PermissionDenied,
-        );
-        assert_noop!(
-            Reward::wipe_campaign(Origin::signed(not_hoster), crowdloan_id),
-            RewardError::PermissionDenied,
-        );
+        assert_noop!(Reward::wipe_campaign(Origin::signed(not_hoster), campaign_id), RewardError::PermissionDenied,);
     });
 }
 

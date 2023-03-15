@@ -1982,7 +1982,6 @@ dependencies = [
  "pallet-collator-selection",
  "pallet-collective",
  "pallet-conviction-voting",
- "pallet-crowdloan-reward",
  "pallet-democracy",
  "pallet-elections-phragmen",
  "pallet-identity",
@@ -1995,6 +1994,7 @@ dependencies = [
  "pallet-randomness-collective-flip",
  "pallet-recovery",
  "pallet-referenda",
+ "pallet-reward-campaign",
  "pallet-scheduler",
  "pallet-session",
  "pallet-sudo",
@@ -5517,25 +5517,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "pallet-crowdloan-reward"
-version = "1.0.0"
-dependencies = [
- "frame-benchmarking",
- "frame-support",
- "frame-system",
- "log",
- "pallet-balances",
- "pallet-vesting",
- "parity-scale-codec",
- "scale-info",
- "sp-arithmetic",
- "sp-core",
- "sp-io",
- "sp-runtime",
- "sp-std",
-]
-
-[[package]]
 name = "pallet-democracy"
 version = "4.0.0-dev"
 source = "git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.29#cc370aa61e15c18d23a2f686b812fd576a630afe"
@@ -5937,6 +5918,25 @@ dependencies = [
  "scale-info",
  "serde",
  "sp-arithmetic",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
+name = "pallet-reward-campaign"
+version = "1.0.0"
+dependencies = [
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "log",
+ "pallet-balances",
+ "pallet-vesting",
+ "parity-scale-codec",
+ "scale-info",
+ "sp-arithmetic",
+ "sp-core",
  "sp-io",
  "sp-runtime",
  "sp-std",

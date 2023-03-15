@@ -50,10 +50,10 @@ pub mod pallet {
         AccountIdOf,
         BalanceOf,
         BlockNumberOf,
+        CampaignIdOf,
+        CampaignRewardFor,
         ClaimerStatus,
         CreateCampaignParamFor,
-        CrowdloanIdOf,
-        CrowdloanRewardFor,
         InstantEnsuredResultOf,
         RewardCampaignStatus,
         RewardUnitOf,
@@ -67,13 +67,16 @@ pub mod pallet {
     #[pallet::generate_store(pub(super) trait Store)]
     pub struct Pallet<T>(_);
 
+    /// Configuration trait for reward campaign pallet
     #[pallet::config]
     pub trait Config: frame_system::Config + pallet_vesting::Config {
+        /// Overarching event type
         type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
-
+        /// Currency type to mainly represent free balance
         type Currency: Currency<AccountIdOf<Self>>;
 
-        type CrowdloanId: Parameter
+        /// Unique Identifier to identify a campaign
+        type CampaignId: Parameter
             + Member
             + MaybeSerializeDeserialize
             + Debug
@@ -83,62 +86,72 @@ pub mod pallet {
             + Copy
             + MaxEncodedLen;
 
+        /// Convert block number type to balance type
         type BlockNumberToBalance: Convert<BlockNumberOf<Self>, BalanceOf<Self>>;
+
+        /// Conversion interface to convert between VestingBalance and Currency
         type CurrencyConvert: Convert<BalanceOf<Self>, VestingBalanceOf<Self>>
             + Convert<VestingBalanceOf<Self>, BalanceOf<Self>>;
 
+        /// Weight information for extrinsic
         type WeightInfo: WeightInfo;
     }
 
+    /// Map campaign_id to it's current status
+    #[pallet::storage]
+    #[pallet::getter(fn get_campaign_status)]
+    pub type CampaignStatus<T: Config> = StorageMap<_, Blake2_128Concat, CampaignIdOf<T>, RewardCampaignStatus>;
+
+    /// Map campaign_id to the details of how reward shall be executed
+    #[pallet::storage]
+    #[pallet::getter(fn get_reward_info)]
+    pub type RewardInfo<T: Config> = StorageMap<_, Blake2_128Concat, CampaignIdOf<T>, CampaignRewardFor<T>>;
+
+    /// Map the pair of campaign_id and contributer accountId to
+    /// the details of how much and how this contributer is to be rewarded
     #[pallet::storage]
     #[pallet::getter(fn get_contribution)]
     pub type Contribution<T> =
-        StorageDoubleMap<_, Blake2_128Concat, CrowdloanIdOf<T>, Blake2_128Concat, AccountIdOf<T>, RewardUnitOf<T>>;
+        StorageDoubleMap<_, Blake2_128Concat, CampaignIdOf<T>, Blake2_128Concat, AccountIdOf<T>, RewardUnitOf<T>>;
 
-    #[pallet::storage]
-    #[pallet::getter(fn get_reward_info)]
-    pub type RewardInfo<T: Config> = StorageMap<_, Blake2_128Concat, CrowdloanIdOf<T>, CrowdloanRewardFor<T>>;
-
-    #[pallet::storage]
-    #[pallet::getter(fn get_campaign_status)]
-    pub type CampaignStatus<T: Config> = StorageMap<_, Blake2_128Concat, CrowdloanIdOf<T>, RewardCampaignStatus>;
-
+    /// Set of event thrown from this pallet
     #[pallet::event]
     #[pallet::generate_deposit(pub(super) fn deposit_event)]
     pub enum Event<T: Config> {
         /// A new reward campaign with `CrowdloanId` started
-        CampaignStarted(CrowdloanIdOf<T>),
+        CampaignStarted(CampaignIdOf<T>),
         /// This reward campaign's info have been updated
-        CampaignUpdated(CrowdloanIdOf<T>),
+        CampaignUpdated(CampaignIdOf<T>),
         /// Campaign have been locked
-        CampaignLocked(CrowdloanIdOf<T>),
+        CampaignLocked(CampaignIdOf<T>),
         /// Campaign have been wiped
-        CampaignWiped(CrowdloanIdOf<T>),
+        CampaignWiped(CampaignIdOf<T>),
         /// Campaign have been discarded
-        CampaignDiscarded(CrowdloanIdOf<T>),
+        CampaignDiscarded(CampaignIdOf<T>),
         /// A contributer received instant amount of reward
         InstantRewarded {
-            crowdloan_id: CrowdloanIdOf<T>,
+            campaign_id: CampaignIdOf<T>,
             contributer: AccountIdOf<T>,
         },
         /// Vesting schdule of vesting amount have been applied to user
         VestingScheduleApplied {
-            crowdloan_id: CrowdloanIdOf<T>,
+            campaign_id: CampaignIdOf<T>,
             contributer: AccountIdOf<T>,
         },
         /// A contributer have been added as rewardee
         ContributerAdded {
-            crowdloan_id: CrowdloanIdOf<T>,
+            campaign_id: CampaignIdOf<T>,
             contributer: AccountIdOf<T>,
             amount: BalanceOf<T>,
         },
         /// A contributer have been removed from campaign
         ContributerKicked {
-            crowdloan_id: CrowdloanIdOf<T>,
+            campaign_id: CampaignIdOf<T>,
             contributer: AccountIdOf<T>,
         },
     }
 
+    /// Error specific to this pallet
     #[pallet::error]
     pub enum Error<T> {
         /// This tasj requires more permission from the origin
@@ -178,20 +191,23 @@ pub mod pallet {
         RewardTooSmall,
     }
 
+    /// Extrinsic calls
     #[pallet::call]
     impl<T: Config> Pallet<T> {
-        #[pallet::weight(<T as Config>::WeightInfo::start_new_crowdloan())]
-        pub fn start_new_crowdloan(
+        /// Start a new reward campaign under `campaign_id`
+        /// information of the campaign will be given under `info: CreateCampaignParam`
+        #[pallet::weight(<T as Config>::WeightInfo::start_new_campaign())]
+        pub fn start_new_campaign(
             origin: OriginFor<T>,
-            crowdloan_id: CrowdloanIdOf<T>,
+            campaign_id: CampaignIdOf<T>,
             info: CreateCampaignParamFor<T>,
         ) -> DispatchResult {
             let hoster = ensure_signed(origin)?;
 
-            ensure!(!<CampaignStatus<T>>::contains_key(&crowdloan_id), <Error<T>>::RewardCampaignExists);
-            ensure!(!<RewardInfo<T>>::contains_key(&crowdloan_id), <Error<T>>::RewardCampaignExists);
+            ensure!(!<CampaignStatus<T>>::contains_key(&campaign_id), <Error<T>>::RewardCampaignExists);
+            ensure!(!<RewardInfo<T>>::contains_key(&campaign_id), <Error<T>>::RewardCampaignExists);
             ensure!(
-                <Contribution<T>>::iter_key_prefix(&crowdloan_id).next().is_none(),
+                <Contribution<T>>::iter_key_prefix(&campaign_id).next().is_none(),
                 <Error<T>>::RewardCampaignExists
             );
 
@@ -199,7 +215,7 @@ pub mod pallet {
             let hoster = info.hoster.unwrap_or(hoster);
             let reward_source = hoster.clone();
 
-            let campaign_info = CrowdloanRewardFor::<T> {
+            let campaign_info = CampaignRewardFor::<T> {
                 hoster,
                 reward_source,
                 end_target: info.end_target,
@@ -209,24 +225,27 @@ pub mod pallet {
 
             ensure!(campaign_info.validate().is_some(), <Error<T>>::InvalidInput);
 
-            <CampaignStatus<T>>::insert(crowdloan_id, RewardCampaignStatus::InProgress);
-            <RewardInfo<T>>::insert(crowdloan_id, campaign_info);
+            <CampaignStatus<T>>::insert(campaign_id, RewardCampaignStatus::InProgress);
+            <RewardInfo<T>>::insert(campaign_id, campaign_info);
 
-            Self::deposit_event(Event::<T>::CampaignStarted(crowdloan_id));
+            Self::deposit_event(Event::<T>::CampaignStarted(campaign_id));
             Ok(())
         }
 
+        /// Update the writeable ( non-locked ) campaign under `campaign_id`
+        /// with the new infromation passed in `new_info`
+        /// and left out values will be left unchanged
         #[pallet::weight(<T as Config>::WeightInfo::update_campaign())]
         pub fn update_campaign(
             origin: OriginFor<T>,
-            crowdloan_id: CrowdloanIdOf<T>,
+            campaign_id: CampaignIdOf<T>,
             new_info: UpdateCampaignParamFor<T>,
         ) -> DispatchResult {
-            Self::ensure_hoster(origin, crowdloan_id)?;
-            Self::ensure_campaign_writable(&crowdloan_id)?;
+            Self::ensure_hoster(origin, campaign_id)?;
+            Self::ensure_campaign_writable(&campaign_id)?;
 
-            ensure!(<Contribution<T>>::iter_key_prefix(&crowdloan_id).next().is_none(), <Error<T>>::NonEmptyCampaign);
-            let old_info = Self::get_reward_info(&crowdloan_id).ok_or(<Error<T>>::NoRewardCampaign)?;
+            ensure!(<Contribution<T>>::iter_key_prefix(&campaign_id).next().is_none(), <Error<T>>::NonEmptyCampaign);
+            let old_info = Self::get_reward_info(&campaign_id).ok_or(<Error<T>>::NoRewardCampaign)?;
 
             let end_target = new_info.end_target.unwrap_or(old_info.end_target);
             let instant_percentage = new_info.instant_percentage.unwrap_or(old_info.instant_percentage);
@@ -234,7 +253,7 @@ pub mod pallet {
             let hoster = new_info.hoster.unwrap_or(old_info.hoster);
             let reward_source = hoster.clone();
 
-            let campaign_info = CrowdloanRewardFor::<T> {
+            let campaign_info = CampaignRewardFor::<T> {
                 hoster,
                 reward_source,
                 end_target,
@@ -244,25 +263,27 @@ pub mod pallet {
 
             ensure!(campaign_info.validate().is_some(), <Error<T>>::InvalidInput);
 
-            <RewardInfo<T>>::insert(crowdloan_id, campaign_info);
+            <RewardInfo<T>>::insert(campaign_id, campaign_info);
 
-            Self::deposit_event(<Event<T>>::CampaignUpdated(crowdloan_id));
+            Self::deposit_event(<Event<T>>::CampaignUpdated(campaign_id));
             Ok(())
         }
 
+        /// Add a user `contributer` as a rewardee of writeable campaign `campaign_id`
+        /// with the total reward amount of `amount`
         #[pallet::weight(<T as Config>::WeightInfo::add_contributer())]
         pub fn add_contributer(
             origin: OriginFor<T>,
-            crowdloan_id: CrowdloanIdOf<T>,
+            campaign_id: CampaignIdOf<T>,
             contributer: AccountIdOf<T>,
             amount: BalanceOf<T>,
         ) -> DispatchResult {
-            Self::ensure_hoster(origin, crowdloan_id)?;
-            Self::ensure_campaign_writable(&crowdloan_id)?;
+            Self::ensure_hoster(origin, campaign_id)?;
+            Self::ensure_campaign_writable(&campaign_id)?;
 
-            ensure!(!<Contribution<T>>::contains_key(&crowdloan_id, &contributer), <Error<T>>::ContributerExists);
+            ensure!(!<Contribution<T>>::contains_key(&campaign_id, &contributer), <Error<T>>::ContributerExists);
 
-            let campaign_info = Self::get_reward_info(&crowdloan_id).ok_or(<Error<T>>::NoRewardCampaign)?;
+            let campaign_info = Self::get_reward_info(&campaign_id).ok_or(<Error<T>>::NoRewardCampaign)?;
             let reward_unit = functions::construct_reward_unit::<T>(
                 amount,
                 campaign_info.instant_percentage,
@@ -270,108 +291,119 @@ pub mod pallet {
                 campaign_info.end_target,
             )?;
 
-            <Contribution<T>>::insert(&crowdloan_id, &contributer, reward_unit);
+            <Contribution<T>>::insert(&campaign_id, &contributer, reward_unit);
 
             Self::deposit_event(Event::<T>::ContributerAdded {
-                crowdloan_id,
+                campaign_id,
                 contributer,
                 amount,
             });
             Ok(())
         }
 
+        /// remove user `contributer` under unlocked campaign `campaign_id`
         #[pallet::weight(<T as Config>::WeightInfo::remove_contributer())]
         pub fn remove_contributer(
             origin: OriginFor<T>,
-            crowdloan_id: CrowdloanIdOf<T>,
+            campaign_id: CampaignIdOf<T>,
             contributer: AccountIdOf<T>,
         ) -> DispatchResult {
-            Self::ensure_hoster(origin, crowdloan_id)?;
-            Self::ensure_campaign_writable(&crowdloan_id)?;
+            Self::ensure_hoster(origin, campaign_id)?;
+            Self::ensure_campaign_writable(&campaign_id)?;
 
-            ensure!(<Contribution<T>>::contains_key(&crowdloan_id, &contributer), <Error<T>>::NoContribution);
+            ensure!(<Contribution<T>>::contains_key(&campaign_id, &contributer), <Error<T>>::NoContribution);
 
-            <Contribution<T>>::remove(&crowdloan_id, &contributer);
+            <Contribution<T>>::remove(&campaign_id, &contributer);
 
             Self::deposit_event(Event::<T>::ContributerKicked {
-                crowdloan_id,
+                campaign_id,
                 contributer,
             });
             Ok(())
         }
 
+        /// lock the writable campaign under `campaign_id` and make it read-only
         #[pallet::weight(<T as Config>::WeightInfo::lock_campaign())]
-        pub fn lock_campaign(origin: OriginFor<T>, crowdloan_id: CrowdloanIdOf<T>) -> DispatchResult {
-            Self::ensure_hoster(origin, crowdloan_id)?;
-            Self::ensure_campaign_lockable(&crowdloan_id)?;
+        pub fn lock_campaign(origin: OriginFor<T>, campaign_id: CampaignIdOf<T>) -> DispatchResult {
+            Self::ensure_hoster(origin, campaign_id)?;
+            Self::ensure_campaign_lockable(&campaign_id)?;
 
-            <CampaignStatus<T>>::insert(crowdloan_id, RewardCampaignStatus::Locked);
+            <CampaignStatus<T>>::insert(campaign_id, RewardCampaignStatus::Locked);
 
-            Self::deposit_event(Event::<T>::CampaignLocked(crowdloan_id));
+            Self::deposit_event(Event::<T>::CampaignLocked(campaign_id));
             Ok(())
         }
 
+        /// discard the in-progress campaign information of `campaign_id`
+        /// and remove all the contributers and reward details from chain
         #[pallet::weight(10_0000)]
-        pub fn discard_campaign(origin: OriginFor<T>, crowdloan_id: CrowdloanIdOf<T>) -> DispatchResult {
-            Self::ensure_hoster(origin, crowdloan_id)?;
-            Self::ensure_campaign_discardable(&crowdloan_id)?;
+        pub fn discard_campaign(origin: OriginFor<T>, campaign_id: CampaignIdOf<T>) -> DispatchResult {
+            Self::ensure_hoster(origin, campaign_id)?;
+            Self::ensure_campaign_discardable(&campaign_id)?;
 
-            <Contribution<T>>::remove_prefix(&crowdloan_id, None);
-            <RewardInfo<T>>::remove(&crowdloan_id);
-            <CampaignStatus<T>>::remove(&crowdloan_id);
+            <Contribution<T>>::remove_prefix(&campaign_id, None);
+            <RewardInfo<T>>::remove(&campaign_id);
+            <CampaignStatus<T>>::remove(&campaign_id);
 
-            Self::deposit_event(Event::<T>::CampaignDiscarded(crowdloan_id));
+            Self::deposit_event(Event::<T>::CampaignDiscarded(campaign_id));
 
             Ok(())
         }
 
+        /// wipe the campaign under `campaign_id` after all the
+        /// contributers have claimed their reward
+        /// this will still keep the status as `Wiped`
         #[pallet::weight(<T as Config>::WeightInfo::wipe_campaign())]
-        pub fn wipe_campaign(origin: OriginFor<T>, crowdloan_id: CrowdloanIdOf<T>) -> DispatchResult {
-            Self::ensure_hoster(origin, crowdloan_id.clone())?;
-            Self::ensure_campaign_wipable(&crowdloan_id)?;
+        pub fn wipe_campaign(origin: OriginFor<T>, campaign_id: CampaignIdOf<T>) -> DispatchResult {
+            Self::ensure_hoster(origin, campaign_id.clone())?;
+            Self::ensure_campaign_wipable(&campaign_id)?;
 
-            <Contribution<T>>::remove_prefix(&crowdloan_id, None);
-            <RewardInfo<T>>::remove(&crowdloan_id);
+            <Contribution<T>>::remove_prefix(&campaign_id, None);
+            <RewardInfo<T>>::remove(&campaign_id);
 
-            <CampaignStatus<T>>::insert(&crowdloan_id, RewardCampaignStatus::Wiped);
+            <CampaignStatus<T>>::insert(&campaign_id, RewardCampaignStatus::Wiped);
 
-            Self::deposit_event(Event::<T>::CampaignWiped(crowdloan_id));
+            Self::deposit_event(Event::<T>::CampaignWiped(campaign_id));
             Ok(())
         }
 
+        /// Contributer callable to receive the instant reward
+        /// they are entitled to receive in campaign `campaign_id`
         #[pallet::weight(<T as Config>::WeightInfo::get_instant_reward())]
-        pub fn get_instant_reward(origin: OriginFor<T>, crowdloan_id: CrowdloanIdOf<T>) -> DispatchResult {
+        pub fn get_instant_reward(origin: OriginFor<T>, campaign_id: CampaignIdOf<T>) -> DispatchResult {
             let contributer = ensure_signed(origin)?;
-            Self::ensure_campaign_claimable(&crowdloan_id)?;
+            Self::ensure_campaign_claimable(&campaign_id)?;
             let InstantEnsuredResultOf::<T> {
                 new_status,
                 instant_amount,
-            } = Self::ensure_instant_claimable(&crowdloan_id, &contributer)?;
+            } = Self::ensure_instant_claimable(&campaign_id, &contributer)?;
 
-            let reward_info = Self::get_reward_info(&crowdloan_id).ok_or(<Error<T>>::NoRewardCampaign)?;
+            let reward_info = Self::get_reward_info(&campaign_id).ok_or(<Error<T>>::NoRewardCampaign)?;
 
             functions::do_instant_reward::<T>(&reward_info.reward_source, &contributer, instant_amount)?;
 
-            Self::update_contributer_status(&crowdloan_id, &contributer, new_status);
+            Self::update_contributer_status(&campaign_id, &contributer, new_status);
 
             Self::deposit_event(Event::<T>::InstantRewarded {
-                crowdloan_id,
+                campaign_id,
                 contributer,
             });
             Ok(())
         }
 
+        /// Contributer callable to receive the vesting reward
+        /// they are entitled to receive in campaign `campaign_id`
         #[pallet::weight(<T as Config>::WeightInfo::get_vested_reward())]
-        pub fn get_vested_reward(origin: OriginFor<T>, crowdloan_id: CrowdloanIdOf<T>) -> DispatchResult {
+        pub fn get_vested_reward(origin: OriginFor<T>, campaign_id: CampaignIdOf<T>) -> DispatchResult {
             let contributer = ensure_signed(origin)?;
-            Self::ensure_campaign_claimable(&crowdloan_id)?;
+            Self::ensure_campaign_claimable(&campaign_id)?;
             let VestedEnsuredResultOf::<T> {
                 new_status,
                 vesting_amount,
                 per_block,
-            } = Self::ensure_vested_claimable(&crowdloan_id, &contributer)?;
+            } = Self::ensure_vested_claimable(&campaign_id, &contributer)?;
 
-            let reward_info = Self::get_reward_info(&crowdloan_id).ok_or(<Error<T>>::NoRewardCampaign)?;
+            let reward_info = Self::get_reward_info(&campaign_id).ok_or(<Error<T>>::NoRewardCampaign)?;
 
             functions::do_vesting_reward::<T>(
                 reward_info.reward_source.clone(),
@@ -381,10 +413,10 @@ pub mod pallet {
                 per_block,
             )?;
 
-            Self::update_contributer_status(&crowdloan_id, &contributer, new_status);
+            Self::update_contributer_status(&campaign_id, &contributer, new_status);
 
             Self::deposit_event(Event::<T>::VestingScheduleApplied {
-                crowdloan_id,
+                campaign_id,
                 contributer,
             });
             Ok(())
@@ -392,54 +424,62 @@ pub mod pallet {
     }
 
     impl<T: Config> Pallet<T> {
-        fn ensure_hoster(origin: OriginFor<T>, crowdloan_id: CrowdloanIdOf<T>) -> DispatchResult {
+        /// ensure that the origin is signed by the hoster of campaign_id
+        fn ensure_hoster(origin: OriginFor<T>, campaign_id: CampaignIdOf<T>) -> DispatchResult {
             let claimer = ensure_signed(origin)?;
-            Self::verify_crowdloan_hoster(&claimer, &crowdloan_id)
+            Self::verify_crowdloan_hoster(&claimer, &campaign_id)
         }
 
-        fn verify_crowdloan_hoster(signer: &AccountIdOf<T>, crowdloan_id: &CrowdloanIdOf<T>) -> DispatchResult {
-            (&Self::get_reward_info(crowdloan_id).ok_or(<Error<T>>::NoRewardCampaign)?.hoster == signer)
+        /// ensure the account `signer` and the hoster of `campaign_id` is same
+        fn verify_crowdloan_hoster(signer: &AccountIdOf<T>, campaign_id: &CampaignIdOf<T>) -> DispatchResult {
+            (&Self::get_reward_info(campaign_id).ok_or(<Error<T>>::NoRewardCampaign)?.hoster == signer)
                 .then_some(())
                 .ok_or(<Error<T>>::PermissionDenied.into())
         }
 
-        fn ensure_campaign_writable(crowdloan_id: &CrowdloanIdOf<T>) -> DispatchResult {
+        /// ensure that `campaign_id` state is writable ( i.e non-locked )
+        /// and changed can be made safely
+        fn ensure_campaign_writable(campaign_id: &CampaignIdOf<T>) -> DispatchResult {
             ensure!(
-                Self::get_campaign_status(crowdloan_id).ok_or(<Error<T>>::NoRewardCampaign)? ==
+                Self::get_campaign_status(campaign_id).ok_or(<Error<T>>::NoRewardCampaign)? ==
                     RewardCampaignStatus::InProgress,
                 <Error<T>>::ReadOnlyCampaign
             );
             Ok(())
         }
 
-        fn ensure_campaign_claimable(crowdloan_id: &CrowdloanIdOf<T>) -> DispatchResult {
+        /// ensure campaign `campaign_id` is in state
+        /// where contributer can claim the reward they are entitled to
+        fn ensure_campaign_claimable(campaign_id: &CampaignIdOf<T>) -> DispatchResult {
             ensure!(
-                Self::get_campaign_status(crowdloan_id).ok_or(<Error<T>>::NoRewardCampaign)? ==
+                Self::get_campaign_status(campaign_id).ok_or(<Error<T>>::NoRewardCampaign)? ==
                     RewardCampaignStatus::Locked,
                 <Error<T>>::NonClaimableCampaign
             );
             Ok(())
         }
 
-        fn ensure_campaign_lockable(crowdloan_id: &CrowdloanIdOf<T>) -> DispatchResult {
+        /// ensure the campaign `campaign_id` state is writeable and can be locked
+        fn ensure_campaign_lockable(campaign_id: &CampaignIdOf<T>) -> DispatchResult {
             ensure!(
-                Self::get_campaign_status(crowdloan_id).ok_or(<Error<T>>::NoRewardCampaign)? ==
+                Self::get_campaign_status(campaign_id).ok_or(<Error<T>>::NoRewardCampaign)? ==
                     RewardCampaignStatus::InProgress,
                 <Error<T>>::NonLockableCampaign
             );
             Ok(())
         }
 
-        fn ensure_campaign_wipable(crowdloan_id: &CrowdloanIdOf<T>) -> DispatchResult {
+        /// enusre campaign `campaign_id` can be wiped
+        fn ensure_campaign_wipable(campaign_id: &CampaignIdOf<T>) -> DispatchResult {
             ensure!(
-                Self::get_campaign_status(crowdloan_id).ok_or(<Error<T>>::NoRewardCampaign)? ==
+                Self::get_campaign_status(campaign_id).ok_or(<Error<T>>::NoRewardCampaign)? ==
                     RewardCampaignStatus::Locked,
                 <Error<T>>::CampaignNotLocked,
             );
             ensure!(
-                <Contribution<T>>::iter_key_prefix(crowdloan_id)
+                <Contribution<T>>::iter_key_prefix(campaign_id)
                     .filter(|acc| {
-                        Self::get_contribution(crowdloan_id, acc).map(|p| p.status) != Some(ClaimerStatus::DoneBoth)
+                        Self::get_contribution(campaign_id, acc).map(|p| p.status) != Some(ClaimerStatus::DoneBoth)
                     })
                     .next()
                     .is_none(),
@@ -449,9 +489,10 @@ pub mod pallet {
             Ok(())
         }
 
-        fn ensure_campaign_discardable(crowdloan_id: &CrowdloanIdOf<T>) -> DispatchResult {
+        /// ensure campaign `campain_id` can be discarded
+        fn ensure_campaign_discardable(campaign_id: &CampaignIdOf<T>) -> DispatchResult {
             ensure!(
-                Self::get_campaign_status(crowdloan_id).ok_or(<Error<T>>::NoRewardCampaign)? ==
+                Self::get_campaign_status(campaign_id).ok_or(<Error<T>>::NoRewardCampaign)? ==
                     RewardCampaignStatus::InProgress,
                 <Error<T>>::CampaignLocked,
             );
@@ -459,11 +500,12 @@ pub mod pallet {
             Ok(())
         }
 
+        /// ensure `contributer` can claim instant_reward under `campaign_id`
         fn ensure_instant_claimable(
-            crowdloan_id: &CrowdloanIdOf<T>,
+            campaign_id: &CampaignIdOf<T>,
             contributer: &AccountIdOf<T>,
         ) -> Result<InstantEnsuredResultOf<T>, DispatchError> {
-            let info = Self::get_contribution(crowdloan_id, contributer).ok_or(Error::<T>::NoContribution)?;
+            let info = Self::get_contribution(campaign_id, contributer).ok_or(Error::<T>::NoContribution)?;
 
             let new_status = match info.status {
                 ClaimerStatus::Unprocessed => Ok(ClaimerStatus::DoneInstant),
@@ -477,11 +519,12 @@ pub mod pallet {
             })
         }
 
+        /// ensure `contributer` can claim instant_reward under `campaign_id`
         fn ensure_vested_claimable(
-            crowdloan_id: &CrowdloanIdOf<T>,
+            campaign_id: &CampaignIdOf<T>,
             contributer: &AccountIdOf<T>,
         ) -> Result<VestedEnsuredResultOf<T>, DispatchError> {
-            let info = Self::get_contribution(crowdloan_id, contributer).ok_or(Error::<T>::NoContribution)?;
+            let info = Self::get_contribution(campaign_id, contributer).ok_or(Error::<T>::NoContribution)?;
 
             let new_status = match info.status {
                 ClaimerStatus::Unprocessed => Ok(ClaimerStatus::DoneVesting),
@@ -496,18 +539,20 @@ pub mod pallet {
             })
         }
 
+        /// update `contributer` status under `campaign_id` to `new_status`
         fn update_contributer_status(
-            crowdloan_id: &CrowdloanIdOf<T>,
+            campaign_id: &CampaignIdOf<T>,
             contributer: &AccountIdOf<T>,
             new_status: ClaimerStatus,
         ) {
-            <Contribution<T>>::mutate(&crowdloan_id, &contributer, |state| {
+            <Contribution<T>>::mutate(&campaign_id, &contributer, |state| {
                 state.as_mut().map(|state| {
                     state.status = new_status;
                 });
             });
         }
 
+        /// get current block number from `frame_system`
         fn get_current_block_number() -> BlockNumberOf<T> {
             <frame_system::Pallet<T>>::block_number()
         }

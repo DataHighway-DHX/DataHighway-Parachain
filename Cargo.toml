@@ -8,4 +8,5 @@ members = [
     'pallets/primitives',
     'pallets/parachain-staking',
     'pallets/pallet-inflation',
+    'pallets/reward-campaign',
 ]

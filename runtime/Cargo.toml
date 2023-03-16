@@ -1,6 +1,6 @@
 [package]
 name = 'datahighway-parachain-runtime'
-version = '3.8.1'
+version = '3.9.0'
 authors = ['MXC Foundation GmbH <https://t.me/mxcfoundation>', 'Luke Schoen <luke@mxc.org>', 'Ilya Beregovskiy <ilya@mxc.org>']
 license = 'GPL-3'
 homepage = 'http://www.datahighway.com/'
@@ -28,6 +28,7 @@ static_assertions = '1.1.0'
 module-primitives = { default-features = false, path = '../pallets/primitives' }
 parachain-staking = { path = "../pallets/parachain-staking", default-features = false }
 pallet-inflation = { path = "../pallets/pallet-inflation", default-features = false }
+pallet-reward-campaign = { path = "../pallets/reward-campaign", default-features = false }
 
 # Substrate
 frame-benchmarking = { git = 'https://github.com/paritytech/substrate', branch = 'polkadot-v0.9.29', default-features = false, optional = true }
@@ -160,6 +161,7 @@ std = [
     'pallet-xcm/std',
     'parachain-info/std',
     'parachain-staking/std',
+    'pallet-reward-campaign/std',
     'polkadot-parachain/std',
     'polkadot-runtime-common/std',
     'sp-api/std',
@@ -208,6 +210,7 @@ runtime-benchmarks = [
     'pallet-utility/runtime-benchmarks',
     'pallet-xcm/runtime-benchmarks',
     'parachain-staking/runtime-benchmarks',
+    'pallet-reward-campaign/runtime-benchmarks',
     'polkadot-runtime-common/runtime-benchmarks',
     'sp-runtime/runtime-benchmarks',
     'xcm-builder/runtime-benchmarks',

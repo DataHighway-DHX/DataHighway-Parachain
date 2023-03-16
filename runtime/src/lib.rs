@@ -226,8 +226,8 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
     spec_name: create_runtime_str!("datahighway-parachain"),
     impl_name: create_runtime_str!("datahighway-parachain"),
     authoring_version: 2,
-    spec_version: 7,
-    impl_version: 1,
+    spec_version: 9,
+    impl_version: 0,
     apis: RUNTIME_API_VERSIONS,
 	transaction_version: 1,
 	state_version: 1,
@@ -1100,6 +1100,15 @@ impl parachain_staking::Config for Runtime {
 	type WeightInfo = parachain_staking::default_weights::SubstrateWeight<Runtime>;
 }
 
+impl pallet_reward_campaign::Config for Runtime {
+    type BlockNumberToBalance = sp_runtime::traits::ConvertInto;
+    type CampaignId = u32;
+    type Currency = Balances;
+    type CurrencyConvert = sp_runtime::traits::ConvertInto;
+    type Event = Event;
+    type WeightInfo = pallet_reward_campaign::weights::SubstrateWeight<Self>;
+}
+
 // Create the runtime by composing the FRAME pallets that were previously configured.
 construct_runtime!(
     pub enum Runtime where
@@ -1143,6 +1152,7 @@ construct_runtime!(
         CumulusXcm: cumulus_pallet_xcm::{Pallet, Event<T>, Origin} = 32,
         DmpQueue: cumulus_pallet_dmp_queue::{Pallet, Call, Storage, Event<T>} = 33,
 
+        Reward: pallet_reward_campaign::{Pallet, Call, Storage, Event<T> },
         Inflation: pallet_inflation,
         Council: pallet_collective::<Instance1>,
         TechnicalCommittee: pallet_collective::<Instance2>,
@@ -1175,10 +1185,7 @@ mod benches {
         [pallet_scheduler, Scheduler]
         [pallet_indices, Indices]
         [pallet_balances, Balances]
-        [pallet_collator_selection, CollatorSelection]
         [pallet_democracy, Democracy]
-        [pallet_aura, Aura]
-        [pallet_xcm, PolkadotXcm]
         [pallet_collective::<Instance1>, Council]
         [pallet_collective::<Instance2>, TechnicalCommittee]
         [pallet_elections_phragmen, Elections]
@@ -1192,6 +1199,7 @@ mod benches {
         [pallet_multisig, Multisig]
         [pallet_referenda, Referenda]
         [pallet_conviction_voting, ConvictionVoting]
+        [pallet_crowdloan_reward, Reward]
     );
 }
 

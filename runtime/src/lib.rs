@@ -304,7 +304,7 @@ impl frame_system::Config for Runtime {
     type AccountId = AccountId;
     type Lookup = AccountIdLookup<AccountId, AccountIndex>;
     type Header = generic::Header<BlockNumber, BlakeTwo256>;
-    type Event = Event;
+    type RuntimeEvent = RuntimeEvent;
     type BlockHashCount = ConstU32<BLOCK_HASH_COUNT_AS_CONST>;
     type Version = Version;
     type PalletInfo = PalletInfo;
@@ -354,7 +354,7 @@ impl pallet_balances::Config for Runtime {
     type AccountStore = System;
     type Balance = Balance;
     type DustRemoval = ();
-    type Event = Event;
+    type RuntimeEvent = RuntimeEvent;
     type ExistentialDeposit = ConstU128<EXISTENTIAL_DEPOSIT_AS_CONST>;
     type MaxLocks = ConstU32<MAX_LOCKS_AS_CONST>;
     type MaxReserves = MaxReserves;
@@ -389,7 +389,7 @@ parameter_types! {
 }
 
 impl pallet_transaction_payment::Config for Runtime {
-    type Event = Event;
+    type RuntimeEvent = RuntimeEvent;
     type OnChargeTransaction = pallet_transaction_payment::CurrencyAdapter<Balances, DealWithFees>;
     type LengthToFee = ConstantMultiplier<Balance, TransactionByteFee>;
     type WeightToFee = IdentityFee<Balance>;
@@ -399,7 +399,7 @@ impl pallet_transaction_payment::Config for Runtime {
 }
 
 impl pallet_asset_tx_payment::Config for Runtime {
-    type Event = Event;
+    type RuntimeEvent = RuntimeEvent;
     type Fungibles = Assets;
     type OnChargeAssetTransaction = pallet_asset_tx_payment::FungiblesAdapter<
         pallet_assets::BalanceToAssetBalance<Balances, Runtime, ConvertInto>,
@@ -417,7 +417,7 @@ type CouncilCollective = pallet_collective::Instance1;
 impl pallet_collective::Config<CouncilCollective> for Runtime {
     type Origin = Origin;
     type Proposal = Call;
-    type Event = Event;
+    type RuntimeEvent = RuntimeEvent;
     type MotionDuration = CouncilMotionDuration;
     type MaxProposals = CouncilMaxProposals;
     type MaxMembers = CouncilMaxMembers;
@@ -446,7 +446,7 @@ parameter_types! {
 const_assert!(DesiredMembers::get() <= CouncilMaxMembers::get());
 
 impl pallet_elections_phragmen::Config for Runtime {
-    type Event = Event;
+    type RuntimeEvent = RuntimeEvent;
     type PalletId = ElectionsPhragmenPalletId;
     type Currency = Balances;
     type ChangeMembers = Council;
@@ -477,7 +477,7 @@ type TechnicalCollective = pallet_collective::Instance2;
 impl pallet_collective::Config<TechnicalCollective> for Runtime {
     type Origin = Origin;
     type Proposal = Call;
-    type Event = Event;
+    type RuntimeEvent = RuntimeEvent;
     type MotionDuration = TechnicalMotionDuration;
     type MaxProposals = TechnicalMaxProposals;
     type MaxMembers = TechnicalMaxMembers;
@@ -490,7 +490,7 @@ type EnsureRootOrHalfCouncil = EitherOfDiverse<
     pallet_collective::EnsureProportionMoreThan<AccountId, CouncilCollective, 1, 2>,
 >;
 impl pallet_membership::Config<pallet_membership::Instance1> for Runtime {
-    type Event = Event;
+    type RuntimeEvent = RuntimeEvent;
     type AddOrigin = EnsureRootOrHalfCouncil;
     type RemoveOrigin = EnsureRootOrHalfCouncil;
     type SwapOrigin = EnsureRootOrHalfCouncil;
@@ -537,7 +537,7 @@ impl pallet_treasury::Config for Runtime {
         EnsureRoot<AccountId>,
         pallet_collective::EnsureProportionMoreThan<AccountId, CouncilCollective, 1, 2>,
     >;
-    type Event = Event;
+    type RuntimeEvent = RuntimeEvent;
     type OnSlash = ();
     type ProposalBond = ProposalBond;
     type ProposalBondMinimum = ProposalBondMinimum;
@@ -552,7 +552,7 @@ impl pallet_treasury::Config for Runtime {
 }
 
 impl pallet_bounties::Config for Runtime {
-    type Event = Event;
+    type RuntimeEvent = RuntimeEvent;
     type BountyDepositBase = BountyDepositBase;
     type BountyDepositPayoutDelay = BountyDepositPayoutDelay;
     type BountyUpdatePeriod = BountyUpdatePeriod;
@@ -567,7 +567,7 @@ impl pallet_bounties::Config for Runtime {
 }
 
 impl pallet_child_bounties::Config for Runtime {
-    type Event = Event;
+    type RuntimeEvent = RuntimeEvent;
     type MaxActiveChildBountyCount = MaxActiveChildBountyCount;
     type ChildBountyValueMinimum = ChildBountyValueMinimum;
     type WeightInfo = pallet_child_bounties::weights::SubstrateWeight<Runtime>;
@@ -629,7 +629,7 @@ where
 }
 
 impl pallet_session::Config for Runtime {
-    type Event = Event;
+    type RuntimeEvent = RuntimeEvent;
     type ValidatorId = <Self as frame_system::Config>::AccountId;
     // we don't have stash and controller, thus we don't need the convert as well.
     type ValidatorIdOf = ConvertInto;
@@ -643,7 +643,7 @@ impl pallet_session::Config for Runtime {
 }
 
 impl pallet_tips::Config for Runtime {
-    type Event = Event;
+    type RuntimeEvent = RuntimeEvent;
     type DataDepositPerByte = DataDepositPerByte;
     type MaximumReasonLength = MaximumReasonLength;
     type Tippers = Elections;
@@ -669,7 +669,7 @@ parameter_types! {
 }
 
 impl pallet_identity::Config for Runtime {
-    type Event = Event;
+    type RuntimeEvent = RuntimeEvent;
     type Currency = Balances;
     type BasicDeposit = BasicDeposit;
     type FieldDeposit = FieldDeposit;
@@ -691,7 +691,7 @@ parameter_types! {
 }
 
 impl pallet_recovery::Config for Runtime {
-    type Event = Event;
+    type RuntimeEvent = RuntimeEvent;
     type Call = Call;
     type Currency = Balances;
     type ConfigDepositBase = ConfigDepositBase;
@@ -710,7 +710,7 @@ parameter_types! {
 }
 
 impl pallet_assets::Config for Runtime {
-    type Event = Event;
+    type RuntimeEvent = RuntimeEvent;
     type Balance = u128;
     type AssetId = u32;
     type Currency = Balances;
@@ -729,7 +729,7 @@ impl pallet_assets::Config for Runtime {
 impl pallet_randomness_collective_flip::Config for Runtime {}
 
 impl pallet_utility::Config for Runtime {
-    type Event = Event;
+    type RuntimeEvent = RuntimeEvent;
     type Call = Call;
     type PalletsOrigin = OriginCaller;
     type WeightInfo = pallet_utility::weights::SubstrateWeight<Runtime>;
@@ -746,7 +746,7 @@ parameter_types! {
 }
 
 impl pallet_multisig::Config for Runtime {
-    type Event = Event;
+    type RuntimeEvent = RuntimeEvent;
     type Call = Call;
     type Currency = Balances;
     type DepositBase = DepositBase;
@@ -808,7 +808,7 @@ impl InstanceFilter<Call> for ProxyType {
 }
 
 impl pallet_proxy::Config for Runtime {
-    type Event = Event;
+    type RuntimeEvent = RuntimeEvent;
     type Call = Call;
     type Currency = Balances;
     type ProxyType = ProxyType;
@@ -833,7 +833,7 @@ parameter_types! {
 }
 
 impl pallet_scheduler::Config for Runtime {
-    type Event = Event;
+    type RuntimeEvent = RuntimeEvent;
     type Origin = Origin;
     type PalletsOrigin = OriginCaller;
     type Call = Call;
@@ -855,7 +855,7 @@ parameter_types! {
 
 impl pallet_preimage::Config for Runtime {
     type WeightInfo = pallet_preimage::weights::SubstrateWeight<Runtime>;
-    type Event = Event;
+    type RuntimeEvent = RuntimeEvent;
     type Currency = Balances;
     type ManagerOrigin = EnsureRoot<AccountId>;
     type MaxSize = PreimageMaxSize;
@@ -870,7 +870,7 @@ parameter_types! {
 
 impl pallet_conviction_voting::Config for Runtime {
     type WeightInfo = pallet_conviction_voting::weights::SubstrateWeight<Self>;
-    type Event = Event;
+    type RuntimeEvent = RuntimeEvent;
     type Currency = Balances;
     type VoteLockingPeriod = VoteLockingPeriod;
     type MaxVotes = ConstU32<512>;
@@ -928,7 +928,7 @@ impl pallet_referenda::TracksInfo<Balance, BlockNumber> for TracksInfo {
 impl pallet_referenda::Config for Runtime {
     type WeightInfo = pallet_referenda::weights::SubstrateWeight<Self>;
     type Call = Call;
-    type Event = Event;
+    type RuntimeEvent = RuntimeEvent;
     type Scheduler = Scheduler;
     type SubmitOrigin = frame_system::EnsureSigned<AccountId>;
     type Currency = pallet_balances::Pallet<Self>;
@@ -960,7 +960,7 @@ parameter_types! {
 
 impl pallet_democracy::Config for Runtime {
     type Proposal = Call;
-    type Event = Event;
+    type RuntimeEvent = RuntimeEvent;
     type Currency = Balances;
     type EnactmentPeriod = EnactmentPeriod;
     type LaunchPeriod = LaunchPeriod;
@@ -1011,7 +1011,7 @@ impl pallet_democracy::Config for Runtime {
 
 impl pallet_sudo::Config for Runtime {
     type Call = Call;
-    type Event = Event;
+    type RuntimeEvent = RuntimeEvent;
 }
 
 parameter_types! {
@@ -1022,7 +1022,7 @@ impl pallet_indices::Config for Runtime {
     type AccountIndex = AccountIndex;
     type Currency = Balances;
     type Deposit = IndexDeposit;
-    type Event = Event;
+    type RuntimeEvent = RuntimeEvent;
     type WeightInfo = pallet_indices::weights::SubstrateWeight<Runtime>;
 }
 
@@ -1032,7 +1032,7 @@ parameter_types! {
 }
 
 impl cumulus_pallet_parachain_system::Config for Runtime {
-    type Event = Event;
+    type RuntimeEvent = RuntimeEvent;
     type OnSystemEvent = ();
     type SelfParaId = parachain_info::Pallet<Runtime>;
     type DmpMessageHandler = DmpQueue;
@@ -1048,7 +1048,7 @@ impl parachain_info::Config for Runtime {}
 impl cumulus_pallet_aura_ext::Config for Runtime {}
 
 impl cumulus_pallet_xcmp_queue::Config for Runtime {
-    type Event = Event;
+    type RuntimeEvent = RuntimeEvent;
     type XcmExecutor = XcmExecutor<XcmConfig>;
     type ChannelInfo = ParachainSystem;
     type VersionWrapper = ();
@@ -1059,7 +1059,7 @@ impl cumulus_pallet_xcmp_queue::Config for Runtime {
 }
 
 impl cumulus_pallet_dmp_queue::Config for Runtime {
-    type Event = Event;
+    type RuntimeEvent = RuntimeEvent;
     type XcmExecutor = XcmExecutor<XcmConfig>;
     type ExecuteOverweightOrigin = EnsureRoot<AccountId>;
 }
@@ -1073,7 +1073,7 @@ impl pallet_inflation::Config for Runtime {
 }
 
 impl parachain_staking::Config for Runtime {
-	type Event = Event;
+	type RuntimeEvent = RuntimeEvent;
 	type Currency = Balances;
 	type CurrencyBalance = Balance;
 
@@ -1116,9 +1116,9 @@ construct_runtime!(
         NodeBlock = opaque::Block,
         UncheckedExtrinsic = UncheckedExtrinsic
     {
-        System: frame_system::{Pallet, Call, Config, Storage, Event<T>} = 0,
+        System: frame_system::{Pallet, Call, Config, Storage, RuntimeEvent<T>} = 0,
         ParachainSystem: cumulus_pallet_parachain_system::{
-            Pallet, Call, Config, Storage, Inherent, Event<T>, ValidateUnsigned,
+            Pallet, Call, Config, Storage, Inherent, RuntimeEvent<T>, ValidateUnsigned,
         } = 1,
         Utility: pallet_utility = 2,
         RandomnessCollectiveFlip: pallet_randomness_collective_flip::{Pallet, Storage} = 3,
@@ -1126,31 +1126,30 @@ construct_runtime!(
         Identity: pallet_identity = 5,
         Recovery: pallet_recovery = 6,
         Scheduler: pallet_scheduler = 7,
-        Sudo: pallet_sudo::{Pallet, Call, Config<T>, Storage, Event<T>} = 8,
+        Sudo: pallet_sudo::{Pallet, Call, Config<T>, Storage, RuntimeEvent<T>} = 8,
         ParachainInfo: parachain_info::{Pallet, Storage, Config} = 9,
         Indices: pallet_indices = 10,
 
         // Monetary stuff.
-        Balances: pallet_balances::{Pallet, Call, Storage, Config<T>, Event<T>} = 15,
-        Vesting: pallet_vesting::{Pallet, Call, Storage, Config<T>, Event<T>} = 16,
-        TransactionPayment: pallet_transaction_payment::{Pallet, Storage, Config, Event<T>} = 17,
-        AssetTxPayment: pallet_asset_tx_payment = 18,
+        Balances: pallet_balances::{Pallet, Call, Storage, Config<T>, RuntimeEvent<T>} = 15,
+        TransactionPayment: pallet_transaction_payment::{Pallet, Storage, Config, RuntimeEvent<T>} = 16,
+        AssetTxPayment: pallet_asset_tx_payment = 17,
 
         // Collator support. The order of these 4 are important and shall not change.
         // Authorship must be before session in order to note author in the correct session and era
         // for im-online and staking.
         Authorship: pallet_authorship::{Pallet, Call, Storage} = 20,
-        Session: pallet_session::{Pallet, Call, Storage, Event, Config<T>} = 21,
-        ParachainStaking: parachain_staking::{Pallet, Call, Storage, Event<T>, Config<T>} = 22,
+        Session: pallet_session::{Pallet, Call, Storage, RuntimeEvent, Config<T>} = 21,
+        ParachainStaking: parachain_staking::{Pallet, Call, Storage, RuntimeEvent<T>, Config<T>} = 22,
         Democracy: pallet_democracy = 23,
         Aura: pallet_aura::{Pallet, Storage, Config<T>} = 24,
         AuraExt: cumulus_pallet_aura_ext::{Pallet, Storage, Config} = 25,
 
         // XCM helpers.
-        XcmpQueue: cumulus_pallet_xcmp_queue::{Pallet, Call, Storage, Event<T>} = 30,
-        PolkadotXcm: pallet_xcm::{Pallet, Call, Event<T>, Origin, Config} = 31,
-        CumulusXcm: cumulus_pallet_xcm::{Pallet, Event<T>, Origin} = 32,
-        DmpQueue: cumulus_pallet_dmp_queue::{Pallet, Call, Storage, Event<T>} = 33,
+        XcmpQueue: cumulus_pallet_xcmp_queue::{Pallet, Call, Storage, RuntimeEvent<T>} = 30,
+        PolkadotXcm: pallet_xcm::{Pallet, Call, RuntimeEvent<T>, Origin, Config} = 31,
+        CumulusXcm: cumulus_pallet_xcm::{Pallet, RuntimeEvent<T>, Origin} = 32,
+        DmpQueue: cumulus_pallet_dmp_queue::{Pallet, Call, Storage, RuntimeEvent<T>} = 33,
 
         Reward: pallet_reward_campaign::{Pallet, Call, Storage, Event<T> },
         Inflation: pallet_inflation,
@@ -1158,7 +1157,7 @@ construct_runtime!(
         TechnicalCommittee: pallet_collective::<Instance2>,
         Elections: pallet_elections_phragmen,
         TechnicalMembership: pallet_membership::<Instance1>,
-        Treasury: pallet_treasury::{Pallet, Call, Storage, Config, Event<T>},
+        Treasury: pallet_treasury::{Pallet, Call, Storage, Config, RuntimeEvent<T>},
         Bounties: pallet_bounties,
         ChildBounties: pallet_child_bounties,
         Tips: pallet_tips,
@@ -1362,7 +1361,7 @@ impl_runtime_apis! {
                 hex_literal::hex!("c2261276cc9d1f8598ea4b6a74b15c2f57c875e4cff74148e4628f264b974c80").to_vec().into(),
                 // Execution Phase
                 hex_literal::hex!("26aa394eea5630e07c48ae0c9558cef7ff553b5a9862a516939d82b3d3d8661a").to_vec().into(),
-                // Event Count
+                // RuntimeEvent Count
                 hex_literal::hex!("26aa394eea5630e07c48ae0c9558cef70a98fdbe9ce6c55837576c60c7af3850").to_vec().into(),
                 // System Events
                 hex_literal::hex!("26aa394eea5630e07c48ae0c9558cef780d41e5e16056765bc8461851072c9d7").to_vec().into(),

@@ -56,11 +56,11 @@ construct_runtime!(
 		NodeBlock = Block,
 		UncheckedExtrinsic = UncheckedExtrinsic,
 	{
-		System: frame_system::{Pallet, Call, Config, Storage, Event<T>},
-		Balances: pallet_balances::{Pallet, Call, Storage, Config<T>, Event<T>},
+		System: frame_system::{Pallet, Call, Config, Storage, RuntimeEvent<T>},
+		Balances: pallet_balances::{Pallet, Call, Storage, Config<T>, RuntimeEvent<T>},
 		Authorship: pallet_authorship::{Pallet, Call, Storage, Inherent},
-		StakePallet: stake::{Pallet, Call, Storage, Config<T>, Event<T>},
-		Session: pallet_session::{Pallet, Call, Storage, Event, Config<T>},
+		StakePallet: stake::{Pallet, Call, Storage, Config<T>, RuntimeEvent<T>},
+		Session: pallet_session::{Pallet, Call, Storage, RuntimeEvent, Config<T>},
 		Aura: pallet_aura::{Pallet, Storage},
 	}
 );
@@ -84,7 +84,7 @@ impl frame_system::Config for Test {
 	type AccountId = AccountId;
 	type Lookup = IdentityLookup<Self::AccountId>;
 	type Header = Header;
-	type Event = Event;
+	type RuntimeEvent = RuntimeEvent;
 	type BlockHashCount = BlockHashCount;
 	type Version = ();
 	type PalletInfo = PalletInfo;
@@ -107,7 +107,7 @@ impl pallet_balances::Config for Test {
 	type MaxReserves = ();
 	type ReserveIdentifier = [u8; 8];
 	type Balance = Balance;
-	type Event = Event;
+	type RuntimeEvent = RuntimeEvent;
 	type DustRemoval = ();
 	type ExistentialDeposit = ExistentialDeposit;
 	type AccountStore = System;
@@ -156,7 +156,7 @@ impl OnUnbalanced<NegativeImbalanceOf<Test>> for ToBeneficiary {
 }
 
 impl Config for Test {
-	type Event = Event;
+	type RuntimeEvent = RuntimeEvent;
 	type Currency = Balances;
 	type CurrencyBalance = <Self as pallet_balances::Config>::Balance;
 	type MinBlocksPerRound = MinBlocksPerRound;
@@ -192,7 +192,7 @@ parameter_types! {
 }
 
 impl pallet_session::Config for Test {
-	type Event = Event;
+	type RuntimeEvent = RuntimeEvent;
 	type ValidatorId = AccountId;
 	type ValidatorIdOf = ConvertInto;
 	type ShouldEndSession = StakePallet;
@@ -356,16 +356,16 @@ pub(crate) fn roll_to(n: BlockNumber, authors: Vec<Option<AccountId>>) {
 	}
 }
 
-pub(crate) fn last_event() -> Event {
-	System::events().pop().expect("Event expected").event
+pub(crate) fn last_event() -> RuntimeEvent {
+	System::events().pop().expect("RuntimeEvent expected").event
 }
 
-pub(crate) fn events() -> Vec<pallet::Event<Test>> {
+pub(crate) fn events() -> Vec<pallet::RuntimeEvent<Test>> {
 	System::events()
 		.into_iter()
 		.map(|r| r.event)
 		.filter_map(|e| {
-			if let Event::StakePallet(inner) = e {
+			if let RuntimeEvent::StakePallet(inner) = e {
 				Some(inner)
 			} else {
 				None

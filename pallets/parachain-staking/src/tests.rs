@@ -30,14 +30,14 @@ use sp_runtime::{traits::Zero, Perbill, Permill, Perquintill, SaturatedConversio
 
 use crate::{
 	mock::{
-		almost_equal, events, last_event, roll_to, AccountId, Balance, Balances, BlockNumber, Event as MetaEvent,
+		almost_equal, events, last_event, roll_to, AccountId, Balance, Balances, BlockNumber, RuntimeEvent as MetaEvent,
 		ExtBuilder, Origin, Session, StakePallet, System, Test, BLOCKS_PER_ROUND, DECIMALS, TREASURY_ACC,
 	},
 	set::OrderedSet,
 	types::{
 		BalanceOf, Candidate, CandidateStatus, DelegationCounter, Delegator, RoundInfo, Stake, StakeOf, TotalStake,
 	},
-	CandidatePool, Config, Error, Event, STAKING_ID,
+	CandidatePool, Config, Error, RuntimeEvent, STAKING_ID,
 };
 
 #[test]
@@ -313,7 +313,7 @@ fn join_collator_candidates() {
 			assert_ok!(StakePallet::join_candidates(Origin::signed(7), 10u128,));
 			assert_eq!(
 				last_event(),
-				MetaEvent::StakePallet(Event::JoinedCollatorCandidates(7, 10u128))
+				MetaEvent::StakePallet(RuntimeEvent::JoinedCollatorCandidates(7, 10u128))
 			);
 
 			// MaxCollatorCandidateStake
@@ -329,7 +329,7 @@ fn join_collator_candidates() {
 
 			assert_eq!(
 				last_event(),
-				MetaEvent::StakePallet(Event::JoinedCollatorCandidates(10, StakePallet::max_candidate_stake(),))
+				MetaEvent::StakePallet(RuntimeEvent::JoinedCollatorCandidates(10, StakePallet::max_candidate_stake(),))
 			);
 		});
 }
@@ -386,7 +386,7 @@ fn collator_exit_executes_after_delay() {
 			assert_eq!(StakePallet::selected_candidates().into_inner(), vec![1, 7]);
 			assert_eq!(
 				last_event(),
-				MetaEvent::StakePallet(Event::CollatorScheduledExit(2, 2, 4))
+				MetaEvent::StakePallet(RuntimeEvent::CollatorScheduledExit(2, 2, 4))
 			);
 			let info = StakePallet::candidate_pool(&2).unwrap();
 			assert_eq!(info.status, CandidateStatus::Leaving(4));
@@ -400,15 +400,15 @@ fn collator_exit_executes_after_delay() {
 			// (within the last T::StakeDuration blocks)
 			roll_to(25, vec![]);
 			let expected = vec![
-				Event::MaxSelectedCandidatesSet(2, 5),
-				Event::NewRound(5, 1),
-				Event::NewRound(10, 2),
-				Event::LeftTopCandidates(2),
-				Event::CollatorScheduledExit(2, 2, 4),
-				Event::NewRound(15, 3),
-				Event::NewRound(20, 4),
-				Event::CandidateLeft(2, 400),
-				Event::NewRound(25, 5),
+				RuntimeEvent::MaxSelectedCandidatesSet(2, 5),
+				RuntimeEvent::NewRound(5, 1),
+				RuntimeEvent::NewRound(10, 2),
+				RuntimeEvent::LeftTopCandidates(2),
+				RuntimeEvent::CollatorScheduledExit(2, 2, 4),
+				RuntimeEvent::NewRound(15, 3),
+				RuntimeEvent::NewRound(20, 4),
+				RuntimeEvent::CandidateLeft(2, 400),
+				RuntimeEvent::NewRound(25, 5),
 			];
 			assert_eq!(events(), expected);
 		});
@@ -450,13 +450,13 @@ fn collator_selection_chooses_top_candidates() {
 			roll_to(8, vec![]);
 			// should choose top MaxSelectedCandidates (5), in order
 			assert_eq!(StakePallet::selected_candidates().into_inner(), vec![1, 2, 3, 4, 5]);
-			let expected = vec![Event::MaxSelectedCandidatesSet(2, 5), Event::NewRound(5, 1)];
+			let expected = vec![RuntimeEvent::MaxSelectedCandidatesSet(2, 5), RuntimeEvent::NewRound(5, 1)];
 			assert_eq!(events(), expected);
 			assert_ok!(StakePallet::init_leave_candidates(Origin::signed(6)));
 			assert_eq!(StakePallet::selected_candidates().into_inner(), vec![1, 2, 3, 4, 5],);
 			assert_eq!(
 				last_event(),
-				MetaEvent::StakePallet(Event::CollatorScheduledExit(1, 6, 3))
+				MetaEvent::StakePallet(RuntimeEvent::CollatorScheduledExit(1, 6, 3))
 			);
 
 			roll_to(15, vec![]);
@@ -468,25 +468,25 @@ fn collator_selection_chooses_top_candidates() {
 			assert_eq!(StakePallet::selected_candidates().into_inner(), vec![1, 2, 3, 4, 6]);
 			assert_eq!(
 				last_event(),
-				MetaEvent::StakePallet(Event::JoinedCollatorCandidates(6, 69u128))
+				MetaEvent::StakePallet(RuntimeEvent::JoinedCollatorCandidates(6, 69u128))
 			);
 
 			roll_to(27, vec![]);
 			// should choose top MaxSelectedCandidates (5), in order
 			let expected = vec![
-				Event::MaxSelectedCandidatesSet(2, 5),
-				Event::NewRound(5, 1),
-				Event::LeftTopCandidates(6),
-				Event::CollatorScheduledExit(1, 6, 3),
+				RuntimeEvent::MaxSelectedCandidatesSet(2, 5),
+				RuntimeEvent::NewRound(5, 1),
+				RuntimeEvent::LeftTopCandidates(6),
+				RuntimeEvent::CollatorScheduledExit(1, 6, 3),
 				// TotalCollatorStake is updated once candidate 6 left in `execute_delayed_collator_exits`
-				Event::NewRound(10, 2),
-				Event::NewRound(15, 3),
-				Event::CandidateLeft(6, 50),
-				Event::NewRound(20, 4),
+				RuntimeEvent::NewRound(10, 2),
+				RuntimeEvent::NewRound(15, 3),
+				RuntimeEvent::CandidateLeft(6, 50),
+				RuntimeEvent::NewRound(20, 4),
 				// 5 had staked 60 which was exceeded by 69 of 6
-				Event::EnteredTopCandidates(6),
-				Event::JoinedCollatorCandidates(6, 69),
-				Event::NewRound(25, 5),
+				RuntimeEvent::EnteredTopCandidates(6),
+				RuntimeEvent::JoinedCollatorCandidates(6, 69),
+				RuntimeEvent::NewRound(25, 5),
 			];
 			assert_eq!(events(), expected);
 		});
@@ -518,13 +518,13 @@ fn exit_queue_with_events() {
 			roll_to(8, vec![]);
 			// should choose top MaxSelectedCandidates (5), in order
 			assert_eq!(StakePallet::selected_candidates().into_inner(), vec![1, 2, 3, 4, 5]);
-			let mut expected = vec![Event::MaxSelectedCandidatesSet(2, 5), Event::NewRound(5, 1)];
+			let mut expected = vec![RuntimeEvent::MaxSelectedCandidatesSet(2, 5), RuntimeEvent::NewRound(5, 1)];
 			assert_eq!(events(), expected);
 			assert_ok!(StakePallet::init_leave_candidates(Origin::signed(6)));
 			assert_eq!(StakePallet::selected_candidates().into_inner(), vec![1, 2, 3, 4, 5]);
 			assert_eq!(
 				last_event(),
-				MetaEvent::StakePallet(Event::CollatorScheduledExit(1, 6, 3))
+				MetaEvent::StakePallet(RuntimeEvent::CollatorScheduledExit(1, 6, 3))
 			);
 
 			roll_to(11, vec![]);
@@ -532,7 +532,7 @@ fn exit_queue_with_events() {
 			assert_eq!(StakePallet::selected_candidates().into_inner(), vec![1, 2, 3, 4]);
 			assert_eq!(
 				last_event(),
-				MetaEvent::StakePallet(Event::CollatorScheduledExit(2, 5, 4))
+				MetaEvent::StakePallet(RuntimeEvent::CollatorScheduledExit(2, 5, 4))
 			);
 
 			assert_eq!(CandidatePool::<Test>::count(), 6, "No collators have left yet.");
@@ -542,7 +542,7 @@ fn exit_queue_with_events() {
 			assert_eq!(StakePallet::selected_candidates().into_inner(), vec![1, 2, 3]);
 			assert_eq!(
 				last_event(),
-				MetaEvent::StakePallet(Event::CollatorScheduledExit(3, 4, 5))
+				MetaEvent::StakePallet(RuntimeEvent::CollatorScheduledExit(3, 4, 5))
 			);
 			assert_noop!(
 				StakePallet::init_leave_candidates(Origin::signed(4)),
@@ -561,20 +561,20 @@ fn exit_queue_with_events() {
 
 			roll_to(30, vec![]);
 			let mut new_events = vec![
-				Event::LeftTopCandidates(6),
-				Event::CollatorScheduledExit(1, 6, 3),
-				Event::NewRound(10, 2),
-				Event::LeftTopCandidates(5),
-				Event::CollatorScheduledExit(2, 5, 4),
-				Event::NewRound(15, 3),
-				Event::CandidateLeft(6, 50),
-				Event::LeftTopCandidates(4),
-				Event::CollatorScheduledExit(3, 4, 5),
-				Event::NewRound(20, 4),
-				Event::CandidateLeft(5, 60),
-				Event::NewRound(25, 5),
-				Event::CandidateLeft(4, 70),
-				Event::NewRound(30, 6),
+				RuntimeEvent::LeftTopCandidates(6),
+				RuntimeEvent::CollatorScheduledExit(1, 6, 3),
+				RuntimeEvent::NewRound(10, 2),
+				RuntimeEvent::LeftTopCandidates(5),
+				RuntimeEvent::CollatorScheduledExit(2, 5, 4),
+				RuntimeEvent::NewRound(15, 3),
+				RuntimeEvent::CandidateLeft(6, 50),
+				RuntimeEvent::LeftTopCandidates(4),
+				RuntimeEvent::CollatorScheduledExit(3, 4, 5),
+				RuntimeEvent::NewRound(20, 4),
+				RuntimeEvent::CandidateLeft(5, 60),
+				RuntimeEvent::NewRound(25, 5),
+				RuntimeEvent::CandidateLeft(4, 70),
+				RuntimeEvent::NewRound(30, 6),
 			];
 			expected.append(&mut new_events);
 			assert_eq!(events(), expected);
@@ -937,7 +937,7 @@ fn multiple_delegations() {
 			roll_to(8, vec![]);
 			// chooses top MaxSelectedCandidates (5), in order
 			assert_eq!(StakePallet::selected_candidates().into_inner(), vec![1, 2, 3, 4, 5]);
-			let mut expected = vec![Event::MaxSelectedCandidatesSet(2, 5), Event::NewRound(5, 1)];
+			let mut expected = vec![RuntimeEvent::MaxSelectedCandidatesSet(2, 5), RuntimeEvent::NewRound(5, 1)];
 			assert_eq!(events(), expected);
 			assert_noop!(
 				StakePallet::delegate_another_candidate(Origin::signed(6), 1, 10),
@@ -959,11 +959,11 @@ fn multiple_delegations() {
 			roll_to(16, vec![]);
 			assert_eq!(StakePallet::selected_candidates().into_inner(), vec![1, 2, 4, 3, 5]);
 			let mut new = vec![
-				Event::Delegation(6, 10, 2, 50),
-				Event::Delegation(6, 10, 4, 30),
-				Event::Delegation(6, 10, 3, 30),
-				Event::NewRound(10, 2),
-				Event::NewRound(15, 3),
+				RuntimeEvent::Delegation(6, 10, 2, 50),
+				RuntimeEvent::Delegation(6, 10, 4, 30),
+				RuntimeEvent::Delegation(6, 10, 3, 30),
+				RuntimeEvent::NewRound(10, 2),
+				RuntimeEvent::NewRound(15, 3),
 			];
 			expected.append(&mut new);
 			assert_eq!(events(), expected);
@@ -996,13 +996,13 @@ fn multiple_delegations() {
 			roll_to(26, vec![]);
 			assert_eq!(StakePallet::selected_candidates().into_inner(), vec![2, 1, 4, 3, 5]);
 			let mut new2 = vec![
-				Event::NewRound(20, 4),
-				Event::Delegation(7, 80, 2, 130),
-				Event::DelegationReplaced(10, 11, 6, 10, 2, 131),
-				Event::Delegation(10, 11, 2, 131),
-				Event::DelegationReplaced(11, 11, 9, 10, 2, 132),
-				Event::Delegation(11, 11, 2, 132),
-				Event::NewRound(25, 5),
+				RuntimeEvent::NewRound(20, 4),
+				RuntimeEvent::Delegation(7, 80, 2, 130),
+				RuntimeEvent::DelegationReplaced(10, 11, 6, 10, 2, 131),
+				RuntimeEvent::Delegation(10, 11, 2, 131),
+				RuntimeEvent::DelegationReplaced(11, 11, 9, 10, 2, 132),
+				RuntimeEvent::Delegation(11, 11, 2, 132),
+				RuntimeEvent::NewRound(25, 5),
 			];
 			expected.append(&mut new2);
 			assert_eq!(events(), expected);
@@ -1010,14 +1010,14 @@ fn multiple_delegations() {
 			assert_eq!(StakePallet::selected_candidates().into_inner(), vec![1, 4, 3, 5]);
 			assert_eq!(
 				last_event(),
-				MetaEvent::StakePallet(Event::CollatorScheduledExit(5, 2, 7))
+				MetaEvent::StakePallet(RuntimeEvent::CollatorScheduledExit(5, 2, 7))
 			);
 
 			roll_to(31, vec![]);
 			let mut new3 = vec![
-				Event::LeftTopCandidates(2),
-				Event::CollatorScheduledExit(5, 2, 7),
-				Event::NewRound(30, 6),
+				RuntimeEvent::LeftTopCandidates(2),
+				RuntimeEvent::CollatorScheduledExit(5, 2, 7),
+				RuntimeEvent::NewRound(30, 6),
 			];
 			expected.append(&mut new3);
 			assert_eq!(events(), expected);
@@ -1531,7 +1531,7 @@ fn round_transitions() {
 		.build()
 		.execute_with(|| {
 			roll_to(5, vec![]);
-			let init = vec![Event::NewRound(5, 1)];
+			let init = vec![RuntimeEvent::NewRound(5, 1)];
 			assert_eq!(events(), init);
 			assert_ok!(StakePallet::set_blocks_per_round(Origin::root(), 3));
 			assert_noop!(
@@ -1540,13 +1540,13 @@ fn round_transitions() {
 			);
 			assert_eq!(
 				last_event(),
-				MetaEvent::StakePallet(Event::BlocksPerRoundSet(1, 5, 5, 3))
+				MetaEvent::StakePallet(RuntimeEvent::BlocksPerRoundSet(1, 5, 5, 3))
 			);
 
 			// last round startet at 5 but we are already at 9, so we expect 9 to be the new
 			// round
 			roll_to(8, vec![]);
-			assert_eq!(last_event(), MetaEvent::StakePallet(Event::NewRound(8, 2)));
+			assert_eq!(last_event(), MetaEvent::StakePallet(RuntimeEvent::NewRound(8, 2)));
 		});
 
 	// if duration of current round is less than new bpr, round waits until new bpr
@@ -1563,23 +1563,23 @@ fn round_transitions() {
 			// 3 blocks
 			roll_to(6, vec![]);
 			// chooses top MaxSelectedCandidates (5), in order
-			let init = vec![Event::NewRound(5, 1)];
+			let init = vec![RuntimeEvent::NewRound(5, 1)];
 			assert_eq!(events(), init);
 			assert_ok!(StakePallet::set_blocks_per_round(Origin::root(), 3));
 			assert_eq!(
 				last_event(),
-				MetaEvent::StakePallet(Event::BlocksPerRoundSet(1, 5, 5, 3))
+				MetaEvent::StakePallet(RuntimeEvent::BlocksPerRoundSet(1, 5, 5, 3))
 			);
 
 			// there should not be a new event
 			roll_to(7, vec![]);
 			assert_eq!(
 				last_event(),
-				MetaEvent::StakePallet(Event::BlocksPerRoundSet(1, 5, 5, 3))
+				MetaEvent::StakePallet(RuntimeEvent::BlocksPerRoundSet(1, 5, 5, 3))
 			);
 
 			roll_to(8, vec![]);
-			assert_eq!(last_event(), MetaEvent::StakePallet(Event::NewRound(8, 2)));
+			assert_eq!(last_event(), MetaEvent::StakePallet(RuntimeEvent::NewRound(8, 2)));
 		});
 
 	// round_immediately_jumps_if_current_duration_exceeds_new_blocks_per_round
@@ -1593,18 +1593,18 @@ fn round_transitions() {
 		.execute_with(|| {
 			roll_to(7, vec![]);
 			// chooses top MaxSelectedCandidates (5), in order
-			let init = vec![Event::NewRound(5, 1)];
+			let init = vec![RuntimeEvent::NewRound(5, 1)];
 			assert_eq!(events(), init);
 			assert_ok!(StakePallet::set_blocks_per_round(Origin::root(), 3));
 
 			assert_eq!(
 				last_event(),
-				MetaEvent::StakePallet(Event::BlocksPerRoundSet(1, 5, 5, 3))
+				MetaEvent::StakePallet(RuntimeEvent::BlocksPerRoundSet(1, 5, 5, 3))
 			);
 			roll_to(8, vec![]);
 
 			// last round startet at 5, so we expect 8 to be the new round
-			assert_eq!(last_event(), MetaEvent::StakePallet(Event::NewRound(8, 2)));
+			assert_eq!(last_event(), MetaEvent::StakePallet(RuntimeEvent::NewRound(8, 2)));
 		});
 }
 
@@ -2752,7 +2752,7 @@ fn increase_max_candidate_stake() {
 			assert_ok!(StakePallet::set_max_candidate_stake(Origin::root(), max_stake + 1));
 			assert_eq!(
 				last_event(),
-				MetaEvent::StakePallet(Event::MaxCandidateStakeChanged(max_stake + 1))
+				MetaEvent::StakePallet(RuntimeEvent::MaxCandidateStakeChanged(max_stake + 1))
 			);
 			assert_eq!(StakePallet::max_candidate_stake(), max_stake + 1);
 			assert_ok!(StakePallet::candidate_stake_more(Origin::signed(1), 1));
@@ -2789,7 +2789,7 @@ fn decrease_max_candidate_stake() {
 			assert_eq!(StakePallet::max_candidate_stake(), 50);
 			assert_eq!(
 				last_event(),
-				MetaEvent::StakePallet(Event::MaxCandidateStakeChanged(50))
+				MetaEvent::StakePallet(RuntimeEvent::MaxCandidateStakeChanged(50))
 			);
 
 			// check collator states, nothing changed
@@ -2921,7 +2921,7 @@ fn force_remove_candidate() {
 				}
 			);
 			assert_eq!(Session::disabled_validators(), vec![0]);
-			assert_eq!(last_event(), MetaEvent::StakePallet(Event::CollatorRemoved(1, 200)));
+			assert_eq!(last_event(), MetaEvent::StakePallet(RuntimeEvent::CollatorRemoved(1, 200)));
 			assert!(!StakePallet::top_candidates().contains(&StakeOf::<Test> { owner: 1, amount: 100 }));
 			assert_eq!(StakePallet::selected_candidates().into_inner(), vec![2, 3]);
 			assert_eq!(CandidatePool::<Test>::count(), 2);

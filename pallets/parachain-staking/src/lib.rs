@@ -222,7 +222,7 @@ pub mod pallet {
 	#[pallet::config]
 	pub trait Config: frame_system::Config + pallet_balances::Config + pallet_session::Config {
 		/// Overarching event type
-		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
+		type RuntimeEvent: From<RuntimeEvent<Self>> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
 		// FIXME: Remove Currency and CurrencyBalance types. Problem: Need to restrict
 		// pallet_balances::Config::Balance with From<u64> for usage with Perquintill
 		// multiplication
@@ -442,7 +442,7 @@ pub mod pallet {
 
 	#[pallet::event]
 	#[pallet::generate_deposit(pub(crate) fn deposit_event)]
-	pub enum Event<T: Config> {
+	pub enum RuntimeEvent<T: Config> {
 		/// A new staking round has started.
 		/// \[block number, round number\]
 		NewRound(T::BlockNumber, SessionIndex),
@@ -545,7 +545,7 @@ pub mod pallet {
 				// start next round
 				<Round<T>>::put(round);
 
-				Self::deposit_event(Event::NewRound(round.first, round.current));
+				Self::deposit_event(RuntimeEvent::NewRound(round.first, round.current));
 				post_weight = <T as Config>::WeightInfo::on_initialize_round_update();
 			}
 			// check for network reward
@@ -755,7 +755,7 @@ pub mod pallet {
             let old_rate = Self::reward_per_block();
             <RewardPerBlock<T>>::put(reward_per_block);
 
-            Self::deposit_event(Event::<T>::RewardPerBlockUpdated(old_rate, reward_per_block));
+            Self::deposit_event(RuntimeEvent::<T>::RewardPerBlockUpdated(old_rate, reward_per_block));
             Ok(())
         }
 
@@ -831,7 +831,7 @@ pub mod pallet {
 				}
 			});
 
-			Self::deposit_event(Event::MaxSelectedCandidatesSet(old, new));
+			Self::deposit_event(RuntimeEvent::MaxSelectedCandidatesSet(old, new));
 
 			Ok(Some(<T as pallet::Config>::WeightInfo::set_max_selected_candidates(
 				// SAFETY: we ensured that end > start further above.
@@ -872,7 +872,7 @@ pub mod pallet {
 				..old_round
 			});
 
-			Self::deposit_event(Event::BlocksPerRoundSet(
+			Self::deposit_event(RuntimeEvent::BlocksPerRoundSet(
 				old_round.current,
 				old_round.first,
 				old_round.length,
@@ -905,7 +905,7 @@ pub mod pallet {
 
 			MaxCollatorCandidateStake::<T>::put(new);
 
-			Self::deposit_event(Event::MaxCandidateStakeChanged(new));
+			Self::deposit_event(RuntimeEvent::MaxCandidateStakeChanged(new));
 			Ok(())
 		}
 
@@ -973,7 +973,7 @@ pub mod pallet {
 				(0u32, 0u32)
 			};
 
-			Self::deposit_event(Event::CollatorRemoved(collator, total_amount));
+			Self::deposit_event(RuntimeEvent::CollatorRemoved(collator, total_amount));
 
 			Ok(Some(<T as Config>::WeightInfo::force_remove_candidate(
 				num_collators,
@@ -1047,7 +1047,7 @@ pub mod pallet {
 			);
 			CandidatePool::<T>::insert(&sender, candidate);
 
-			Self::deposit_event(Event::JoinedCollatorCandidates(sender, stake));
+			Self::deposit_event(RuntimeEvent::JoinedCollatorCandidates(sender, stake));
 			Ok(Some(<T as pallet::Config>::WeightInfo::join_candidates(
 				n,
 				T::MaxDelegatorsPerCollator::get(),
@@ -1121,7 +1121,7 @@ pub mod pallet {
 			{
 				// update top candidates
 				TopCandidates::<T>::put(candidates);
-				Self::deposit_event(Event::LeftTopCandidates(collator.clone()));
+				Self::deposit_event(RuntimeEvent::LeftTopCandidates(collator.clone()));
 				// update total amount at stake from scratch
 				Self::update_total_stake()
 			} else {
@@ -1129,7 +1129,7 @@ pub mod pallet {
 			};
 			CandidatePool::<T>::insert(&collator, state);
 
-			Self::deposit_event(Event::CollatorScheduledExit(now, collator, when));
+			Self::deposit_event(RuntimeEvent::CollatorScheduledExit(now, collator, when));
 			Ok(Some(<T as pallet::Config>::WeightInfo::init_leave_candidates(
 				num_collators,
 				num_delegators,
@@ -1182,7 +1182,7 @@ pub mod pallet {
 
 			Self::remove_candidate(&collator, &state)?;
 
-			Self::deposit_event(Event::CandidateLeft(collator, total_amount));
+			Self::deposit_event(RuntimeEvent::CandidateLeft(collator, total_amount));
 
 			Ok(Some(<T as pallet::Config>::WeightInfo::execute_leave_candidates(
 				T::MaxTopCandidates::get(),
@@ -1234,7 +1234,7 @@ pub mod pallet {
 			// update candidates for next round
 			CandidatePool::<T>::insert(&candidate, state);
 
-			Self::deposit_event(Event::CollatorCanceledExit(candidate));
+			Self::deposit_event(RuntimeEvent::CollatorCanceledExit(candidate));
 
 			Ok(Some(<T as pallet::Config>::WeightInfo::cancel_leave_candidates(
 				n,
@@ -1307,7 +1307,7 @@ pub mod pallet {
 			};
 			CandidatePool::<T>::insert(&collator, state);
 
-			Self::deposit_event(Event::CollatorStakedMore(collator, before_stake, after_stake));
+			Self::deposit_event(RuntimeEvent::CollatorStakedMore(collator, before_stake, after_stake));
 			Ok(Some(<T as pallet::Config>::WeightInfo::candidate_stake_more(
 				n,
 				T::MaxDelegatorsPerCollator::get(),
@@ -1381,7 +1381,7 @@ pub mod pallet {
 			};
 			CandidatePool::<T>::insert(&collator, state);
 
-			Self::deposit_event(Event::CollatorStakedLess(collator, before_stake, after));
+			Self::deposit_event(RuntimeEvent::CollatorStakedLess(collator, before_stake, after));
 			Ok(Some(<T as pallet::Config>::WeightInfo::candidate_stake_less(
 				n,
 				T::MaxDelegatorsPerCollator::get(),
@@ -1523,7 +1523,7 @@ pub mod pallet {
 			// update or clear storage of potentially kicked delegator
 			Self::update_kicked_delegator_storage(maybe_kicked_delegator);
 
-			Self::deposit_event(Event::Delegation(acc, amount, collator, new_total));
+			Self::deposit_event(RuntimeEvent::Delegation(acc, amount, collator, new_total));
 			Ok(Some(<T as pallet::Config>::WeightInfo::join_delegators(
 				n,
 				T::MaxDelegatorsPerCollator::get(),
@@ -1678,7 +1678,7 @@ pub mod pallet {
 			// update or clear storage of potentially kicked delegator
 			Self::update_kicked_delegator_storage(maybe_kicked_delegator);
 
-			Self::deposit_event(Event::Delegation(acc, amount, collator, new_total));
+			Self::deposit_event(RuntimeEvent::Delegation(acc, amount, collator, new_total));
 			Ok(Some(<T as pallet::Config>::WeightInfo::join_delegators(
 				n,
 				T::MaxDelegatorsPerCollator::get(),
@@ -1724,7 +1724,7 @@ pub mod pallet {
 
 			DelegatorState::<T>::remove(&acc);
 
-			Self::deposit_event(Event::DelegatorLeft(acc, delegator.total));
+			Self::deposit_event(RuntimeEvent::DelegatorLeft(acc, delegator.total));
 			Ok(Some(<T as pallet::Config>::WeightInfo::leave_delegators(
 				num_delegations,
 				T::MaxDelegatorsPerCollator::get(),
@@ -1845,7 +1845,7 @@ pub mod pallet {
 			CandidatePool::<T>::insert(&candidate, collator);
 			DelegatorState::<T>::insert(&delegator, delegations);
 
-			Self::deposit_event(Event::DelegatorStakedMore(delegator, candidate, before_total, after));
+			Self::deposit_event(RuntimeEvent::DelegatorStakedMore(delegator, candidate, before_total, after));
 			Ok(Some(<T as pallet::Config>::WeightInfo::delegator_stake_more(
 				n,
 				T::MaxDelegatorsPerCollator::get(),
@@ -1933,7 +1933,7 @@ pub mod pallet {
 			CandidatePool::<T>::insert(&candidate, collator);
 			DelegatorState::<T>::insert(&delegator, delegations);
 
-			Self::deposit_event(Event::DelegatorStakedLess(delegator, candidate, before_total, after));
+			Self::deposit_event(RuntimeEvent::DelegatorStakedLess(delegator, candidate, before_total, after));
 			Ok(Some(<T as pallet::Config>::WeightInfo::delegator_stake_less(
 				n,
 				T::MaxDelegatorsPerCollator::get(),
@@ -2034,7 +2034,7 @@ pub mod pallet {
 			} else if top_candidates.try_insert_replace(new_stake.clone()).is_ok() {
 				// case 2: candidate ascends into TopCandidates with new stake
 				// and might replace another candidate if TopCandidates is full
-				Self::deposit_event(Event::EnteredTopCandidates(candidate));
+				Self::deposit_event(RuntimeEvent::EnteredTopCandidates(candidate));
 				Some((None, top_candidates))
 			} else {
 				// case 3: candidate neither was nor will be member of TopCandidates
@@ -2196,7 +2196,7 @@ pub mod pallet {
 				// leave the set of delegators because no delegations left
 				Self::delegator_leaves_collator(acc.clone(), collator)?;
 				DelegatorState::<T>::remove(&acc);
-				Self::deposit_event(Event::DelegatorLeft(acc, old_total));
+				Self::deposit_event(RuntimeEvent::DelegatorLeft(acc, old_total));
 			} else {
 				// can never fail iff MinDelegatorStake == MinDelegation
 				ensure!(remaining >= T::MinDelegatorStake::get(), Error::<T>::NomStakeBelowMin);
@@ -2254,7 +2254,7 @@ pub mod pallet {
 			}
 			CandidatePool::<T>::insert(&collator, state);
 
-			Self::deposit_event(Event::DelegatorLeftCollator(
+			Self::deposit_event(RuntimeEvent::DelegatorLeftCollator(
 				delegator,
 				collator,
 				delegator_stake,
@@ -2388,7 +2388,7 @@ pub mod pallet {
 				// update storage of kicked delegator
 				let kicked_delegator = Self::prep_kick_delegator(&stake_to_remove, &state.id)?;
 
-				Self::deposit_event(Event::DelegationReplaced(
+				Self::deposit_event(RuntimeEvent::DelegationReplaced(
 					stake.owner,
 					stake.amount,
 					stake_to_remove.owner,
@@ -2623,7 +2623,7 @@ pub mod pallet {
 		fn do_reward(who: &T::AccountId, reward: BalanceOf<T>) {
 			// mint
 			if let Ok(imb) = T::Currency::deposit_into_existing(who, reward) {
-				Self::deposit_event(Event::Rewarded(who.clone(), imb.peek()));
+				Self::deposit_event(RuntimeEvent::Rewarded(who.clone(), imb.peek()));
 			}
 		}
 
@@ -2789,7 +2789,7 @@ pub mod pallet {
 				<ForceNewRound<T>>::put(false);
 				round.update(now);
 				<Round<T>>::put(round);
-				Self::deposit_event(Event::NewRound(round.first, round.current));
+				Self::deposit_event(RuntimeEvent::NewRound(round.first, round.current));
 				true
 			} else {
 				false

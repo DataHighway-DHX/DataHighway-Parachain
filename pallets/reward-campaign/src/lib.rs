@@ -107,8 +107,8 @@ pub mod pallet {
     #[pallet::getter(fn get_reward_info)]
     pub type RewardInfo<T: Config> = StorageMap<_, Blake2_128Concat, CampaignIdOf<T>, CampaignRewardFor<T>>;
 
-    /// Map the pair of campaign_id and contributer accountId to
-    /// the details of how much and how this contributer is to be rewarded
+    /// Map the pair of campaign_id and contributor accountId to
+    /// the details of how much and how this contributor is to be rewarded
     #[pallet::storage]
     #[pallet::getter(fn get_contribution)]
     pub type Contribution<T> =
@@ -128,26 +128,26 @@ pub mod pallet {
         CampaignWiped(CampaignIdOf<T>),
         /// Campaign have been discarded
         CampaignDiscarded(CampaignIdOf<T>),
-        /// A contributer received instant amount of reward
+        /// A contributor received instant amount of reward
         InstantRewarded {
             campaign_id: CampaignIdOf<T>,
-            contributer: AccountIdOf<T>,
+            contributor: AccountIdOf<T>,
         },
         /// Vesting schdule of vesting amount have been applied to user
         VestingScheduleApplied {
             campaign_id: CampaignIdOf<T>,
-            contributer: AccountIdOf<T>,
+            contributor: AccountIdOf<T>,
         },
-        /// A contributer have been added as rewardee
+        /// A contributor have been added as rewardee
         ContributerAdded {
             campaign_id: CampaignIdOf<T>,
-            contributer: AccountIdOf<T>,
+            contributor: AccountIdOf<T>,
             amount: BalanceOf<T>,
         },
-        /// A contributer have been removed from campaign
+        /// A contributor have been removed from campaign
         ContributerKicked {
             campaign_id: CampaignIdOf<T>,
-            contributer: AccountIdOf<T>,
+            contributor: AccountIdOf<T>,
         },
     }
 
@@ -162,7 +162,7 @@ pub mod pallet {
         RewardCampaignExists,
         /// This user have made no contribution
         NoContribution,
-        /// This contributer already exists
+        /// This contributor already exists
         ContributerExists,
         /// Campaign have been locked
         CampaignLocked,
@@ -172,16 +172,16 @@ pub mod pallet {
         CampaignWiped,
         /// This crowdloan is in one of read-only state
         ReadOnlyCampaign,
-        /// This campaign is not yet in claimable state for contributers
+        /// This campaign is not yet in claimable state for contributors
         CampaignNotLocked,
         /// This campaign cannot be locked
         NonLockableCampaign,
-        /// This Reward have been taken by this contributer
+        /// This Reward have been taken by this contributor
         RewardTaken,
         CanotSplitAmount,
-        /// This campaign is not empty. i.e some contributers exists
+        /// This campaign is not empty. i.e some contributors exists
         NonEmptyCampaign,
-        /// Some contributer have not claimed their reward yet
+        /// Some contributor have not claimed their reward yet
         UnclaimedContribution,
         /// Campaign is not in claimable state
         NonClaimableCampaign,
@@ -269,19 +269,19 @@ pub mod pallet {
             Ok(())
         }
 
-        /// Add a user `contributer` as a rewardee of writeable campaign `campaign_id`
+        /// Add a user `contributor` as a rewardee of writeable campaign `campaign_id`
         /// with the total reward amount of `amount`
-        #[pallet::weight(<T as Config>::WeightInfo::add_contributer())]
-        pub fn add_contributer(
+        #[pallet::weight(<T as Config>::WeightInfo::add_contributor())]
+        pub fn add_contributor(
             origin: OriginFor<T>,
             campaign_id: CampaignIdOf<T>,
-            contributer: AccountIdOf<T>,
+            contributor: AccountIdOf<T>,
             amount: BalanceOf<T>,
         ) -> DispatchResult {
             Self::ensure_hoster(origin, campaign_id)?;
             Self::ensure_campaign_writable(&campaign_id)?;
 
-            ensure!(!<Contribution<T>>::contains_key(&campaign_id, &contributer), <Error<T>>::ContributerExists);
+            ensure!(!<Contribution<T>>::contains_key(&campaign_id, &contributor), <Error<T>>::ContributerExists);
 
             let campaign_info = Self::get_reward_info(&campaign_id).ok_or(<Error<T>>::NoRewardCampaign)?;
             let reward_unit = functions::construct_reward_unit::<T>(
@@ -291,33 +291,33 @@ pub mod pallet {
                 campaign_info.end_target,
             )?;
 
-            <Contribution<T>>::insert(&campaign_id, &contributer, reward_unit);
+            <Contribution<T>>::insert(&campaign_id, &contributor, reward_unit);
 
             Self::deposit_event(Event::<T>::ContributerAdded {
                 campaign_id,
-                contributer,
+                contributor,
                 amount,
             });
             Ok(())
         }
 
-        /// remove user `contributer` under unlocked campaign `campaign_id`
-        #[pallet::weight(<T as Config>::WeightInfo::remove_contributer())]
-        pub fn remove_contributer(
+        /// remove user `contributor` under unlocked campaign `campaign_id`
+        #[pallet::weight(<T as Config>::WeightInfo::remove_contributor())]
+        pub fn remove_contributor(
             origin: OriginFor<T>,
             campaign_id: CampaignIdOf<T>,
-            contributer: AccountIdOf<T>,
+            contributor: AccountIdOf<T>,
         ) -> DispatchResult {
             Self::ensure_hoster(origin, campaign_id)?;
             Self::ensure_campaign_writable(&campaign_id)?;
 
-            ensure!(<Contribution<T>>::contains_key(&campaign_id, &contributer), <Error<T>>::NoContribution);
+            ensure!(<Contribution<T>>::contains_key(&campaign_id, &contributor), <Error<T>>::NoContribution);
 
-            <Contribution<T>>::remove(&campaign_id, &contributer);
+            <Contribution<T>>::remove(&campaign_id, &contributor);
 
             Self::deposit_event(Event::<T>::ContributerKicked {
                 campaign_id,
-                contributer,
+                contributor,
             });
             Ok(())
         }
@@ -335,7 +335,7 @@ pub mod pallet {
         }
 
         /// discard the in-progress campaign information of `campaign_id`
-        /// and remove all the contributers and reward details from chain
+        /// and remove all the contributors and reward details from chain
         #[pallet::weight(10_0000)]
         pub fn discard_campaign(origin: OriginFor<T>, campaign_id: CampaignIdOf<T>) -> DispatchResult {
             Self::ensure_hoster(origin, campaign_id)?;
@@ -351,7 +351,7 @@ pub mod pallet {
         }
 
         /// wipe the campaign under `campaign_id` after all the
-        /// contributers have claimed their reward
+        /// contributors have claimed their reward
         /// this will still keep the status as `Wiped`
         #[pallet::weight(<T as Config>::WeightInfo::wipe_campaign())]
         pub fn wipe_campaign(origin: OriginFor<T>, campaign_id: CampaignIdOf<T>) -> DispatchResult {
@@ -371,22 +371,22 @@ pub mod pallet {
         /// they are entitled to receive in campaign `campaign_id`
         #[pallet::weight(<T as Config>::WeightInfo::get_instant_reward())]
         pub fn get_instant_reward(origin: OriginFor<T>, campaign_id: CampaignIdOf<T>) -> DispatchResult {
-            let contributer = ensure_signed(origin)?;
+            let contributor = ensure_signed(origin)?;
             Self::ensure_campaign_claimable(&campaign_id)?;
             let InstantEnsuredResultOf::<T> {
                 new_status,
                 instant_amount,
-            } = Self::ensure_instant_claimable(&campaign_id, &contributer)?;
+            } = Self::ensure_instant_claimable(&campaign_id, &contributor)?;
 
             let reward_info = Self::get_reward_info(&campaign_id).ok_or(<Error<T>>::NoRewardCampaign)?;
 
-            functions::do_instant_reward::<T>(&reward_info.reward_source, &contributer, instant_amount)?;
+            functions::do_instant_reward::<T>(&reward_info.reward_source, &contributor, instant_amount)?;
 
-            Self::update_contributer_status(&campaign_id, &contributer, new_status);
+            Self::update_contributor_status(&campaign_id, &contributor, new_status);
 
             Self::deposit_event(Event::<T>::InstantRewarded {
                 campaign_id,
-                contributer,
+                contributor,
             });
             Ok(())
         }
@@ -395,29 +395,29 @@ pub mod pallet {
         /// they are entitled to receive in campaign `campaign_id`
         #[pallet::weight(<T as Config>::WeightInfo::get_vested_reward())]
         pub fn get_vested_reward(origin: OriginFor<T>, campaign_id: CampaignIdOf<T>) -> DispatchResult {
-            let contributer = ensure_signed(origin)?;
+            let contributor = ensure_signed(origin)?;
             Self::ensure_campaign_claimable(&campaign_id)?;
             let VestedEnsuredResultOf::<T> {
                 new_status,
                 vesting_amount,
                 per_block,
-            } = Self::ensure_vested_claimable(&campaign_id, &contributer)?;
+            } = Self::ensure_vested_claimable(&campaign_id, &contributor)?;
 
             let reward_info = Self::get_reward_info(&campaign_id).ok_or(<Error<T>>::NoRewardCampaign)?;
 
             functions::do_vesting_reward::<T>(
                 reward_info.reward_source.clone(),
                 reward_info.starts_from,
-                contributer.clone(),
+                contributor.clone(),
                 vesting_amount,
                 per_block,
             )?;
 
-            Self::update_contributer_status(&campaign_id, &contributer, new_status);
+            Self::update_contributor_status(&campaign_id, &contributor, new_status);
 
             Self::deposit_event(Event::<T>::VestingScheduleApplied {
                 campaign_id,
-                contributer,
+                contributor,
             });
             Ok(())
         }
@@ -449,7 +449,7 @@ pub mod pallet {
         }
 
         /// ensure campaign `campaign_id` is in state
-        /// where contributer can claim the reward they are entitled to
+        /// where contributor can claim the reward they are entitled to
         fn ensure_campaign_claimable(campaign_id: &CampaignIdOf<T>) -> DispatchResult {
             ensure!(
                 Self::get_campaign_status(campaign_id).ok_or(<Error<T>>::NoRewardCampaign)? ==
@@ -500,12 +500,12 @@ pub mod pallet {
             Ok(())
         }
 
-        /// ensure `contributer` can claim instant_reward under `campaign_id`
+        /// ensure `contributor` can claim instant_reward under `campaign_id`
         fn ensure_instant_claimable(
             campaign_id: &CampaignIdOf<T>,
-            contributer: &AccountIdOf<T>,
+            contributor: &AccountIdOf<T>,
         ) -> Result<InstantEnsuredResultOf<T>, DispatchError> {
-            let info = Self::get_contribution(campaign_id, contributer).ok_or(Error::<T>::NoContribution)?;
+            let info = Self::get_contribution(campaign_id, contributor).ok_or(Error::<T>::NoContribution)?;
 
             let new_status = match info.status {
                 ClaimerStatus::Unprocessed => Ok(ClaimerStatus::DoneInstant),
@@ -519,12 +519,12 @@ pub mod pallet {
             })
         }
 
-        /// ensure `contributer` can claim instant_reward under `campaign_id`
+        /// ensure `contributor` can claim instant_reward under `campaign_id`
         fn ensure_vested_claimable(
             campaign_id: &CampaignIdOf<T>,
-            contributer: &AccountIdOf<T>,
+            contributor: &AccountIdOf<T>,
         ) -> Result<VestedEnsuredResultOf<T>, DispatchError> {
-            let info = Self::get_contribution(campaign_id, contributer).ok_or(Error::<T>::NoContribution)?;
+            let info = Self::get_contribution(campaign_id, contributor).ok_or(Error::<T>::NoContribution)?;
 
             let new_status = match info.status {
                 ClaimerStatus::Unprocessed => Ok(ClaimerStatus::DoneVesting),
@@ -539,13 +539,13 @@ pub mod pallet {
             })
         }
 
-        /// update `contributer` status under `campaign_id` to `new_status`
-        fn update_contributer_status(
+        /// update `contributor` status under `campaign_id` to `new_status`
+        fn update_contributor_status(
             campaign_id: &CampaignIdOf<T>,
-            contributer: &AccountIdOf<T>,
+            contributor: &AccountIdOf<T>,
             new_status: ClaimerStatus,
         ) {
-            <Contribution<T>>::mutate(&campaign_id, &contributer, |state| {
+            <Contribution<T>>::mutate(&campaign_id, &contributor, |state| {
                 state.as_mut().map(|state| {
                     state.status = new_status;
                 });

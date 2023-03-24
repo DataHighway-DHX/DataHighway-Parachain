@@ -92,8 +92,8 @@ benchmarks! {
         );
     }
 
-    add_contributer {
-        let contributer = make_account::<T>(22);
+    add_contributor {
+        let contributor = make_account::<T>(22);
         let caller = make_account::<T>(1);
         let campaign_id: types::CampaignIdOf<T> = 2_u32.into();
         let amount: types::BalanceOf<T> = Bounded::max_value();
@@ -112,15 +112,15 @@ benchmarks! {
             )
         );
 
-    }: _(RawOrigin::Signed(caller.clone()), campaign_id, contributer.clone(), amount)
+    }: _(RawOrigin::Signed(caller.clone()), campaign_id, contributor.clone(), amount)
     verify {
         assert!(
-            CampaignReward::<T>::get_contribution(campaign_id, contributer).is_some()
+            CampaignReward::<T>::get_contribution(campaign_id, contributor).is_some()
         );
     }
 
-    remove_contributer {
-        let contributer = make_account::<T>(22);
+    remove_contributor {
+        let contributor = make_account::<T>(22);
         let caller = make_account::<T>(1);
         let campaign_id: types::CampaignIdOf<T> = 2_u32.into();
         let params = types::CreateCampaignParamFor::<T> {
@@ -138,25 +138,25 @@ benchmarks! {
             )
         );
         assert_ok!(
-            CampaignReward::<T>::add_contributer(RawOrigin::Signed(caller.clone()).into(),
+            CampaignReward::<T>::add_contributor(RawOrigin::Signed(caller.clone()).into(),
                 campaign_id,
-                contributer.clone(),
+                contributor.clone(),
                 Bounded::max_value(),
             )
         );
         assert!(
-            CampaignReward::<T>::get_contribution::<_, types::AccountIdOf<T>>(campaign_id, contributer.clone()).is_some(),
+            CampaignReward::<T>::get_contribution::<_, types::AccountIdOf<T>>(campaign_id, contributor.clone()).is_some(),
         );
-    }: _(RawOrigin::Signed(caller.clone()), campaign_id, contributer.clone())
+    }: _(RawOrigin::Signed(caller.clone()), campaign_id, contributor.clone())
     verify {
         assert_eq!(
-            CampaignReward::<T>::get_contribution::<_, types::AccountIdOf<T>>(campaign_id, contributer.clone()),
+            CampaignReward::<T>::get_contribution::<_, types::AccountIdOf<T>>(campaign_id, contributor.clone()),
             None,
         );
     }
 
     get_instant_reward {
-        let contributer = make_account::<T>(22);
+        let contributor = make_account::<T>(22);
         let caller = make_account::<T>(1);
         let campaign_id: types::CampaignIdOf<T> = 10_u32.into();
         let params = types::CreateCampaignParamFor::<T> {
@@ -175,26 +175,26 @@ benchmarks! {
             )
         );
         assert_ok!(
-            CampaignReward::<T>::add_contributer(RawOrigin::Signed(caller.clone()).into(),
+            CampaignReward::<T>::add_contributor(RawOrigin::Signed(caller.clone()).into(),
                 campaign_id,
-                contributer.clone(),
+                contributor.clone(),
                 ( DHX_UNIT * 5 ).into(),
             )
         );
         assert_ok!(
             CampaignReward::<T>::lock_campaign(RawOrigin::Signed(caller.clone()).into(), campaign_id.clone())
         );
-    }: _(RawOrigin::Signed(contributer.clone()), campaign_id)
+    }: _(RawOrigin::Signed(contributor.clone()), campaign_id)
     verify {
         assert_eq!(
-            CampaignReward::<T>::get_contribution(campaign_id, contributer.clone())
+            CampaignReward::<T>::get_contribution(campaign_id, contributor.clone())
                 .map(|p| p.status),
             Some(types::ClaimerStatus::DoneInstant)
         );
     }
 
     get_vested_reward {
-        let contributer = make_account::<T>(22);
+        let contributor = make_account::<T>(22);
         let caller = make_account::<T>(1);
         let campaign_id: types::CampaignIdOf<T> = 10_u32.into();
         let params = types::CreateCampaignParamFor::<T> {
@@ -213,19 +213,19 @@ benchmarks! {
             )
         );
         assert_ok!(
-            CampaignReward::<T>::add_contributer(RawOrigin::Signed(caller.clone()).into(),
+            CampaignReward::<T>::add_contributor(RawOrigin::Signed(caller.clone()).into(),
                 campaign_id,
-                contributer.clone(),
+                contributor.clone(),
                 <types::BalanceOf<T> as Bounded>::max_value() - 10_000_000_u32.into(),
             )
         );
         assert_ok!(
             CampaignReward::<T>::lock_campaign(RawOrigin::Signed(caller.clone()).into(), campaign_id.clone())
         );
-    }: _(RawOrigin::Signed(contributer.clone()), campaign_id)
+    }: _(RawOrigin::Signed(contributor.clone()), campaign_id)
     verify {
         assert_eq!(
-            CampaignReward::<T>::get_contribution(campaign_id, contributer.clone())
+            CampaignReward::<T>::get_contribution(campaign_id, contributor.clone())
                 .map(|p| p.status),
             Some(types::ClaimerStatus::DoneVesting)
         );
@@ -248,11 +248,11 @@ benchmarks! {
             )
         );
 
-        for contributer in 0_u32 .. 10_u32 {
+        for contributor in 0_u32 .. 10_u32 {
             assert_ok!(
-                CampaignReward::<T>::add_contributer(RawOrigin::Signed(caller.clone()).into(),
+                CampaignReward::<T>::add_contributor(RawOrigin::Signed(caller.clone()).into(),
                     campaign_id.into(),
-                    make_account::<T>(contributer),
+                    make_account::<T>(contributor),
                     ( DHX_UNIT * 5 ).into()
                 )
             );
@@ -266,7 +266,7 @@ benchmarks! {
     }
 
     // TODO:
-    // make weight dependent on number of contributer
+    // make weight dependent on number of contributor
     // that exists in this campaign
     wipe_campaign {
         let campaign_id: types::CampaignIdOf<T> = 3_u32.into();
@@ -285,8 +285,8 @@ benchmarks! {
             )
         );
 
-        for contributer in 0_u32 .. 10_u32 {
-            crate::Contribution::<T>::insert(campaign_id.clone(), make_account::<T>(contributer), types::RewardUnitOf::<T> {
+        for contributor in 0_u32 .. 10_u32 {
+            crate::Contribution::<T>::insert(campaign_id.clone(), make_account::<T>(contributor), types::RewardUnitOf::<T> {
                 instant_amount: 10_000_u32.into(),
                 vesting_amount: 10_000_u32.into(),
                 per_block: 100_000_u32.into(),
@@ -320,8 +320,8 @@ benchmarks! {
             )
         );
 
-        for contributer in 0_u32 .. 10_u32 {
-            crate::Contribution::<T>::insert(campaign_id.clone(), make_account::<T>(contributer), types::RewardUnitOf::<T> {
+        for contributor in 0_u32 .. 10_u32 {
+            crate::Contribution::<T>::insert(campaign_id.clone(), make_account::<T>(contributor), types::RewardUnitOf::<T> {
                 instant_amount: 10_000_u32.into(),
                 vesting_amount: 10_000_u32.into(),
                 per_block: 100_000_u32.into(),

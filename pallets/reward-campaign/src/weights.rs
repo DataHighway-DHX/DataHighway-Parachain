@@ -37,8 +37,8 @@ use sp_std::marker::PhantomData;
 pub trait WeightInfo {
 	fn start_new_campaign() -> Weight;
 	fn update_campaign() -> Weight;
-	fn add_contributer() -> Weight;
-	fn remove_contributer() -> Weight;
+	fn add_contributor() -> Weight;
+	fn remove_contributor() -> Weight;
 	fn get_instant_reward() -> Weight;
 	fn get_vested_reward() -> Weight;
 	fn lock_campaign() -> Weight;
@@ -70,7 +70,7 @@ impl<T: frame_system::Config> WeightInfo for SubstrateWeight<T> {
 	// Storage: Reward RewardInfo (r:1 w:0)
 	// Storage: Reward CampaignStatus (r:1 w:0)
 	// Storage: Reward Contribution (r:1 w:1)
-	fn add_contributer() -> Weight {
+	fn add_contributor() -> Weight {
 		// Minimum execution time:  nanoseconds.
 		Weight::from_ref_time(72_551_000_u64)
 			.saturating_add(T::DbWeight::get().reads(3_u64))
@@ -79,7 +79,7 @@ impl<T: frame_system::Config> WeightInfo for SubstrateWeight<T> {
 	// Storage: Reward RewardInfo (r:1 w:0)
 	// Storage: Reward CampaignStatus (r:1 w:0)
 	// Storage: Reward Contribution (r:1 w:1)
-	fn remove_contributer() -> Weight {
+	fn remove_contributor() -> Weight {
 		// Minimum execution time:  nanoseconds.
 		Weight::from_ref_time(71_797_000_u64)
 			.saturating_add(T::DbWeight::get().reads(3_u64))
@@ -157,7 +157,7 @@ impl WeightInfo for () {
 	// Storage: Reward RewardInfo (r:1 w:0)
 	// Storage: Reward CampaignStatus (r:1 w:0)
 	// Storage: Reward Contribution (r:1 w:1)
-	fn add_contributer() -> Weight {
+	fn add_contributor() -> Weight {
 		// Minimum execution time:  nanoseconds.
 		Weight::from_ref_time(72_551_000_u64)
 			.saturating_add(RocksDbWeight::get().reads(3_u64))
@@ -166,7 +166,7 @@ impl WeightInfo for () {
 	// Storage: Reward RewardInfo (r:1 w:0)
 	// Storage: Reward CampaignStatus (r:1 w:0)
 	// Storage: Reward Contribution (r:1 w:1)
-	fn remove_contributer() -> Weight {
+	fn remove_contributor() -> Weight {
 		// Minimum execution time:  nanoseconds.
 		Weight::from_ref_time(71_797_000_u64)
 			.saturating_add(RocksDbWeight::get().reads(3_u64))

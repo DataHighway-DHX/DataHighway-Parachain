@@ -22,7 +22,7 @@ use sp_runtime::{
 
 use crate::types;
 
-/// input details of how a contributer is supposed to receive his reward
+/// input details of how a contributor is supposed to receive his reward
 /// this will output `SplittedAmount`
 #[cfg_attr(test, derive(Clone, Debug))]
 pub struct SplitableAmount<BlockNumber, Balance> {
@@ -32,7 +32,7 @@ pub struct SplitableAmount<BlockNumber, Balance> {
     pub instant_percentage: types::SmallRational,
 }
 
-/// output of how a contributer is supposed to receive his reward
+/// output of how a contributor is supposed to receive his reward
 /// this will be the output generated from `SplittableAmount`
 #[cfg_attr(test, derive(Eq, PartialEq, Debug, Clone))]
 pub struct SplittedAmount<Balance> {
@@ -144,8 +144,8 @@ pub fn do_vesting_reward<T: crate::Config>(
         let vesting_info = types::VestingInfoOf::<T>::new(vesting_amount, per_block, starts_from);
 
         let creditor_origin = <T as frame_system::Config>::Origin::from(frame_system::RawOrigin::Signed(reward_source));
-        let contributer_lookup = <T::Lookup as StaticLookup>::unlookup(user);
+        let contributor_lookup = <T::Lookup as StaticLookup>::unlookup(user);
 
-        pallet_vesting::Pallet::<T>::vested_transfer(creditor_origin, contributer_lookup, vesting_info)
+        pallet_vesting::Pallet::<T>::vested_transfer(creditor_origin, contributor_lookup, vesting_info)
     }
 }

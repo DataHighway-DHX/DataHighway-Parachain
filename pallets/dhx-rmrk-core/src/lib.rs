@@ -10,21 +10,30 @@ mod tests;
 
 #[frame_support::pallet]
 pub mod pallet {
-	use frame_support::pallet_prelude::OptionQuery;
-    use frame_support::pallet_prelude::*;
-    use frame_system::ensure_root;
-    use frame_system::pallet_prelude::*;
-    use frame_support::{transactional, sp_runtime::Permill};
-    use pallet_rmrk_core::BoundedResourceInfoTypeOf;
-    use pallet_rmrk_core::BoundedCollectionSymbolOf;
-    use pallet_rmrk_core::WeightInfo;
+    use frame_support::{
+        pallet_prelude::{
+            OptionQuery,
+            *,
+        },
+        sp_runtime::Permill,
+        transactional,
+    };
+    use frame_system::{
+        ensure_root,
+        pallet_prelude::*,
+    };
+    use pallet_rmrk_core::{
+        BoundedCollectionSymbolOf,
+        BoundedResourceInfoTypeOf,
+        WeightInfo,
+    };
 
     type NftId<T> = <T as pallet_uniques::pallet::Config>::ItemId;
     type CollectionId<T> = <T as pallet_uniques::pallet::Config>::CollectionId;
 
-	#[pallet::pallet]
-	#[pallet::generate_store(pub(super) trait Store)]
-	pub struct Pallet<T>(_);
+    #[pallet::pallet]
+    #[pallet::generate_store(pub(super) trait Store)]
+    pub struct Pallet<T>(_);
 
     #[pallet::genesis_config]
     pub struct GenesisConfig<T: Config> {
@@ -33,27 +42,27 @@ pub mod pallet {
 
     #[cfg(feature = "std")]
     impl<T: Config> Default for GenesisConfig<T> {
-	    fn default() -> Self {
-		    Self {
+        fn default() -> Self {
+            Self {
                 allowed_producers: vec![],
             }
-	    }
+        }
     }
 
     #[pallet::genesis_build]
     impl<T: Config> GenesisBuild<T> for GenesisConfig<T> {
-	    fn build(&self) {
-	        for producer in &self.allowed_producers {
+        fn build(&self) {
+            for producer in &self.allowed_producers {
                 <AuthorisedProducers<T>>::insert(producer, ());
             }
         }
     }
 
-	/// Configure the pallet by specifying the parameters and types on which it depends.
-	#[pallet::config]
-	pub trait Config: frame_system::Config + pallet_rmrk_core::Config {
+    /// Configure the pallet by specifying the parameters and types on which it depends.
+    #[pallet::config]
+    pub trait Config: frame_system::Config + pallet_rmrk_core::Config {
         /// Because this pallet emits events, it depends on the runtime's definition of an event.
-		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
+        type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
     }
 
     #[pallet::error]
@@ -75,37 +84,37 @@ pub mod pallet {
         RemovedAuthorisedProducer(T::AccountId),
     }
 
-
     #[pallet::storage]
     #[pallet::getter(fn get_authorised_producer)]
-    pub type AuthorisedProducers<T> = StorageMap<_, Twox64Concat, <T as frame_system::Config>::AccountId, (), OptionQuery>;
+    pub type AuthorisedProducers<T> =
+        StorageMap<_, Twox64Concat, <T as frame_system::Config>::AccountId, (), OptionQuery>;
 
-	#[pallet::call]
-	impl<T: Config> Pallet<T> {
+    #[pallet::call]
+    impl<T: Config> Pallet<T> {
         // Call signature, fee & else should be same as actual rmrk-core
         //
         /// Mints an NFT in the specified collection
-		/// Sets metadata and the royalty attribute
-		///
-		/// Parameters:
-		/// - `collection_id`: The collection of the asset to be minted.
-		/// - `nft_id`: The nft value of the asset to be minted.
-		/// - `recipient`: Receiver of the royalty
-		/// - `royalty`: Permillage reward from each trade for the Recipient
-		/// - `metadata`: Arbitrary data about an nft, e.g. IPFS hash
+        /// Sets metadata and the royalty attribute
+        ///
+        /// Parameters:
+        /// - `collection_id`: The collection of the asset to be minted.
+        /// - `nft_id`: The nft value of the asset to be minted.
+        /// - `recipient`: Receiver of the royalty
+        /// - `royalty`: Permillage reward from each trade for the Recipient
+        /// - `metadata`: Arbitrary data about an nft, e.g. IPFS hash
         #[pallet::weight(<T as pallet_rmrk_core::Config>::WeightInfo::mint_nft() )]
-		#[transactional]
+        #[transactional]
         pub fn mint_nft(
-			origin: OriginFor<T>,
-			owner: Option<T::AccountId>,
-			nft_id: NftId<T>,
-			collection_id: CollectionId<T>,
-			royalty_recipient: Option<T::AccountId>,
-			royalty: Option<Permill>,
-			metadata: BoundedVec<u8, T::StringLimit>,
-			transferable: bool,
-			resources: Option<BoundedResourceInfoTypeOf<T>>,
-		) -> DispatchResult {
+            origin: OriginFor<T>,
+            owner: Option<T::AccountId>,
+            nft_id: NftId<T>,
+            collection_id: CollectionId<T>,
+            royalty_recipient: Option<T::AccountId>,
+            royalty: Option<Permill>,
+            metadata: BoundedVec<u8, T::StringLimit>,
+            transferable: bool,
+            resources: Option<BoundedResourceInfoTypeOf<T>>,
+        ) -> DispatchResult {
             Self::ensure_authorised(origin.clone())?;
 
             pallet_rmrk_core::Pallet::<T>::mint_nft(
@@ -117,32 +126,32 @@ pub mod pallet {
                 royalty,
                 metadata,
                 transferable,
-                resources
+                resources,
             )
         }
 
         /// Mints an NFT in the specified collection directly to another NFT
-		/// Sets metadata and the royalty attribute
-		///
-		/// Parameters:
-		/// - `collection_id`: The class of the asset to be minted.
-		/// - `nft_id`: The nft value of the asset to be minted.
-		/// - `recipient`: Receiver of the royalty
-		/// - `royalty`: Permillage reward from each trade for the Recipient
-		/// - `metadata`: Arbitrary data about an nft, e.g. IPFS hash
-		#[pallet::weight(<T as pallet_rmrk_core::Config>::WeightInfo::mint_nft_directly_to_nft())]
-		#[transactional]
-		pub fn mint_nft_directly_to_nft(
-			origin: OriginFor<T>,
-			owner: (T::CollectionId, T::ItemId),
-			nft_id: T::ItemId,
-			collection_id: T::CollectionId,
-			royalty_recipient: Option<T::AccountId>,
-			royalty: Option<Permill>,
-			metadata: BoundedVec<u8, T::StringLimit>,
-			transferable: bool,
-			resources: Option<BoundedResourceInfoTypeOf<T>>,
-		) -> DispatchResult {
+        /// Sets metadata and the royalty attribute
+        ///
+        /// Parameters:
+        /// - `collection_id`: The class of the asset to be minted.
+        /// - `nft_id`: The nft value of the asset to be minted.
+        /// - `recipient`: Receiver of the royalty
+        /// - `royalty`: Permillage reward from each trade for the Recipient
+        /// - `metadata`: Arbitrary data about an nft, e.g. IPFS hash
+        #[pallet::weight(<T as pallet_rmrk_core::Config>::WeightInfo::mint_nft_directly_to_nft())]
+        #[transactional]
+        pub fn mint_nft_directly_to_nft(
+            origin: OriginFor<T>,
+            owner: (T::CollectionId, T::ItemId),
+            nft_id: T::ItemId,
+            collection_id: T::CollectionId,
+            royalty_recipient: Option<T::AccountId>,
+            royalty: Option<Permill>,
+            metadata: BoundedVec<u8, T::StringLimit>,
+            transferable: bool,
+            resources: Option<BoundedResourceInfoTypeOf<T>>,
+        ) -> DispatchResult {
             Self::ensure_authorised(origin.clone())?;
 
             pallet_rmrk_core::Pallet::<T>::mint_nft_directly_to_nft(
@@ -154,20 +163,20 @@ pub mod pallet {
                 royalty,
                 metadata,
                 transferable,
-                resources
+                resources,
             )
         }
 
         /// Create a collection
-		#[pallet::weight(<T as pallet_rmrk_core::Config>::WeightInfo::create_collection())]
-		#[transactional]
-		pub fn create_collection(
-			origin: OriginFor<T>,
-			collection_id: T::CollectionId,
-			metadata: BoundedVec<u8, T::StringLimit>,
-			max: Option<u32>,
-			symbol: BoundedCollectionSymbolOf<T>,
-		) -> DispatchResult {
+        #[pallet::weight(<T as pallet_rmrk_core::Config>::WeightInfo::create_collection())]
+        #[transactional]
+        pub fn create_collection(
+            origin: OriginFor<T>,
+            collection_id: T::CollectionId,
+            metadata: BoundedVec<u8, T::StringLimit>,
+            max: Option<u32>,
+            symbol: BoundedCollectionSymbolOf<T>,
+        ) -> DispatchResult {
             Self::ensure_authorised(origin.clone())?;
 
             pallet_rmrk_core::Pallet::<T>::create_collection(origin, collection_id, metadata, max, symbol)
@@ -194,13 +203,12 @@ pub mod pallet {
             Self::deposit_event(<Event<T>>::RemovedAuthorisedProducer(producer));
             Ok(())
         }
-	}
+    }
 
-	impl<T: Config> Pallet<T> {
+    impl<T: Config> Pallet<T> {
         fn ensure_authorised(origin: OriginFor<T>) -> DispatchResult {
             let caller = ensure_signed(origin)?;
-            Self::get_authorised_producer(caller)
-                .ok_or(Error::<T>::InsufficientPermission.into())
+            Self::get_authorised_producer(caller).ok_or(Error::<T>::InsufficientPermission.into())
         }
     }
 }

@@ -1,5 +1,5 @@
-Version 3.6.1
+Version 3.7.1
 
-Automation
-- update the release job to create a release and upload the linux artifact to it
+What's changed?
+- Automate release creation and assets upload
 

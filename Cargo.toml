@@ -9,4 +9,5 @@ members = [
     'pallets/parachain-staking',
     'pallets/pallet-inflation',
     'pallets/dhx-rmrk-core',
+    'pallets/reward-campaign',
 ]

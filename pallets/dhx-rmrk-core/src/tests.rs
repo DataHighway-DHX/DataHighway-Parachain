@@ -1,5 +1,11 @@
-use crate::{mock::*, Error};
-use frame_support::{assert_noop, assert_ok};
+use crate::{
+    mock::*,
+    Error,
+};
+use frame_support::{
+    assert_noop,
+    assert_ok,
+};
 use frame_system::ensure_signed;
 use sp_runtime::DispatchError;
 
@@ -13,17 +19,7 @@ fn permissionned_origin() {
     // These calls should fail with insufficient permission
     new_test_ext().execute_with(|| {
         assert_noop!(
-            DhxRmrkCore::mint_nft(
-                denied_origin.clone(),
-                None,
-                1,
-                2,
-                None,
-                None,
-                Default::default(),
-                false,
-                None,
-            ),
+            DhxRmrkCore::mint_nft(denied_origin.clone(), None, 1, 2, None, None, Default::default(), false, None,),
             Error::<Test>::InsufficientPermission,
         );
 
@@ -43,13 +39,7 @@ fn permissionned_origin() {
         );
 
         assert_noop!(
-            DhxRmrkCore::create_collection(
-                denied_origin.clone(),
-                1,
-                Default::default(),
-                None,
-                Default::default(),
-            ),
+            DhxRmrkCore::create_collection(denied_origin.clone(), 1, Default::default(), None, Default::default(),),
             Error::<Test>::InsufficientPermission,
         );
     });
@@ -60,47 +50,44 @@ fn permissionned_origin() {
             let primary_nft_id = index as u32;
             let derived_nft_id = primary_nft_id + allowed_origins.len() as u32;
             let collection_id = index as u32;
-            assert_ok!(
-                Balances::set_balance(Origin::root(), ensure_signed(origin.clone()).unwrap(), 10u64.pow(18), 10),
-            );
+            assert_ok!(Balances::set_balance(
+                Origin::root(),
+                ensure_signed(origin.clone()).unwrap(),
+                10u64.pow(18),
+                10
+            ),);
 
-            assert_ok!(
-                DhxRmrkCore::create_collection(
-                    origin.clone(),
-                    collection_id,
-                    Default::default(),
-                    None,
-                    Default::default()
-                ),
-            );
+            assert_ok!(DhxRmrkCore::create_collection(
+                origin.clone(),
+                collection_id,
+                Default::default(),
+                None,
+                Default::default()
+            ),);
 
-            assert_ok!(
-                DhxRmrkCore::mint_nft(
-                    origin.clone(),
-                    None,
-                    primary_nft_id,
-                    collection_id,
-                    None,
-                    None,
-                    Default::default(),
-                    true,
-                    Default::default()
-                ),
-            );
+            assert_ok!(DhxRmrkCore::mint_nft(
+                origin.clone(),
+                None,
+                primary_nft_id,
+                collection_id,
+                None,
+                None,
+                Default::default(),
+                true,
+                Default::default()
+            ),);
 
-            assert_ok!(
-                DhxRmrkCore::mint_nft_directly_to_nft(
-                    origin.clone(),
-                    (collection_id, primary_nft_id),
-                    derived_nft_id,
-                    collection_id,
-                    None,
-                    None,
-                    Default::default(),
-                    true,
-                    Default::default()
-                ),
-            );
+            assert_ok!(DhxRmrkCore::mint_nft_directly_to_nft(
+                origin.clone(),
+                (collection_id, primary_nft_id),
+                derived_nft_id,
+                collection_id,
+                None,
+                None,
+                Default::default(),
+                true,
+                Default::default()
+            ),);
         }
     })
 }
@@ -121,14 +108,9 @@ pub fn allowed_producers_genesis() {
 pub fn allowed_procuer_removal() {
     new_test_ext().execute_with(|| {
         matches!(DhxRmrkCore::get_authorised_producer(&1), Some(_));
-        assert_noop!(
-            DhxRmrkCore::remove_producer(Origin::signed(10), 1),
-            DispatchError::BadOrigin
-        );
+        assert_noop!(DhxRmrkCore::remove_producer(Origin::signed(10), 1), DispatchError::BadOrigin);
 
-        assert_ok!(
-            DhxRmrkCore::remove_producer(Origin::root(), 1),
-        );
+        assert_ok!(DhxRmrkCore::remove_producer(Origin::root(), 1),);
         matches!(DhxRmrkCore::get_authorised_producer(&1), None);
     })
 }
@@ -137,14 +119,9 @@ pub fn allowed_procuer_removal() {
 pub fn allowed_producer_insertion() {
     new_test_ext().execute_with(|| {
         matches!(DhxRmrkCore::get_authorised_producer(&10), None);
-        assert_noop!(
-            DhxRmrkCore::add_producer(Origin::signed(1), 10),
-            DispatchError::BadOrigin,
-        );
+        assert_noop!(DhxRmrkCore::add_producer(Origin::signed(1), 10), DispatchError::BadOrigin,);
 
-        assert_ok!(
-            DhxRmrkCore::add_producer(Origin::root(), 10)
-        );
+        assert_ok!(DhxRmrkCore::add_producer(Origin::root(), 10));
         matches!(DhxRmrkCore::get_authorised_producer(&10), Some(_));
     });
 }

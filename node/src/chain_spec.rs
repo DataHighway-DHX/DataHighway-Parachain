@@ -8,27 +8,24 @@ use datahighway_parachain_runtime::{
     ElectionsConfig,
     GenesisConfig,
     IndicesConfig,
+    ParachainStakingConfig,
     SessionConfig,
     SessionKeys,
     SudoConfig,
     SystemConfig,
     TechnicalCommitteeConfig,
+    TechnicalMaxMembers,
     TechnicalMembershipConfig,
     TransactionPaymentConfig,
-    TreasuryConfig, ParachainStakingConfig, TechnicalMaxMembers,
+    TreasuryConfig,
 };
-use module_primitives::{
-    types::{
-        AccountId,
-        Balance,
-        Signature,
-    },
+use module_primitives::types::{
+    AccountId,
+    Balance,
+    Signature,
 };
 // required for AccountId::from_str
-use std::str::FromStr;
-use hex_literal::{
-    hex, // for parsing string literal at compile time use hex!("...");
-};
+use hex_literal::hex;
 use sc_chain_spec::{
     ChainSpecExtension,
     ChainSpecGroup,
@@ -40,20 +37,24 @@ use serde::{
     Serialize,
 };
 use sp_core::{
-    crypto::{ UncheckedInto},
+    crypto::UncheckedInto,
     sr25519,
     Pair,
     Public,
 };
-use sp_runtime::{AccountId32, BoundedVec};
-use sp_runtime::traits::{
-    IdentifyAccount,
-    Verify,
+use sp_runtime::{
+    traits::{
+        IdentifyAccount,
+        Verify,
+    },
+    AccountId32,
+    BoundedVec,
 };
 pub use sp_runtime::{
     Perbill,
     Permill,
 };
+use std::str::FromStr;
 
 const ROCOCO_DEV_PROTOCOL_ID: &str = "dhx-rococo-dev";
 const ROCOCO_LOCAL_PROTOCOL_ID: &str = "dhx-rococo-local";
@@ -78,9 +79,7 @@ const SAFE_XCM_VERSION: u32 = xcm::prelude::XCM_VERSION;
 
 /// Helper function to generate a crypto pair from seed
 pub fn get_public_from_seed<TPublic: Public>(seed: &str) -> <TPublic::Pair as Pair>::Public {
-    TPublic::Pair::from_string(&format!("//{}", seed), None)
-        .expect("static values are valid; qed")
-        .public()
+    TPublic::Pair::from_string(&format!("//{}", seed), None).expect("static values are valid; qed").public()
 }
 
 /// The extensions for the [`ChainSpec`].
@@ -121,7 +120,9 @@ where
 ///
 /// The input must be a tuple of individual keys (a single arg for now since we have just one key).
 pub fn datahighway_session_keys(keys: AuraId) -> SessionKeys {
-    SessionKeys { aura: keys }
+    SessionKeys {
+        aura: keys,
+    }
 }
 
 // DHX DAO Unlocked Reserves Balance
@@ -191,14 +192,8 @@ pub fn datahighway_rococo_development_config() -> ChainSpec {
             dev_genesis(
                 // Initial collators
                 vec![
-                    (
-                        get_account_id_from_seed::<sr25519::Public>("Alice"),
-                        get_collator_keys_from_seed("Alice"),
-                    ),
-                    (
-                        get_account_id_from_seed::<sr25519::Public>("Bob"),
-                        get_collator_keys_from_seed("Bob"),
-                    ),
+                    (get_account_id_from_seed::<sr25519::Public>("Alice"), get_collator_keys_from_seed("Alice")),
+                    (get_account_id_from_seed::<sr25519::Public>("Bob"), get_collator_keys_from_seed("Bob")),
                 ],
                 // Sudo root key
                 get_account_id_from_seed::<sr25519::Public>("Alice"),
@@ -260,14 +255,8 @@ pub fn datahighway_rococo_local_testnet_config() -> ChainSpec {
             testnet_genesis(
                 // Initial collators
                 vec![
-                    (
-                        get_account_id_from_seed::<sr25519::Public>("Alice"),
-                        get_collator_keys_from_seed("Alice"),
-                    ),
-                    (
-                        get_account_id_from_seed::<sr25519::Public>("Bob"),
-                        get_collator_keys_from_seed("Bob"),
-                    ),
+                    (get_account_id_from_seed::<sr25519::Public>("Alice"), get_collator_keys_from_seed("Alice")),
+                    (get_account_id_from_seed::<sr25519::Public>("Bob"), get_collator_keys_from_seed("Bob")),
                 ],
                 // Sudo root key
                 get_account_id_from_seed::<sr25519::Public>("Alice"),
@@ -329,14 +318,8 @@ pub fn datahighway_chachacha_development_config() -> ChainSpec {
             dev_genesis(
                 // Initial collators
                 vec![
-                    (
-                        get_account_id_from_seed::<sr25519::Public>("Alice"),
-                        get_collator_keys_from_seed("Alice"),
-                    ),
-                    (
-                        get_account_id_from_seed::<sr25519::Public>("Bob"),
-                        get_collator_keys_from_seed("Bob"),
-                    ),
+                    (get_account_id_from_seed::<sr25519::Public>("Alice"), get_collator_keys_from_seed("Alice")),
+                    (get_account_id_from_seed::<sr25519::Public>("Bob"), get_collator_keys_from_seed("Bob")),
                 ],
                 // Sudo root keys
                 get_account_id_from_seed::<sr25519::Public>("Alice"),
@@ -398,14 +381,8 @@ pub fn datahighway_chachacha_local_testnet_config() -> ChainSpec {
             testnet_genesis(
                 // Initial collators
                 vec![
-                    (
-                        get_account_id_from_seed::<sr25519::Public>("Alice"),
-                        get_collator_keys_from_seed("Alice"),
-                    ),
-                    (
-                        get_account_id_from_seed::<sr25519::Public>("Bob"),
-                        get_collator_keys_from_seed("Bob"),
-                    ),
+                    (get_account_id_from_seed::<sr25519::Public>("Alice"), get_collator_keys_from_seed("Alice")),
+                    (get_account_id_from_seed::<sr25519::Public>("Bob"), get_collator_keys_from_seed("Bob")),
                 ],
                 // Sudo root key
                 get_account_id_from_seed::<sr25519::Public>("Alice"),
@@ -468,32 +445,31 @@ pub fn datahighway_rococo_parachain_config() -> ChainSpec {
                     // authority #1
                     (
                         // account id
-                        hex!["106c208ac262aa3733629ad0860d0dc72d8b9152e1cdcab497949a3f9504517a"].into(),
+                        hex!["2c455b61697eb1c304dcfb98e7cf79549d3ef08562278e458310e5a2c6dd3649"].into(),
                         // aura
-                        hex!["106c208ac262aa3733629ad0860d0dc72d8b9152e1cdcab497949a3f9504517a"].unchecked_into()
+                        hex!["2c455b61697eb1c304dcfb98e7cf79549d3ef08562278e458310e5a2c6dd3649"].unchecked_into(),
                     ),
                     // authority #2
                     (
                         // account id
-                        hex!["0234df0fce3e763e02b6644e589bd256bbd45121bdf6d98dd1cf1072b6228859"].into(),
+                        hex!["fa53ed7fea9d1a5e2a9b49be085a48c792db9a695ef76c7fd3d5f65544499e2a"].into(),
                         // aura
-                        hex!["0234df0fce3e763e02b6644e589bd256bbd45121bdf6d98dd1cf1072b6228859"].unchecked_into()
+                        hex!["fa53ed7fea9d1a5e2a9b49be085a48c792db9a695ef76c7fd3d5f65544499e2a"].unchecked_into(),
                     ),
                     // authority #3
                     (
                         // account id
-                        hex!["02fe175463b5c7c378416e06780f7c60520d4dbcf759a7634a311e562e13a765"].into(),
+                        hex!["ec867060232ed36aa6446bcb365092e4f8be801800435c080d9691a31243431b"].into(),
                         // aura
-                        hex!["02fe175463b5c7c378416e06780f7c60520d4dbcf759a7634a311e562e13a765"].unchecked_into()
+                        hex!["ec867060232ed36aa6446bcb365092e4f8be801800435c080d9691a31243431b"].unchecked_into(),
                     ),
                     // authority #4
                     (
                         // account id
-                        hex!["ea239700d67f53d30e39bee0c056f1165a6fb59ad4d5dd495c06d001af366c02"].into(),
+                        hex!["dc6257c1de73e096101ebcb5789c569bb15b831b1c707ae372467465e158e906"].into(),
                         // aura
-                        hex!["ea239700d67f53d30e39bee0c056f1165a6fb59ad4d5dd495c06d001af366c02"].unchecked_into()
-                    )
-
+                        hex!["dc6257c1de73e096101ebcb5789c569bb15b831b1c707ae372467465e158e906"].unchecked_into(),
+                    ),
                 ],
                 // Sudo root key
                 sudo_account_rococo_and_chachacha(),
@@ -510,25 +486,25 @@ pub fn datahighway_rococo_parachain_config() -> ChainSpec {
                     // authority #1 controller
                     hex!["467da0333f16ce430bfa18fb8c25cfbbc49f35946370989280aaf3142fff7344"].into(),
                     // authority #1 aura
-                    hex!["106c208ac262aa3733629ad0860d0dc72d8b9152e1cdcab497949a3f9504517a"].into(),
+                    hex!["2c455b61697eb1c304dcfb98e7cf79549d3ef08562278e458310e5a2c6dd3649"].into(),
                     // authority #2 stash
                     hex!["b2347d115c9300a433a59b0ef321430a6d418d0555a6a41dfebe99fb86765110"].into(),
                     // authority #2 controller
                     hex!["ac691d2b336f8347a22eb3831b381e4adac45ab6f0ad85abc1336633313f173d"].into(),
                     // authority #2 aura
-                    hex!["0234df0fce3e763e02b6644e589bd256bbd45121bdf6d98dd1cf1072b6228859"].into(),
+                    hex!["fa53ed7fea9d1a5e2a9b49be085a48c792db9a695ef76c7fd3d5f65544499e2a"].into(),
                     // authority #3 stash
                     hex!["f4062d6d4ac30ea04659b24994cc0ebf249fed1591e6cf1c25d5f4f78e78bb6b"].into(),
                     // authority #3 controller
                     hex!["4cad3775c026114d4a6e965f72caf11c18eb03ea7a3b4c0516f4cb8856b2575f"].into(),
                     // authority #3 aura
-                    hex!["02fe175463b5c7c378416e06780f7c60520d4dbcf759a7634a311e562e13a765"].into(),
+                    hex!["ec867060232ed36aa6446bcb365092e4f8be801800435c080d9691a31243431b"].into(),
                     // authority #4 stash
                     hex!["a0d56496c02c203312ebce4a2804c7e0c31e34f983b9bc037f7c95f34e416613"].into(),
                     // authority #4 controller
                     hex!["6cd4eeb38c45a073d3c8e3ddd24e2502707060f33a1d92e082e32c106512500f"].into(),
                     // authority #4 aura
-                    hex!["ea239700d67f53d30e39bee0c056f1165a6fb59ad4d5dd495c06d001af366c02"].into(),
+                    hex!["dc6257c1de73e096101ebcb5789c569bb15b831b1c707ae372467465e158e906"].into(),
                 ],
                 // Parachain ID
                 2116.into(),
@@ -575,30 +551,29 @@ pub fn datahighway_chachacha_parachain_config() -> ChainSpec {
                         // account id
                         hex!["106c208ac262aa3733629ad0860d0dc72d8b9152e1cdcab497949a3f9504517a"].into(),
                         // aura
-                        hex!["106c208ac262aa3733629ad0860d0dc72d8b9152e1cdcab497949a3f9504517a"].unchecked_into()
+                        hex!["106c208ac262aa3733629ad0860d0dc72d8b9152e1cdcab497949a3f9504517a"].unchecked_into(),
                     ),
                     // authority #2
                     (
                         // account id
                         hex!["0234df0fce3e763e02b6644e589bd256bbd45121bdf6d98dd1cf1072b6228859"].into(),
                         // aura
-                        hex!["0234df0fce3e763e02b6644e589bd256bbd45121bdf6d98dd1cf1072b6228859"].unchecked_into()
+                        hex!["0234df0fce3e763e02b6644e589bd256bbd45121bdf6d98dd1cf1072b6228859"].unchecked_into(),
                     ),
                     // authority #3
                     (
                         // account id
                         hex!["02fe175463b5c7c378416e06780f7c60520d4dbcf759a7634a311e562e13a765"].into(),
                         // aura
-                        hex!["02fe175463b5c7c378416e06780f7c60520d4dbcf759a7634a311e562e13a765"].unchecked_into()
+                        hex!["02fe175463b5c7c378416e06780f7c60520d4dbcf759a7634a311e562e13a765"].unchecked_into(),
                     ),
                     // authority #4
                     (
                         // account id
                         hex!["ea239700d67f53d30e39bee0c056f1165a6fb59ad4d5dd495c06d001af366c02"].into(),
                         // aura
-                        hex!["ea239700d67f53d30e39bee0c056f1165a6fb59ad4d5dd495c06d001af366c02"].unchecked_into()
-                    )
-
+                        hex!["ea239700d67f53d30e39bee0c056f1165a6fb59ad4d5dd495c06d001af366c02"].unchecked_into(),
+                    ),
                 ],
                 // Sudo root key
                 sudo_account_rococo_and_chachacha(),
@@ -677,14 +652,8 @@ pub fn datahighway_westend_development_config() -> ChainSpec {
             dev_genesis(
                 // Initial collators
                 vec![
-                    (
-                        get_account_id_from_seed::<sr25519::Public>("Alice"),
-                        get_collator_keys_from_seed("Alice"),
-                    ),
-                    (
-                        get_account_id_from_seed::<sr25519::Public>("Bob"),
-                        get_collator_keys_from_seed("Bob"),
-                    ),
+                    (get_account_id_from_seed::<sr25519::Public>("Alice"), get_collator_keys_from_seed("Alice")),
+                    (get_account_id_from_seed::<sr25519::Public>("Bob"), get_collator_keys_from_seed("Bob")),
                 ],
                 // Sudo root key
                 get_account_id_from_seed::<sr25519::Public>("Alice"),
@@ -746,14 +715,8 @@ pub fn datahighway_westend_local_testnet_config() -> ChainSpec {
             testnet_genesis(
                 // Initial collators
                 vec![
-                    (
-                        get_account_id_from_seed::<sr25519::Public>("Alice"),
-                        get_collator_keys_from_seed("Alice"),
-                    ),
-                    (
-                        get_account_id_from_seed::<sr25519::Public>("Bob"),
-                        get_collator_keys_from_seed("Bob"),
-                    ),
+                    (get_account_id_from_seed::<sr25519::Public>("Alice"), get_collator_keys_from_seed("Alice")),
+                    (get_account_id_from_seed::<sr25519::Public>("Bob"), get_collator_keys_from_seed("Bob")),
                 ],
                 // Sudo root key
                 get_account_id_from_seed::<sr25519::Public>("Alice"),
@@ -815,14 +778,8 @@ pub fn datahighway_kusama_development_config() -> ChainSpec {
             dev_genesis(
                 // Initial collators
                 vec![
-                    (
-                        get_account_id_from_seed::<sr25519::Public>("Alice"),
-                        get_collator_keys_from_seed("Alice"),
-                    ),
-                    (
-                        get_account_id_from_seed::<sr25519::Public>("Bob"),
-                        get_collator_keys_from_seed("Bob"),
-                    ),
+                    (get_account_id_from_seed::<sr25519::Public>("Alice"), get_collator_keys_from_seed("Alice")),
+                    (get_account_id_from_seed::<sr25519::Public>("Bob"), get_collator_keys_from_seed("Bob")),
                 ],
                 // Sudo root key
                 get_account_id_from_seed::<sr25519::Public>("Alice"),
@@ -884,14 +841,8 @@ pub fn datahighway_kusama_local_testnet_config() -> ChainSpec {
             testnet_genesis(
                 // Initial collators
                 vec![
-                    (
-                        get_account_id_from_seed::<sr25519::Public>("Alice"),
-                        get_collator_keys_from_seed("Alice"),
-                    ),
-                    (
-                        get_account_id_from_seed::<sr25519::Public>("Bob"),
-                        get_collator_keys_from_seed("Bob"),
-                    ),
+                    (get_account_id_from_seed::<sr25519::Public>("Alice"), get_collator_keys_from_seed("Alice")),
+                    (get_account_id_from_seed::<sr25519::Public>("Bob"), get_collator_keys_from_seed("Bob")),
                 ],
                 // Sudo root key
                 get_account_id_from_seed::<sr25519::Public>("Alice"),
@@ -956,29 +907,29 @@ pub fn datahighway_westend_parachain_config() -> ChainSpec {
                         // account
                         hex!["2628f7a7bb067a23daa14b1aa9f10ff44545d37907f2d5cefee905236944060a"].into(),
                         // aura
-                        hex!["2628f7a7bb067a23daa14b1aa9f10ff44545d37907f2d5cefee905236944060a"].unchecked_into()
+                        hex!["2628f7a7bb067a23daa14b1aa9f10ff44545d37907f2d5cefee905236944060a"].unchecked_into(),
                     ),
                     // authority #2
                     (
                         // account
                         hex!["709f96ae975cd0cfafd98fb241810a2870d58fcfdbb1ee6892a8740525f4d871"].into(),
                         // aura
-                        hex!["709f96ae975cd0cfafd98fb241810a2870d58fcfdbb1ee6892a8740525f4d871"].unchecked_into()
+                        hex!["709f96ae975cd0cfafd98fb241810a2870d58fcfdbb1ee6892a8740525f4d871"].unchecked_into(),
                     ),
                     // authority #3
                     (
                         // account
                         hex!["ce7f04896b8d13da7a4f3f0a49bf6c1d77076043a1184a993ce75d96f6e0ee56"].into(),
                         // aura
-                        hex!["ce7f04896b8d13da7a4f3f0a49bf6c1d77076043a1184a993ce75d96f6e0ee56"].unchecked_into()
+                        hex!["ce7f04896b8d13da7a4f3f0a49bf6c1d77076043a1184a993ce75d96f6e0ee56"].unchecked_into(),
                     ),
                     // authority #4
                     (
                         // account
                         hex!["c27631914b41a8f58e24277158817d064a4144df430dd2cf7baeaa17414deb3e"].into(),
                         // aura
-                        hex!["c27631914b41a8f58e24277158817d064a4144df430dd2cf7baeaa17414deb3e"].unchecked_into()
-                    )
+                        hex!["c27631914b41a8f58e24277158817d064a4144df430dd2cf7baeaa17414deb3e"].unchecked_into(),
+                    ),
                 ],
                 // Sudo root key
                 sudo_account_westend_baikal(),
@@ -1060,29 +1011,29 @@ pub fn datahighway_kusama_parachain_config() -> ChainSpec {
                         // account
                         hex!["a8694c0c9e315e020844944ac76712c84f84a00007016e61c7e2f83fc56c5b3f"].into(),
                         // aura
-                        hex!["a8694c0c9e315e020844944ac76712c84f84a00007016e61c7e2f83fc56c5b3f"].unchecked_into()
+                        hex!["a8694c0c9e315e020844944ac76712c84f84a00007016e61c7e2f83fc56c5b3f"].unchecked_into(),
                     ),
                     // authority #2
                     (
                         // account
                         hex!["a8db9194388b3c038b126a5e2520515be2e989e3f380ce2cb5cf29d5a26c0522"].into(),
                         // aura
-                        hex!["a8db9194388b3c038b126a5e2520515be2e989e3f380ce2cb5cf29d5a26c0522"].unchecked_into()
+                        hex!["a8db9194388b3c038b126a5e2520515be2e989e3f380ce2cb5cf29d5a26c0522"].unchecked_into(),
                     ),
                     // authority #3
                     (
                         // account
                         hex!["b8212af17ba93d9175748469afa0a74357712ff4571a36d347df58cf3821cd3d"].into(),
                         // aura
-                        hex!["b8212af17ba93d9175748469afa0a74357712ff4571a36d347df58cf3821cd3d"].unchecked_into()
+                        hex!["b8212af17ba93d9175748469afa0a74357712ff4571a36d347df58cf3821cd3d"].unchecked_into(),
                     ),
                     // authority #4
                     (
                         // account
                         hex!["10a3d6854dc35e4b3fd77af4beda98f79dbe9edf5c29c14c8d57bec4bd733c0f"].into(),
                         // aura
-                        hex!["10a3d6854dc35e4b3fd77af4beda98f79dbe9edf5c29c14c8d57bec4bd733c0f"].unchecked_into()
-                    )
+                        hex!["10a3d6854dc35e4b3fd77af4beda98f79dbe9edf5c29c14c8d57bec4bd733c0f"].unchecked_into(),
+                    ),
                 ],
                 // Sudo root key
                 sudo_account_kusama_tanganika(),
@@ -1174,14 +1125,12 @@ fn spreehafen_testnet_genesis(
 
     GenesisConfig {
         system: SystemConfig {
-            code: datahighway_parachain_runtime::WASM_BINARY.expect("WASM binary was not build, please build it!").to_vec(),
+            code: datahighway_parachain_runtime::WASM_BINARY
+                .expect("WASM binary was not build, please build it!")
+                .to_vec(),
         },
         balances: BalancesConfig {
-            balances: hardspoon_balances
-                .iter()
-                .cloned()
-                .map(|x| (x.0.clone(), x.1.clone()))
-                .collect(),
+            balances: hardspoon_balances.iter().cloned().map(|x| (x.0.clone(), x.1.clone())).collect(),
         },
         indices: IndicesConfig {
             indices: endowed_accounts.iter().enumerate().map(|(index, x)| (index as u32, (*x).clone())).collect(),
@@ -1234,14 +1183,15 @@ fn spreehafen_testnet_genesis(
         transaction_payment: TransactionPaymentConfig::default(),
         aura_ext: Default::default(),
         parachain_system: Default::default(),
-		polkadot_xcm: datahighway_parachain_runtime::PolkadotXcmConfig {
-			safe_xcm_version: Some(SAFE_XCM_VERSION),
-		},
+        polkadot_xcm: datahighway_parachain_runtime::PolkadotXcmConfig {
+            safe_xcm_version: Some(SAFE_XCM_VERSION),
+        },
         parachain_staking: ParachainStakingConfig {
             stakers: [].into(),
             max_candidate_stake: datahighway_parachain_runtime::constants::staking::MAX_CANDIDATE_STAKE,
             reward_per_block: datahighway_parachain_runtime::constants::staking::REWARD_PER_BLOCK,
         },
+        vesting: Default::default(),
     }
 }
 
@@ -1257,14 +1207,12 @@ fn testnet_genesis(
 
     GenesisConfig {
         system: SystemConfig {
-            code: datahighway_parachain_runtime::WASM_BINARY.expect("WASM binary was not build, please build it!").to_vec(),
+            code: datahighway_parachain_runtime::WASM_BINARY
+                .expect("WASM binary was not build, please build it!")
+                .to_vec(),
         },
         balances: BalancesConfig {
-            balances: hardspoon_balances
-                .iter()
-                .cloned()
-                .map(|x| (x.0.clone(), x.1.clone()))
-                .collect(),
+            balances: hardspoon_balances.iter().cloned().map(|x| (x.0.clone(), x.1.clone())).collect(),
         },
         indices: IndicesConfig {
             indices: endowed_accounts.iter().enumerate().map(|(index, x)| (index as u32, (*x).clone())).collect(),
@@ -1317,14 +1265,15 @@ fn testnet_genesis(
         transaction_payment: TransactionPaymentConfig::default(),
         aura_ext: Default::default(),
         parachain_system: Default::default(),
-		polkadot_xcm: datahighway_parachain_runtime::PolkadotXcmConfig {
-			safe_xcm_version: Some(SAFE_XCM_VERSION),
-		},
+        polkadot_xcm: datahighway_parachain_runtime::PolkadotXcmConfig {
+            safe_xcm_version: Some(SAFE_XCM_VERSION),
+        },
         parachain_staking: ParachainStakingConfig {
             stakers: [].into(),
             max_candidate_stake: datahighway_parachain_runtime::constants::staking::MAX_CANDIDATE_STAKE,
             reward_per_block: datahighway_parachain_runtime::constants::staking::REWARD_PER_BLOCK,
         },
+        vesting: Default::default(),
     }
 }
 
@@ -1340,14 +1289,12 @@ fn dev_genesis(
 
     GenesisConfig {
         system: SystemConfig {
-            code: datahighway_parachain_runtime::WASM_BINARY.expect("WASM binary was not build, please build it!").to_vec(),
+            code: datahighway_parachain_runtime::WASM_BINARY
+                .expect("WASM binary was not build, please build it!")
+                .to_vec(),
         },
         balances: BalancesConfig {
-            balances: hardspoon_balances
-                .iter()
-                .cloned()
-                .map(|x| (x.0.clone(), x.1.clone()))
-                .collect(),
+            balances: hardspoon_balances.iter().cloned().map(|x| (x.0.clone(), x.1.clone())).collect(),
         },
         indices: IndicesConfig {
             indices: endowed_accounts.iter().enumerate().map(|(index, x)| (index as u32, (*x).clone())).collect(),
@@ -1400,14 +1347,15 @@ fn dev_genesis(
         transaction_payment: TransactionPaymentConfig::default(),
         aura_ext: Default::default(),
         parachain_system: Default::default(),
-		polkadot_xcm: datahighway_parachain_runtime::PolkadotXcmConfig {
-			safe_xcm_version: Some(SAFE_XCM_VERSION),
-		},
+        polkadot_xcm: datahighway_parachain_runtime::PolkadotXcmConfig {
+            safe_xcm_version: Some(SAFE_XCM_VERSION),
+        },
         parachain_staking: ParachainStakingConfig {
             stakers: [].into(),
             max_candidate_stake: datahighway_parachain_runtime::constants::staking::MAX_CANDIDATE_STAKE,
             reward_per_block: datahighway_parachain_runtime::constants::staking::REWARD_PER_BLOCK,
         },
+        vesting: Default::default(),
     }
 }
 
@@ -1422,7 +1370,9 @@ fn baikal_testnet_genesis(
 
     GenesisConfig {
         system: SystemConfig {
-            code: datahighway_parachain_runtime::WASM_BINARY.expect("WASM binary was not build, please build it!").to_vec(),
+            code: datahighway_parachain_runtime::WASM_BINARY
+                .expect("WASM binary was not build, please build it!")
+                .to_vec(),
         },
         balances: BalancesConfig {
             balances: endowed_accounts
@@ -1494,14 +1444,15 @@ fn baikal_testnet_genesis(
         transaction_payment: TransactionPaymentConfig::default(),
         aura_ext: Default::default(),
         parachain_system: Default::default(),
-		polkadot_xcm: datahighway_parachain_runtime::PolkadotXcmConfig {
-			safe_xcm_version: Some(SAFE_XCM_VERSION),
-		},
+        polkadot_xcm: datahighway_parachain_runtime::PolkadotXcmConfig {
+            safe_xcm_version: Some(SAFE_XCM_VERSION),
+        },
         parachain_staking: ParachainStakingConfig {
             stakers: [].into(),
             max_candidate_stake: datahighway_parachain_runtime::constants::staking::MAX_CANDIDATE_STAKE,
             reward_per_block: datahighway_parachain_runtime::constants::staking::REWARD_PER_BLOCK,
         },
+        vesting: Default::default(),
     }
 }
 
@@ -1517,14 +1468,12 @@ fn tanganika_testnet_genesis(
 
     GenesisConfig {
         system: SystemConfig {
-            code: datahighway_parachain_runtime::WASM_BINARY.expect("WASM binary was not build, please build it!").to_vec(),
+            code: datahighway_parachain_runtime::WASM_BINARY
+                .expect("WASM binary was not build, please build it!")
+                .to_vec(),
         },
         balances: BalancesConfig {
-            balances: hardspoon_balances
-                .iter()
-                .cloned()
-                .map(|x| (x.0.clone(), x.1.clone()))
-                .collect(),
+            balances: hardspoon_balances.iter().cloned().map(|x| (x.0.clone(), x.1.clone())).collect(),
         },
         indices: IndicesConfig {
             indices: endowed_accounts.iter().enumerate().map(|(index, x)| (index as u32, (*x).clone())).collect(),
@@ -1577,13 +1526,14 @@ fn tanganika_testnet_genesis(
         transaction_payment: TransactionPaymentConfig::default(),
         aura_ext: Default::default(),
         parachain_system: Default::default(),
-		polkadot_xcm: datahighway_parachain_runtime::PolkadotXcmConfig {
-			safe_xcm_version: Some(SAFE_XCM_VERSION),
-		},
+        polkadot_xcm: datahighway_parachain_runtime::PolkadotXcmConfig {
+            safe_xcm_version: Some(SAFE_XCM_VERSION),
+        },
         parachain_staking: ParachainStakingConfig {
             stakers: [].into(),
             max_candidate_stake: datahighway_parachain_runtime::constants::staking::MAX_CANDIDATE_STAKE,
             reward_per_block: datahighway_parachain_runtime::constants::staking::REWARD_PER_BLOCK,
         },
+        vesting: Default::default(),
     }
 }

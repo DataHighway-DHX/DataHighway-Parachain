@@ -24,8 +24,8 @@
 //!
 //! ## Assumptions
 //!
-//! - The minting of rewards after [InitialPeriodLength] many blocks is handled
-//!   by another pallet, e.g., ParachainStaking.
+//! - The minting of rewards after [InitialPeriodLength] many blocks is handled by another pallet, e.g.,
+//!   ParachainStaking.
 
 #![cfg_attr(not(feature = "std"), no_std)]
 
@@ -40,62 +40,69 @@ mod mock;
 #[cfg(feature = "runtime-benchmarks")]
 mod benchmarking;
 
-pub use crate::{default_weights::WeightInfo, pallet::*};
+pub use crate::{
+    default_weights::WeightInfo,
+    pallet::*,
+};
 
 #[frame_support::pallet]
 pub mod pallet {
-	use super::WeightInfo;
-	use frame_support::{
-		pallet_prelude::*,
-		traits::{Currency, OnUnbalanced, StorageVersion},
-	};
-	use frame_system::pallet_prelude::*;
+    use super::WeightInfo;
+    use frame_support::{
+        pallet_prelude::*,
+        traits::{
+            Currency,
+            OnUnbalanced,
+            StorageVersion,
+        },
+    };
+    use frame_system::pallet_prelude::*;
 
-	pub(crate) type AccountIdOf<T> = <T as frame_system::Config>::AccountId;
-	pub(crate) type BalanceOf<T> = <<T as Config>::Currency as Currency<AccountIdOf<T>>>::Balance;
-	pub(crate) type NegativeImbalanceOf<T> = <<T as Config>::Currency as Currency<AccountIdOf<T>>>::NegativeImbalance;
+    pub(crate) type AccountIdOf<T> = <T as frame_system::Config>::AccountId;
+    pub(crate) type BalanceOf<T> = <<T as Config>::Currency as Currency<AccountIdOf<T>>>::Balance;
+    pub(crate) type NegativeImbalanceOf<T> = <<T as Config>::Currency as Currency<AccountIdOf<T>>>::NegativeImbalance;
 
-	pub const STORAGE_VERSION: StorageVersion = StorageVersion::new(1);
+    pub const STORAGE_VERSION: StorageVersion = StorageVersion::new(1);
 
-	#[pallet::config]
-	pub trait Config: frame_system::Config {
-		/// Currency type.
-		type Currency: Currency<AccountIdOf<Self>>;
+    #[pallet::config]
+    pub trait Config: frame_system::Config {
+        /// Currency type.
+        type Currency: Currency<AccountIdOf<Self>>;
 
-		/// The length of the initial period in which the constant reward is
-		/// minted. Once the current block exceeds this, rewards are no further
-		/// issued.
-		#[pallet::constant]
-		type InitialPeriodLength: Get<<Self as frame_system::Config>::BlockNumber>;
+        /// The length of the initial period in which the constant reward is
+        /// minted. Once the current block exceeds this, rewards are no further
+        /// issued.
+        #[pallet::constant]
+        type InitialPeriodLength: Get<<Self as frame_system::Config>::BlockNumber>;
 
-		/// The amount of newly issued tokens per block during the initial
-		/// period.
-		#[pallet::constant]
-		type InitialPeriodReward: Get<BalanceOf<Self>>;
+        /// The amount of newly issued tokens per block during the initial
+        /// period.
+        #[pallet::constant]
+        type InitialPeriodReward: Get<BalanceOf<Self>>;
 
-		/// The beneficiary to receive the rewards.
-		type Beneficiary: OnUnbalanced<NegativeImbalanceOf<Self>>;
+        /// The beneficiary to receive the rewards.
+        type Beneficiary: OnUnbalanced<NegativeImbalanceOf<Self>>;
 
-		/// Weight information for extrinsics in this pallet.
-		type WeightInfo: WeightInfo;
-	}
+        /// Weight information for extrinsics in this pallet.
+        type WeightInfo: WeightInfo;
+    }
 
-	#[pallet::pallet]
-	#[pallet::generate_store(pub(super) trait Store)]
-	#[pallet::storage_version(STORAGE_VERSION)]
-	pub struct Pallet<T>(_);
+    #[pallet::pallet]
+    #[pallet::generate_store(pub(super) trait Store)]
+    #[pallet::storage_version(STORAGE_VERSION)]
+    pub struct Pallet<T>(_);
 
-	#[pallet::hooks]
-	impl<T: Config> Hooks<BlockNumberFor<T>> for Pallet<T> {
-		fn on_initialize(now: T::BlockNumber) -> Weight {
-			// The complement of this is handled in ParachainStaking.
-			if now <= T::InitialPeriodLength::get() {
-				let reward = T::Currency::issue(T::InitialPeriodReward::get());
-				T::Beneficiary::on_unbalanced(reward);
-				<T as Config>::WeightInfo::on_initialize_mint_to_treasury()
-			} else {
-				<T as Config>::WeightInfo::on_initialize_no_action()
-			}
-		}
-	}
+    #[pallet::hooks]
+    impl<T: Config> Hooks<BlockNumberFor<T>> for Pallet<T> {
+        fn on_initialize(now: T::BlockNumber) -> Weight {
+            // The complement of this is handled in ParachainStaking.
+            if now <= T::InitialPeriodLength::get() {
+                let reward = T::Currency::issue(T::InitialPeriodReward::get());
+                T::Beneficiary::on_unbalanced(reward);
+                <T as Config>::WeightInfo::on_initialize_mint_to_treasury()
+            } else {
+                <T as Config>::WeightInfo::on_initialize_no_action()
+            }
+        }
+    }
 }

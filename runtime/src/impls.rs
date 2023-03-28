@@ -17,10 +17,21 @@
 
 //! Some configurable implementations as associated type for the substrate runtime.
 
-use crate::{AccountId, Assets, Authorship, Balances, NegativeImbalance, Runtime};
+use crate::{
+    AccountId,
+    Assets,
+    Authorship,
+    Balances,
+    NegativeImbalance,
+    Runtime,
+};
 use frame_support::traits::{
-    fungibles::{Balanced, CreditOf},
-    Currency, OnUnbalanced,
+    fungibles::{
+        Balanced,
+        CreditOf,
+    },
+    Currency,
+    OnUnbalanced,
 };
 use pallet_asset_tx_payment::HandleCredit;
 

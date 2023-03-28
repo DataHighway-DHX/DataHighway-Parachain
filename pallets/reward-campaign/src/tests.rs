@@ -56,7 +56,7 @@ fn campaign_creation_success() {
             })
         );
 
-        // Data of a usual contributer
+        // Data of a usual contributor
         let user_a = (11u32.into(), 1_000_000_u128);
         let user_b = (12u32.into(), 2_100_004_u128);
         let user_a_reward = types::RewardUnitOf::<Test> {
@@ -76,10 +76,10 @@ fn campaign_creation_success() {
         assert_eq!(user_b_reward.instant_amount + user_b_reward.vesting_amount, user_b.1);
 
         // add users
-        assert_ok!(Reward::add_contributer(Origin::signed(hoster), campaign_id, user_a.0, user_a.1));
-        assert_ok!(Reward::add_contributer(Origin::signed(hoster), campaign_id, user_b.0, user_b.1));
+        assert_ok!(Reward::add_contributor(Origin::signed(hoster), campaign_id, user_a.0, user_a.1));
+        assert_ok!(Reward::add_contributor(Origin::signed(hoster), campaign_id, user_b.0, user_b.1));
 
-        // Check contributers are added properly
+        // Check contributors are added properly
         assert_eq!(Reward::get_contribution(campaign_id, user_a.0).as_ref(), Some(&user_a_reward));
         assert_eq!(Reward::get_contribution(campaign_id, user_b.0).as_ref(), Some(&user_b_reward));
 
@@ -259,9 +259,9 @@ fn campaign_status() {
     };
 
     // With in-progress status
-    // - contributer can be added
-    // - contributer can be removed
-    // - contributer cannot claim instant reward
+    // - contributor can be added
+    // - contributor can be removed
+    // - contributor cannot claim instant reward
     // - contributr cannot claim vesting reward
     // - campaign can be locked
     // - campaign can be discarded
@@ -275,10 +275,10 @@ fn campaign_status() {
         assert_ok!(new_quick_campaign(hoster, campaign_id));
         assert_eq!(Reward::get_campaign_status(campaign_id), Some(types::RewardCampaignStatus::InProgress));
 
-        // cann add contributer
-        assert_ok!(Reward::add_contributer(Origin::signed(hoster), campaign_id, 5_u32.into(), 10000_u128.into()));
-        // can remove contributer
-        assert_ok!(Reward::remove_contributer(Origin::signed(hoster), campaign_id, 5_u32.into()));
+        // cann add contributor
+        assert_ok!(Reward::add_contributor(Origin::signed(hoster), campaign_id, 5_u32.into(), 10000_u128.into()));
+        // can remove contributor
+        assert_ok!(Reward::remove_contributor(Origin::signed(hoster), campaign_id, 5_u32.into()));
         // cannot wipe campaign
         assert_noop!(Reward::wipe_campaign(Origin::signed(hoster), campaign_id), RewardError::CampaignNotLocked,);
         // cannot claim instant reward
@@ -304,38 +304,38 @@ fn campaign_status() {
     });
 
     // With Locked status
-    // - contributer cannot be added
-    // - contributer cannot be removed
-    // - contributer can claim instant reward
-    // - contributer can claim vesting reward
+    // - contributor cannot be added
+    // - contributor cannot be removed
+    // - contributor can claim instant reward
+    // - contributor can claim vesting reward
     // - campaign cannot be discarded
     // - campaign cannot be locked
-    // - campaign can be wiped ( only if all contributer are rewarded)
+    // - campaign can be wiped ( only if all contributor are rewarded)
     new_test_ext().execute_with(|| {
         run_to_block(1);
         let hoster = 1_u32.into();
         let campaign_id = 10_u32.into();
-        let contributer_a = 1_u32.into();
-        let contributer_b = 2_u32.into();
+        let contributor_a = 1_u32.into();
+        let contributor_b = 2_u32.into();
 
         // initilize the campaign
         assert_ok!(new_quick_campaign(hoster, campaign_id));
-        assert_ok!(Reward::add_contributer(Origin::signed(hoster), campaign_id, contributer_a, 100_000_u32.into()));
-        assert_ok!(Reward::add_contributer(Origin::signed(hoster), campaign_id, contributer_b, 200_000_u32.into()));
+        assert_ok!(Reward::add_contributor(Origin::signed(hoster), campaign_id, contributor_a, 100_000_u32.into()));
+        assert_ok!(Reward::add_contributor(Origin::signed(hoster), campaign_id, contributor_b, 200_000_u32.into()));
         let reward_source = Reward::get_reward_info(campaign_id).unwrap().reward_source;
         credit_account::<Test>(&reward_source, 1_000_000_u32.into());
 
         // lock the campaign
         assert_ok!(Reward::lock_campaign(Origin::signed(hoster), campaign_id));
 
-        // cannot add contributer
+        // cannot add contributor
         assert_noop!(
-            Reward::add_contributer(Origin::signed(hoster), campaign_id, 33_u32.into(), 100_000_u32.into()),
+            Reward::add_contributor(Origin::signed(hoster), campaign_id, 33_u32.into(), 100_000_u32.into()),
             RewardError::ReadOnlyCampaign,
         );
-        // Cannot remove contributer
+        // Cannot remove contributor
         assert_noop!(
-            Reward::remove_contributer(Origin::signed(hoster), campaign_id, contributer_a),
+            Reward::remove_contributor(Origin::signed(hoster), campaign_id, contributor_a),
             RewardError::ReadOnlyCampaign,
         );
         // Cannot lock campaign
@@ -343,25 +343,25 @@ fn campaign_status() {
         // cannot discard the campaign
         assert_noop!(Reward::discard_campaign(Origin::signed(hoster), campaign_id), RewardError::CampaignLocked,);
         // can call get instant reward
-        assert_ok!(Reward::get_instant_reward(Origin::signed(contributer_a), campaign_id));
-        assert_ok!(Reward::get_instant_reward(Origin::signed(contributer_b), campaign_id));
+        assert_ok!(Reward::get_instant_reward(Origin::signed(contributor_a), campaign_id));
+        assert_ok!(Reward::get_instant_reward(Origin::signed(contributor_b), campaign_id));
         // can call get vesting reward
-        assert_ok!(Reward::get_vested_reward(Origin::signed(contributer_a), campaign_id));
-        // since there is still unclaimed contribution ( vesting reward of contributer_b)
+        assert_ok!(Reward::get_vested_reward(Origin::signed(contributor_a), campaign_id));
+        // since there is still unclaimed contribution ( vesting reward of contributor_b)
         // cannot wipe campaign
         assert_noop!(Reward::wipe_campaign(Origin::signed(hoster), campaign_id), RewardError::UnclaimedContribution,);
-        assert_ok!(Reward::get_vested_reward(Origin::signed(contributer_b), campaign_id));
+        assert_ok!(Reward::get_vested_reward(Origin::signed(contributor_b), campaign_id));
         // can wipe campaign
         assert_ok!(Reward::wipe_campaign(Origin::signed(hoster), campaign_id));
     });
 
     // With Wiped status
-    // - cannot add contributer
-    // - cannot remove contributer
+    // - cannot add contributor
+    // - cannot remove contributor
     // - cannot lock campaign
     // - cannot discard campaign
-    // - contributer cannot claim instant reward
-    // - contributer cannot claim vesting reward
+    // - contributor cannot claim instant reward
+    // - contributor cannot claim vesting reward
     new_test_ext().execute_with(|| {
         run_to_block(1);
         let hoster = 10_u32.into();
@@ -371,21 +371,21 @@ fn campaign_status() {
         assert_ok!(new_quick_campaign(hoster, campaign_id));
         let reward_source = Reward::get_reward_info(campaign_id).unwrap().reward_source;
         credit_account::<Test>(&reward_source, 1_000_000_u32.into());
-        assert_ok!(Reward::add_contributer(Origin::signed(hoster), campaign_id, 100_u32.into(), 100_000_u32.into()));
+        assert_ok!(Reward::add_contributor(Origin::signed(hoster), campaign_id, 100_u32.into(), 100_000_u32.into()));
         assert_ok!(Reward::lock_campaign(Origin::signed(hoster), campaign_id));
         assert_ok!(Reward::get_vested_reward(Origin::signed(100_u32.into()), campaign_id));
         assert_ok!(Reward::get_instant_reward(Origin::signed(100_u32.into()), campaign_id));
         assert_ok!(Reward::wipe_campaign(Origin::signed(hoster), campaign_id));
         assert_eq!(Reward::get_campaign_status(campaign_id), Some(types::RewardCampaignStatus::Wiped));
 
-        // cannot add contributer
+        // cannot add contributor
         assert_noop!(
-            Reward::add_contributer(Origin::signed(hoster), campaign_id, 33_u32.into(), 100_000_u32.into()),
+            Reward::add_contributor(Origin::signed(hoster), campaign_id, 33_u32.into(), 100_000_u32.into()),
             RewardError::NoRewardCampaign,
         );
-        // Cannot remove contributer
+        // Cannot remove contributor
         assert_noop!(
-            Reward::remove_contributer(Origin::signed(hoster), campaign_id, 33_u32.into()),
+            Reward::remove_contributor(Origin::signed(hoster), campaign_id, 33_u32.into()),
             RewardError::NoRewardCampaign,
         );
         // Cannot lock campaign
@@ -423,7 +423,7 @@ fn claimer_status() {
         run_to_block(1);
         let hoster = 1_u32.into();
         let campaign_id = 3_u32.into();
-        let contributer = 4_u32.into();
+        let contributor = 4_u32.into();
 
         assert_ok!(Reward::start_new_campaign(
             Origin::signed(hoster),
@@ -435,22 +435,22 @@ fn claimer_status() {
                 end_target: 10_u32.into(),
             },
         ));
-        assert_ok!(Reward::add_contributer(Origin::signed(hoster), campaign_id, contributer, 100_000_u32.into()));
+        assert_ok!(Reward::add_contributor(Origin::signed(hoster), campaign_id, contributor, 100_000_u32.into()));
         assert_ok!(Reward::lock_campaign(Origin::signed(hoster), campaign_id));
         assert_eq!(
-            Reward::get_contribution(campaign_id, contributer).map(|p| p.status),
+            Reward::get_contribution(campaign_id, contributor).map(|p| p.status),
             Some(types::ClaimerStatus::Unprocessed)
         );
         credit_account::<Test>(&hoster, 10_000_000_u32.into());
 
         // can claim vesting reward
-        assert_ok!(Reward::get_vested_reward(Origin::signed(contributer), campaign_id));
+        assert_ok!(Reward::get_vested_reward(Origin::signed(contributor), campaign_id));
         // cannot call again vesting reward
-        assert_noop!(Reward::get_vested_reward(Origin::signed(contributer), campaign_id), RewardError::RewardTaken);
+        assert_noop!(Reward::get_vested_reward(Origin::signed(contributor), campaign_id), RewardError::RewardTaken);
         // can call instant reward
-        assert_ok!(Reward::get_instant_reward(Origin::signed(contributer), campaign_id));
+        assert_ok!(Reward::get_instant_reward(Origin::signed(contributor), campaign_id));
         // cannot call again instant reward
-        assert_noop!(Reward::get_instant_reward(Origin::signed(contributer), campaign_id), RewardError::RewardTaken);
+        assert_noop!(Reward::get_instant_reward(Origin::signed(contributor), campaign_id), RewardError::RewardTaken);
     });
 }
 
@@ -545,7 +545,7 @@ fn new_crowdloan_update_sucess() {
 }
 
 #[test]
-fn contributer_addition_removal_success() {
+fn contributor_addition_removal_success() {
     new_test_ext().execute_with(|| {
         run_to_block(1);
         let campaign_id = 22_u32.into();
@@ -563,46 +563,46 @@ fn contributer_addition_removal_success() {
             }
         ));
 
-        let contributer_a = 101_u32.into();
-        let contributer_b = 102_u32.into();
-        let contributer_amount = 1_000_000_u32.into();
-        let contributer_unit = types::RewardUnitOf::<Test> {
+        let contributor_a = 101_u32.into();
+        let contributor_b = 102_u32.into();
+        let contributor_amount = 1_000_000_u32.into();
+        let contributor_unit = types::RewardUnitOf::<Test> {
             instant_amount: 300_000_u32.into(),
             vesting_amount: 700_000_u32.into(),
             per_block: 7_000_u32.into(),
             status: types::ClaimerStatus::Unprocessed,
         };
 
-        // add contributer a
-        assert_ok!(Reward::add_contributer(Origin::signed(hoster), campaign_id, contributer_a, contributer_amount));
-        assert_eq!(Reward::get_contribution(campaign_id, contributer_a), Some(contributer_unit.clone()));
+        // add contributor a
+        assert_ok!(Reward::add_contributor(Origin::signed(hoster), campaign_id, contributor_a, contributor_amount));
+        assert_eq!(Reward::get_contribution(campaign_id, contributor_a), Some(contributor_unit.clone()));
         assert_eq!(
             reward_events().last(),
             Some(&RewardEvent::ContributerAdded {
                 campaign_id,
-                contributer: contributer_a,
-                amount: contributer_amount
+                contributor: contributor_a,
+                amount: contributor_amount
             })
         );
-        // add contributer b
-        assert_ok!(Reward::add_contributer(Origin::signed(hoster), campaign_id, contributer_b, contributer_amount));
-        assert_eq!(Reward::get_contribution(campaign_id, contributer_b), Some(contributer_unit.clone()));
+        // add contributor b
+        assert_ok!(Reward::add_contributor(Origin::signed(hoster), campaign_id, contributor_b, contributor_amount));
+        assert_eq!(Reward::get_contribution(campaign_id, contributor_b), Some(contributor_unit.clone()));
         assert_eq!(
             reward_events().last(),
             Some(&RewardEvent::ContributerAdded {
                 campaign_id,
-                contributer: contributer_b,
-                amount: contributer_amount
+                contributor: contributor_b,
+                amount: contributor_amount
             })
         );
-        // remove contributer a
-        assert_ok!(Reward::remove_contributer(Origin::signed(hoster), campaign_id, contributer_a));
-        assert_eq!(Reward::get_contribution(campaign_id, contributer_a), None);
+        // remove contributor a
+        assert_ok!(Reward::remove_contributor(Origin::signed(hoster), campaign_id, contributor_a));
+        assert_eq!(Reward::get_contribution(campaign_id, contributor_a), None);
         assert_eq!(
             reward_events().last(),
             Some(&RewardEvent::ContributerKicked {
                 campaign_id,
-                contributer: contributer_a
+                contributor: contributor_a
             })
         );
     });
@@ -627,8 +627,8 @@ fn discard_campaign_success() {
             }
         ));
 
-        // add a contributers
-        assert_ok!(Reward::add_contributer(Origin::signed(hoster), campaign_id, 22_u32.into(), 100_000));
+        // add a contributors
+        assert_ok!(Reward::add_contributor(Origin::signed(hoster), campaign_id, 22_u32.into(), 100_000));
 
         // attempt to discard
         assert_ok!(Reward::discard_campaign(Origin::signed(hoster), campaign_id));
@@ -663,15 +663,15 @@ fn lock_campaign_success() {
             }
         ));
 
-        // add contributers
-        assert_ok!(Reward::add_contributer(Origin::signed(hoster), campaign_id, 101_u32.into(), 100_000));
-        assert_ok!(Reward::add_contributer(Origin::signed(hoster), campaign_id, 102_u32.into(), 100_000));
+        // add contributors
+        assert_ok!(Reward::add_contributor(Origin::signed(hoster), campaign_id, 101_u32.into(), 100_000));
+        assert_ok!(Reward::add_contributor(Origin::signed(hoster), campaign_id, 102_u32.into(), 100_000));
 
         // lock the campaign
         assert_ok!(Reward::lock_campaign(Origin::signed(hoster), campaign_id));
         // status should be locked
         assert_eq!(Reward::get_campaign_status(campaign_id), Some(types::RewardCampaignStatus::Locked));
-        // contributer should be as-is
+        // contributor should be as-is
         assert_eq!(crate::Contribution::<Test>::iter_key_prefix(campaign_id).collect::<Vec<_>>(), vec![102, 101]);
         // event must be deposited
         assert_eq!(reward_events().last(), Some(&RewardEvent::CampaignLocked(campaign_id)));
@@ -697,7 +697,7 @@ fn wipe_campaign_success() {
             }
         ));
         credit_account::<Test>(&hoster, 100_000_u32.into());
-        assert_ok!(Reward::add_contributer(Origin::signed(hoster), campaign_id, 101_u32.into(), 10_000));
+        assert_ok!(Reward::add_contributor(Origin::signed(hoster), campaign_id, 101_u32.into(), 10_000));
         assert_ok!(Reward::lock_campaign(Origin::signed(hoster), campaign_id));
         assert_ok!(Reward::get_instant_reward(Origin::signed(101_u32.into()), campaign_id));
         assert_ok!(Reward::get_vested_reward(Origin::signed(101_u32.into()), campaign_id));
@@ -708,7 +708,7 @@ fn wipe_campaign_success() {
         assert_eq!(Reward::get_campaign_status(campaign_id), Some(types::RewardCampaignStatus::Wiped));
         // should be no info in rewardInfo
         assert_eq!(Reward::get_reward_info(campaign_id), None);
-        // contributers should be cleared
+        // contributors should be cleared
         assert_eq!(crate::Contribution::<Test>::iter_key_prefix(campaign_id).next(), None);
         // event should be deposited
         assert_eq!(reward_events().last(), Some(&RewardEvent::CampaignWiped(campaign_id)));
@@ -738,9 +738,9 @@ fn hoster_access_control() {
         // - cannot update the campaign
         // - cannot discard the campaign
         // - cannot lock the campaign
-        // - cannot add contributer
-        // - cannot remove contributer
-        // - cannot wipe contributer
+        // - cannot add contributor
+        // - cannot remove contributor
+        // - cannot wipe contributor
         assert_noop!(
             Reward::update_campaign(Origin::signed(not_hoster), campaign_id, Default::default()),
             RewardError::PermissionDenied,
@@ -749,11 +749,11 @@ fn hoster_access_control() {
         assert_noop!(Reward::lock_campaign(Origin::signed(not_hoster), campaign_id), RewardError::PermissionDenied,);
         assert_noop!(Reward::discard_campaign(Origin::signed(not_hoster), campaign_id), RewardError::PermissionDenied,);
         assert_noop!(
-            Reward::add_contributer(Origin::signed(not_hoster), campaign_id, 99_u32.into(), 10_000_u32.into()),
+            Reward::add_contributor(Origin::signed(not_hoster), campaign_id, 99_u32.into(), 10_000_u32.into()),
             RewardError::PermissionDenied,
         );
         assert_noop!(
-            Reward::remove_contributer(Origin::signed(not_hoster), campaign_id, 99_u32.into()),
+            Reward::remove_contributor(Origin::signed(not_hoster), campaign_id, 99_u32.into()),
             RewardError::PermissionDenied,
         );
         assert_noop!(Reward::wipe_campaign(Origin::signed(not_hoster), campaign_id), RewardError::PermissionDenied,);

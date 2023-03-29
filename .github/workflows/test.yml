@@ -30,6 +30,11 @@ jobs:
           rustup default nightly-2022-08-10
           rustup target add wasm32-unknown-unknown --toolchain nightly-2022-08-10
 
+      - name: Install protoc
+        run: |
+          sudo apt update
+          sudo apt-get install protobuf-compiler
+
       - name: Run cargo check
         run: cargo +nightly-2022-08-10 check
 

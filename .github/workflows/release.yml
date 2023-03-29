@@ -8,7 +8,6 @@ on:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
     steps:
@@ -21,6 +20,11 @@ jobs:
           toolchain: nightly-2023-03-24
           target: wasm32-unknown-unknown
           override: true
+
+      - name: Install protoc
+        run: |
+          sudo apt update
+          sudo apt-get install protobuf-compiler
 
       - name: Build and zip
         run: |
@@ -39,18 +43,18 @@ jobs:
           body_path: CHANGELOG.md
         env:
           GITHUB_TOKEN: ${{ github.token }}
-      
+
       - name: generate raw kusama chainspec
         run: |
           ./target/release/datahighway-collator build-spec --chain kusama --disable-default-bootnode > plain-parachain-chainspec.json
           ./target/release/datahighway-collator build-spec --chain plain-parachain-chainspec.json --disable-default-bootnode --raw > kusama-parachain-raw.json
-          
+
       - name: generate raw rococo chainspec
         run: ./target/release/datahighway-collator build-spec --chain rococo --disable-default-bootnode > rococo-parachain-chainspec.json
 
       - name: fetch kusama chainspec
         run: wget https://github.com/DataHighway-DHX/DataHighway-Parachain/releases/download/v3.7.1/kusama.json
-      
+
       - name: fetch rococo chainspec
         run: wget https://raw.githubusercontent.com/DataHighway-DHX/DataHighway-Parachain/2c7ee5ddffffee8a7f8867694e791647e38a8fa1/res/rococo/rococo.json
 
@@ -69,7 +73,7 @@ jobs:
           asset_path: datahighway-collator.gz
           asset_name: datahighway-collator.gz
           asset_content_type: application/gzip
-      
+
       - name: upload compressed runtime wasm
         uses: actions/upload-release-asset@v1
         env:
@@ -79,7 +83,7 @@ jobs:
           asset_path: ./target/release/wbuild/datahighway-parachain-runtime/datahighway_parachain_runtime.compact.compressed.wasm
           asset_name: datahighway_parachain_runtime.compact.compressed.wasm
           asset_content_type: application/octet-stream
-      
+
       - name: upload kusama relay chainspec
         uses: actions/upload-release-asset@v1
         env:
@@ -109,7 +113,7 @@ jobs:
           asset_path: ./kusama-parachain-raw.json
           asset_name: kusama-parachain-raw.json
           asset_content_type: application/json
-      
+
       - name: upload parachain spec (v3.6.0)
         uses: actions/upload-release-asset@v1
         env:
@@ -119,7 +123,7 @@ jobs:
           asset_path: ./tanganika-parachain-raw.json
           asset_name: tanganika-parachain-raw.json
           asset_content_type: application/json
-      
+
       - name: upload rococo parachain spec
         uses: actions/upload-release-asset@v1
         env:

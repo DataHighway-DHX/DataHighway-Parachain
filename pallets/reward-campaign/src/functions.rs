@@ -143,7 +143,7 @@ pub fn do_vesting_reward<T: crate::Config>(
     } else {
         let vesting_info = types::VestingInfoOf::<T>::new(vesting_amount, per_block, starts_from);
 
-        let creditor_origin = <T as frame_system::Config>::Origin::from(frame_system::RawOrigin::Signed(reward_source));
+        let creditor_origin = <T as frame_system::Config>::RuntimeOrigin::from(frame_system::RawOrigin::Signed(reward_source));
         let contributor_lookup = <T::Lookup as StaticLookup>::unlookup(user);
 
         pallet_vesting::Pallet::<T>::vested_transfer(creditor_origin, contributor_lookup, vesting_info)

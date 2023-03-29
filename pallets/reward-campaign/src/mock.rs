@@ -46,9 +46,9 @@ impl system::Config for Test {
     type BlockLength = ();
     type BlockNumber = BlockNumber;
     type BlockWeights = ();
-    type Call = Call;
+    type RuntimeCall = RuntimeCall;
     type DbWeight = ();
-    type Event = Event;
+    type RuntimeEvent = RuntimeEvent;
     type Hash = H256;
     type Hashing = BlakeTwo256;
     type Header = Header;
@@ -58,7 +58,7 @@ impl system::Config for Test {
     type OnKilledAccount = ();
     type OnNewAccount = ();
     type OnSetCode = ();
-    type Origin = Origin;
+    type RuntimeOrigin = RuntimeOrigin;
     type PalletInfo = PalletInfo;
     type SS58Prefix = ConstU16<42>;
     type SystemWeightInfo = ();
@@ -75,7 +75,7 @@ impl pallet_balances::Config for Test {
     type AccountStore = System;
     type Balance = Balance;
     type DustRemoval = ();
-    type Event = Event;
+    type RuntimeEvent = RuntimeEvent;
     type ExistentialDeposit = ExistentialDeposit;
     type MaxLocks = MaxLocks;
     type MaxReserves = ();
@@ -86,7 +86,7 @@ impl pallet_balances::Config for Test {
 impl pallet_vesting::Config for Test {
     type BlockNumberToBalance = sp_runtime::traits::ConvertInto;
     type Currency = Balances;
-    type Event = Event;
+    type RuntimeEvent = RuntimeEvent;
     type MinVestedTransfer = VestingMinTransfer;
     type WeightInfo = ();
 
@@ -98,7 +98,7 @@ impl crowdloan_reward::Config for Test {
     type CampaignId = u32;
     type Currency = Balances;
     type CurrencyConvert = sp_runtime::traits::ConvertInto;
-    type Event = Event;
+    type RuntimeEvent = RuntimeEvent;
     type WeightInfo = ();
 }
 
@@ -131,7 +131,7 @@ pub fn reward_events() -> Vec<crate::Event<Test>> {
         .into_iter()
         .map(|r| r.event)
         .filter_map(|e| {
-            if let Event::Reward(inner) = e {
+            if let RuntimeEvent::Reward(inner) = e {
                 Some(inner)
             } else {
                 None

@@ -56,11 +56,11 @@ construct_runtime!(
 		NodeBlock = Block,
 		UncheckedExtrinsic = UncheckedExtrinsic,
 	{
-		System: frame_system::{Pallet, Call, Config, Storage, RuntimeEvent<T>},
-		Balances: pallet_balances::{Pallet, Call, Storage, Config<T>, RuntimeEvent<T>},
+		System: frame_system::{Pallet, Call, Config, Storage, Event<T>},
+		Balances: pallet_balances::{Pallet, Call, Storage, Config<T>, Event<T>},
 		Authorship: pallet_authorship::{Pallet, Call, Storage, Inherent},
-		StakePallet: stake::{Pallet, Call, Storage, Config<T>, RuntimeEvent<T>},
-		Session: pallet_session::{Pallet, Call, Storage, RuntimeEvent, Config<T>},
+		StakePallet: stake::{Pallet, Call, Storage, Config<T>, Event<T>},
+		Session: pallet_session::{Pallet, Call, Storage, Event, Config<T>},
 		Aura: pallet_aura::{Pallet, Storage},
 	}
 );
@@ -75,10 +75,10 @@ parameter_types! {
 impl frame_system::Config for Test {
 	type BaseCallFilter = frame_support::traits::Everything;
 	type DbWeight = ();
-	type Origin = Origin;
+	type RuntimeOrigin = RuntimeOrigin;
 	type Index = u64;
 	type BlockNumber = BlockNumber;
-	type Call = Call;
+	type RuntimeCall = RuntimeCall;
 	type Hash = H256;
 	type Hashing = BlakeTwo256;
 	type AccountId = AccountId;
@@ -329,7 +329,7 @@ impl ExtBuilder {
 
 		if self.blocks_per_round != BLOCKS_PER_ROUND {
 			ext.execute_with(|| {
-				StakePallet::set_blocks_per_round(Origin::root(), self.blocks_per_round)
+				StakePallet::set_blocks_per_round(RuntimeOrigin::root(), self.blocks_per_round)
 					.expect("Ran into issues when setting blocks_per_round");
 			});
 		}
@@ -356,11 +356,11 @@ pub(crate) fn roll_to(n: BlockNumber, authors: Vec<Option<AccountId>>) {
 	}
 }
 
-pub(crate) fn last_event() -> RuntimeEvent {
-	System::events().pop().expect("RuntimeEvent expected").event
+pub(crate) fn last_event() -> pallet::Event<Test> {
+	events().pop().expect("Event expected")
 }
 
-pub(crate) fn events() -> Vec<pallet::RuntimeEvent<Test>> {
+pub(crate) fn events() -> Vec<pallet::Event<Test>> {
 	System::events()
 		.into_iter()
 		.map(|r| r.event)

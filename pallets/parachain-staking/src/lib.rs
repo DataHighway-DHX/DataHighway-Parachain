@@ -700,13 +700,13 @@ pub mod pallet {
 				);
 				if let Some(delegated_val) = opt_val {
 					assert_ok!(<Pallet<T>>::join_delegators(
-						T::Origin::from(Some(actor.clone()).into()),
+						T::RuntimeOrigin::from(Some(actor.clone()).into()),
 						T::Lookup::unlookup(delegated_val.clone()),
 						balance,
 					));
 				} else {
 					assert_ok!(<Pallet<T>>::join_candidates(
-						T::Origin::from(Some(actor.clone()).into()),
+						T::RuntimeOrigin::from(Some(actor.clone()).into()),
 						balance
 					));
 				}

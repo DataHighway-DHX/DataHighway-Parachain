@@ -232,7 +232,7 @@ where
 					owner: collator,
 					amount,
 				}]
-				.try_into()?,
+				.try_into().map_err(|_| ())?,
 			),
 			total: amount,
 		})

@@ -18,7 +18,7 @@ jobs:
       - name: Add wasm toolchain
         uses: actions-rs/toolchain@v1
         with:
-          toolchain: nightly-2022-08-10
+          toolchain: nightly-2023-03-24
           target: wasm32-unknown-unknown
           override: true
 

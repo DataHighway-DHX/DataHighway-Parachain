@@ -7,6 +7,7 @@ use frame_support::{
         ConstU64,
         Currency,
         Imbalance,
+        WithdrawReasons,
     },
 };
 use frame_system as system;
@@ -69,6 +70,7 @@ parameter_types! {
     pub const ExistentialDeposit: u128 = 500;
     pub const MaxLocks: u32 = 50;
     pub const VestingMinTransfer: Balance = 1000;
+    pub UnvestedFundsAllowedWithdrawReasons: WithdrawReasons = WithdrawReasons::except(WithdrawReasons::TRANSFER | WithdrawReasons::RESERVE);
 }
 
 impl pallet_balances::Config for Test {
@@ -89,6 +91,7 @@ impl pallet_vesting::Config for Test {
     type RuntimeEvent = RuntimeEvent;
     type MinVestedTransfer = VestingMinTransfer;
     type WeightInfo = ();
+    type UnvestedFundsAllowedWithdrawReasons = UnvestedFundsAllowedWithdrawReasons;
 
     const MAX_VESTING_SCHEDULES: u32 = 20;
 }

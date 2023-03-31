@@ -14,7 +14,7 @@ use sp_api::impl_runtime_apis;
 use sp_core::{crypto::KeyTypeId, OpaqueMetadata};
 use sp_runtime::{
     create_runtime_str, generic, impl_opaque_keys, traits,
-    traits::{AccountIdLookup, BlakeTwo256, Block as BlockT, ConvertInto, StaticLookup, SaturatedConversion},
+    traits::{AccountIdLookup, BlakeTwo256, Block as BlockT, ConvertInto, StaticLookup, SaturatedConversion, Bounded},
     transaction_validity::{ TransactionSource, TransactionValidity},
     ApplyExtrinsicResult, FixedPointNumber,
 };
@@ -365,6 +365,7 @@ impl pallet_balances::Config for Runtime {
 
 parameter_types! {
 	pub const MinVestedTransfer: Balance = 100 * CENTS;
+    pub UnvestedFundsAllowedWithdrawReasons: WithdrawReasons = WithdrawReasons::except(WithdrawReasons::TRANSFER | WithdrawReasons::RESERVE);
 }
 
 impl pallet_vesting::Config for Runtime {
@@ -374,6 +375,7 @@ impl pallet_vesting::Config for Runtime {
 	type MinVestedTransfer = MinVestedTransfer;
 	type WeightInfo = pallet_vesting::weights::SubstrateWeight<Runtime>;
 	const MAX_VESTING_SCHEDULES: u32 = 28;
+    type UnvestedFundsAllowedWithdrawReasons = UnvestedFundsAllowedWithdrawReasons;
 }
 
 pub const OPERATIONAL_FEE_MULTIPLIER_AS_CONST: u8 = 5;
@@ -387,6 +389,7 @@ parameter_types! {
     pub const TargetBlockFullness: Perquintill = Perquintill::from_percent(25);
     pub AdjustmentVariable: Multiplier = Multiplier::saturating_from_rational(1, 100_000);
     pub MinimumMultiplier: Multiplier = Multiplier::saturating_from_rational(1, 1_000_000_000u128);
+    pub MaximumMultiplier: Multiplier = Bounded::max_value();
 }
 
 impl pallet_transaction_payment::Config for Runtime {
@@ -395,7 +398,7 @@ impl pallet_transaction_payment::Config for Runtime {
     type LengthToFee = ConstantMultiplier<Balance, TransactionByteFee>;
     type WeightToFee = IdentityFee<Balance>;
     type FeeMultiplierUpdate =
-        TargetedFeeAdjustment<Self, TargetBlockFullness, AdjustmentVariable, MinimumMultiplier>;
+        TargetedFeeAdjustment<Self, TargetBlockFullness, AdjustmentVariable, MinimumMultiplier, MaximumMultiplier>;
     type OperationalFeeMultiplier = ConstU8<OPERATIONAL_FEE_MULTIPLIER_AS_CONST>;
 }
 
@@ -843,8 +846,7 @@ impl pallet_scheduler::Config for Runtime {
     type MaxScheduledPerBlock = ConstU32<MAX_SCHEDULED_PER_BLOCK_AS_CONST>;
     type WeightInfo = pallet_scheduler::weights::SubstrateWeight<Runtime>;
     type OriginPrivilegeCmp = EqualPrivilegeOnly;
-    type PreimageProvider = Preimage;
-    type NoPreimagePostponement = NoPreimagePostponement;
+    type Preimages = Preimage;
 }
 
 parameter_types! {
@@ -859,7 +861,6 @@ impl pallet_preimage::Config for Runtime {
     type RuntimeEvent = RuntimeEvent;
     type Currency = Balances;
     type ManagerOrigin = EnsureRoot<AccountId>;
-    type MaxSize = PreimageMaxSize;
     type BaseDeposit = PreimageBaseDeposit;
     type ByteDeposit = PreimageByteDeposit;
 }
@@ -945,6 +946,7 @@ impl pallet_referenda::Config for Runtime {
     type UndecidingTimeout = UndecidingTimeout;
     type AlarmInterval = AlarmInterval;
     type Tracks = TracksInfo;
+    type Preimages = Preimage;
 }
 
 pub const MAX_VOTES_AS_CONST: u32 = 100;
@@ -962,7 +964,6 @@ parameter_types! {
 }
 
 impl pallet_democracy::Config for Runtime {
-    type Proposal = RuntimeCall;
     type RuntimeEvent = RuntimeEvent;
     type Currency = Balances;
     type EnactmentPeriod = EnactmentPeriod;
@@ -1002,14 +1003,15 @@ impl pallet_democracy::Config for Runtime {
     // only do it once and it lasts only for the cooloff period.
     type VetoOrigin = pallet_collective::EnsureMember<AccountId, TechnicalCollective>;
     type CooloffPeriod = CooloffPeriod;
-    type PreimageByteDeposit = PreimageByteDeposit;
-    type OperationalPreimageOrigin = pallet_collective::EnsureMember<AccountId, CouncilCollective>;
     type Slash = Treasury;
     type Scheduler = Scheduler;
     type PalletsOrigin = OriginCaller;
     type MaxVotes = frame_support::traits::ConstU32<MAX_VOTES_AS_CONST>;
     type WeightInfo = pallet_democracy::weights::SubstrateWeight<Runtime>;
     type MaxProposals = MaxProposals;
+    type MaxDeposits = ConstU32<100>;
+	type MaxBlacklisted = ConstU32<100>;
+    type Preimages = Preimage;
 }
 
 impl pallet_sudo::Config for Runtime {

@@ -342,6 +342,7 @@ pub mod pallet {
             Self::ensure_campaign_discardable(&campaign_id)?;
 
             <Contribution<T>>::remove_prefix(&campaign_id, None);
+            // <Contribution<T>>::clear_prefix(&campaign_id, 0, None);
             <RewardInfo<T>>::remove(&campaign_id);
             <CampaignStatus<T>>::remove(&campaign_id);
 

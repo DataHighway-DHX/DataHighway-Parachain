@@ -1949,7 +1949,7 @@ dependencies = [
 
 [[package]]
 name = "datahighway-parachain-runtime"
-version = "3.9.0"
+version = "3.9.1"
 dependencies = [
  "chrono",
  "cumulus-pallet-aura-ext",
